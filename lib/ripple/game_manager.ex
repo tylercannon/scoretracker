@@ -1,0 +1,214 @@
+defmodule Ripple.GameManager do
+  use GenServer
+
+  @table_name :lobbies
+
+  @create_game_schema NimbleOptions.new!(
+                        host: [
+                          type: :string,
+                          required: true,
+                          doc: "The name of the host. Automatically added to the list of players."
+                        ],
+                        game_mode: [
+                          type: {:in, [:scorekeeper, :party]},
+                          required: true,
+                          doc: """
+                          The game mode of the game.
+                          In scorekeeper mode, the host updates each players score and players can join the lobby as a view-only user.
+                          In party mode, each player joins the lobby and updates their own scores.
+                          """
+                        ],
+                        max_players: [
+                          type: :pos_integer,
+                          required: false,
+                          default: 6,
+                          doc: "The maximum number of players that can join the lobby."
+                        ],
+                        max_rounds: [
+                          type: :pos_integer,
+                          required: false,
+                          default: 10,
+                          doc: "The maximum number of rounds in the game."
+                        ],
+                        players: [
+                          type: {:list, :string},
+                          required: false,
+                          default: [],
+                          doc:
+                            "The list of players (excluding the host) that aren't updating their own scores."
+                        ]
+                      )
+
+  @add_player_schema NimbleOptions.new!(
+                       lobby_id: [
+                         type: :string,
+                         required: true,
+                         doc: "The lobby id to add the player to."
+                       ],
+                       player_name: [
+                         type: :string,
+                         required: true,
+                         doc: "The name of the player to add to the lobby."
+                       ]
+                     )
+
+  @update_player_score_schema NimbleOptions.new!(
+                                lobby_id: [
+                                  type: :string,
+                                  required: true,
+                                  doc: "The lobby id of the game."
+                                ],
+                                player_name: [
+                                  type: :string,
+                                  required: true,
+                                  doc: "The name of the player to update the score for."
+                                ],
+                                round: [
+                                  type: :pos_integer,
+                                  required: true,
+                                  doc: "The round of the game to update the player's score for."
+                                ],
+                                score: [
+                                  type: :pos_integer,
+                                  required: true,
+                                  doc: "The player's score for the given round."
+                                ]
+                              )
+
+  @type create_game_opts() :: [unquote(NimbleOptions.option_typespec(@create_game_schema))]
+  @type add_player_opts() :: [unquote(NimbleOptions.option_typespec(@add_player_schema))]
+
+  @type update_player_score_opts() :: [
+          unquote(NimbleOptions.option_typespec(@update_player_score_schema))
+        ]
+
+  # Client API
+
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  end
+
+  @spec create_game(create_game_opts()) ::
+          String.t() | {:error, NimbleOptions.ValidationError.t()}
+  def create_game(game_opts) do
+    with {:ok, game_opts} <- NimbleOptions.validate(game_opts, @create_game_schema) do
+      GenServer.call(__MODULE__, {:create_game, game_opts})
+    else
+      error -> error
+    end
+  end
+
+  @spec add_player(add_player_opts()) ::
+          :ok | {:error, :already_exists | NimbleOptions.ValidationError.t()}
+  def add_player(player_opts) do
+    with {:ok, player_opts} <- NimbleOptions.validate(player_opts, @add_player_schema) do
+      GenServer.call(__MODULE__, {:add_player, player_opts})
+    else
+      error -> error
+    end
+  end
+
+  @spec update_player_score(update_player_score_opts()) ::
+          :ok | {:error, NimbleOptions.ValidationError.t()}
+  def update_player_score(score_opts) do
+    with {:ok, score_opts} <- NimbleOptions.validate(score_opts, @update_player_score_schema) do
+      GenServer.call(__MODULE__, {:update_player_score, score_opts})
+    else
+      error -> error
+    end
+  end
+
+  @spec get_game(String.t()) :: {:ok, any()} | {:error, :not_found}
+  def get_game(lobby_id) do
+    case :ets.lookup(@table_name, lobby_id) do
+      [{^lobby_id, game_state}] -> {:ok, game_state}
+      [] -> {:error, :not_found}
+    end
+  end
+
+  # Server callbacks
+
+  @impl true
+  def init(_opts) do
+    table_id = :ets.new(@table_name, [:set, :public, :named_table, {:write_concurrency, true}])
+    {:ok, table_id}
+  end
+
+  @impl true
+  def handle_call({:create_game, game_opts}, _from, table_id) do
+    lobby_id = generate_lobby_id()
+    host = Keyword.get(game_opts, :host)
+    game_mode = Keyword.get(game_opts, :game_mode)
+    players = [host | Keyword.get(game_opts, :players, [])]
+    status = if game_mode == :scorekeeper, do: :in_progress, else: :waiting_for_players
+
+    scores =
+      Enum.reduce(players, %{}, fn player, acc ->
+        Map.put(acc, player, %{"1" => 0})
+      end)
+
+    initial_state = %{
+      max_players: Keyword.get(game_opts, :max_players, 6),
+      max_rounds: Keyword.get(game_opts, :max_rounds, 10),
+      host: host,
+      status: status,
+      round: 1,
+      scores: scores
+    }
+
+    :ets.insert(table_id, {lobby_id, initial_state})
+
+    {:reply, lobby_id, table_id}
+  end
+
+  @impl true
+  def handle_call({:add_player, player_opts}, _from, table_id) do
+    lobby_id = Keyword.get(player_opts, :lobby_id)
+    player_name = Keyword.get(player_opts, :player_name)
+    [{^lobby_id, game_state}] = :ets.lookup(table_id, lobby_id)
+
+    case Map.has_key?(game_state.scores, player_name) do
+      true ->
+        {:reply, {:error, :already_exists}, table_id}
+
+      false ->
+        updated_scores = Map.put(game_state.scores, player_name, %{"1" => 0})
+        updated_game_state = %{game_state | scores: updated_scores}
+        :ets.insert(table_id, {lobby_id, updated_game_state})
+        {:reply, :ok, table_id}
+    end
+  end
+
+  @impl true
+  def handle_call({:update_player_score, score_opts}, _from, table_id) do
+    lobby_id = Keyword.get(score_opts, :lobby_id)
+    player_name = Keyword.get(score_opts, :player_name)
+    round = Keyword.get(score_opts, :round)
+    score = Keyword.get(score_opts, :score)
+    [{^lobby_id, game_state}] = :ets.lookup(table_id, lobby_id)
+
+    updated_player_scores =
+      game_state.scores
+      |> Map.get(player_name)
+      |> Map.put(round, score)
+
+    updated_scores = Map.put(game_state.scores, player_name, updated_player_scores)
+    updated_game_state = %{game_state | scores: updated_scores}
+    :ets.insert(table_id, {lobby_id, updated_game_state})
+
+    {:reply, :ok, table_id}
+  end
+
+  # Private helpers
+
+  defp generate_lobby_id(len \\ 8) do
+    allowed_characters = ~c"ABCDEFGHJKMNPQRTUVWXYZ2346789"
+    lobby_id_characters = for _ <- 1..len, into: [], do: Enum.random(allowed_characters)
+    lobby_id = to_string(lobby_id_characters)
+
+    case :ets.lookup(@table_name, lobby_id) do
+      [] -> lobby_id
+      _ -> generate_lobby_id(len)
+    end
+  end
+end

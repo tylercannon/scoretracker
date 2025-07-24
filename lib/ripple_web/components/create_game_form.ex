@@ -1,0 +1,54 @@
+defmodule RippleWeb.CreateGameForm do
+  use RippleWeb, :live_component
+
+  alias Ripple.CreateGame
+
+  @impl true
+  def update(assigns, socket) do
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign(form: to_form(CreateGame.changeset(%CreateGame{})))
+
+    {:ok, socket}
+  end
+
+  @impl true
+  def render(%{on_cancel: _} = assigns) do
+    ~H"""
+    <div>
+      <.simple_form
+        :let={f}
+        for={@form}
+        phx-target={@myself}
+        phx-change={JS.push("validate")}
+        phx-submit="save"
+      >
+        <.input field={f[:host]} label="Host" />
+        <.input field={f[:game_mode]} label="Game Mode" />
+        <.input field={f[:max_players]} label="Max Players" />
+        <.input field={f[:max_rounds]} label="Max Rounds" />
+        <:actions>
+          <.button type="button" phx-click={@on_cancel}>Cancel</.button>
+          <.button>Create</.button>
+        </:actions>
+      </.simple_form>
+    </div>
+    """
+  end
+
+  @impl true
+  def handle_event("validate", attrs, socket) do
+    form =
+      %CreateGame{}
+      |> CreateGame.changeset(attrs)
+      |> to_form(action: :validate)
+
+    {:noreply, assign(socket, form: form)}
+  end
+
+  @impl true
+  def handle_event("save", _attrs, socket) do
+    {:noreply, socket}
+  end
+end
