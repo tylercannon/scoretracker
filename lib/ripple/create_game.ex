@@ -28,4 +28,10 @@ defmodule Ripple.CreateGame do
     |> validate_number(:max_players, greater_than_or_equal_to: 2, less_than_or_equal_to: 10)
     |> validate_number(:max_rounds, greater_than_or_equal_to: 1, less_than_or_equal_to: 20)
   end
+
+  def update(%__MODULE__{} = create_game, attrs) do
+    create_game
+    |> changeset(attrs)
+    |> apply_action(:update)
+  end
 end

@@ -14,6 +14,7 @@ defmodule Ripple.Application do
       # Start a worker by calling: Ripple.Worker.start_link(arg)
       # {Ripple.Worker, arg},
       # Start to serve requests, typically the last entry
+      Ripple.GameManager,
       RippleWeb.Endpoint
     ]
 

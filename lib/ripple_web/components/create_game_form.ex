@@ -2,6 +2,7 @@ defmodule RippleWeb.CreateGameForm do
   use RippleWeb, :live_component
 
   alias Ripple.CreateGame
+  alias Ripple.GameManager
 
   @impl true
   def update(assigns, socket) do
@@ -48,7 +49,23 @@ defmodule RippleWeb.CreateGameForm do
   end
 
   @impl true
-  def handle_event("save", _attrs, socket) do
+  def handle_event("save", attrs, socket) do
+    socket =
+      case CreateGame.update(%CreateGame{}, attrs) do
+        {:ok, create_game} ->
+          _game_id =
+            create_game
+            |> Map.from_struct()
+            |> Enum.to_list()
+            |> GameManager.create_game()
+
+          socket
+          |> put_flash(:success, "Game created!")
+
+        {:error, changeset} ->
+          assign(socket, form: to_form(changeset, action: :validate))
+      end
+
     {:noreply, socket}
   end
 end
