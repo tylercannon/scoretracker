@@ -59,8 +59,7 @@ defmodule RippleWeb.CreateGameForm do
             |> Enum.to_list()
             |> GameManager.create_game()
 
-          socket
-          |> put_flash(:success, "Game created!")
+          push_navigate(socket, to: ~p"/")
 
         {:error, changeset} ->
           assign(socket, form: to_form(changeset, action: :validate))
