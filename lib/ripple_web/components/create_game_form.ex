@@ -25,7 +25,7 @@ defmodule RippleWeb.CreateGameForm do
         phx-change={JS.push("validate")}
         phx-submit="save"
       >
-        <.input field={f[:host]} label="Host" />
+        <.input field={f[:host_name]} label="Host" />
         <.input field={f[:game_mode]} label="Game Mode" />
         <.input field={f[:max_players]} label="Max Players" />
         <.input field={f[:max_rounds]} label="Max Rounds" />
@@ -53,13 +53,16 @@ defmodule RippleWeb.CreateGameForm do
     socket =
       case CreateGame.update(%CreateGame{}, attrs) do
         {:ok, create_game} ->
-          _game_id =
+          game_id =
             create_game
             |> Map.from_struct()
+            |> Map.put(:host_id, socket.assigns.user_id)
             |> Enum.to_list()
             |> GameManager.create_game()
 
-          push_navigate(socket, to: ~p"/")
+          socket
+          |> assign(game_id: game_id)
+          |> push_navigate(to: ~p"/game/#{game_id}")
 
         {:error, changeset} ->
           assign(socket, form: to_form(changeset, action: :validate))

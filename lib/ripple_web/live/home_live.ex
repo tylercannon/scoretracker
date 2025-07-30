@@ -1,7 +1,13 @@
 defmodule RippleWeb.HomeLive do
   use RippleWeb, :live_view
 
-  def render(assigns) do
+  @impl true
+  def mount(_params, session, socket) do
+    {:ok, assign(socket, user_id: session["user_id"])}
+  end
+
+  @impl true
+  def render(%{user_id: _} = assigns) do
     ~H"""
     <div class="w-screen h-screen flex flex-col items-center justify-center bg-slate-600 text-white">
       <h1>Welcome to Ripple</h1>
@@ -21,6 +27,7 @@ defmodule RippleWeb.HomeLive do
         <.live_component
           id="create-game-form"
           module={RippleWeb.CreateGameForm}
+          user_id={@user_id}
           on_cancel={JS.hide(to: "#new-game-modal")}
         />
       </div>

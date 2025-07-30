@@ -4,7 +4,12 @@ defmodule Ripple.GameManager do
   @table_name :lobbies
 
   @create_game_schema NimbleOptions.new!(
-                        host: [
+                        host_id: [
+                          type: :string,
+                          required: true,
+                          doc: "The id of the host."
+                        ],
+                        host_name: [
                           type: :string,
                           required: true,
                           doc: "The name of the host. Automatically added to the list of players."
@@ -45,6 +50,11 @@ defmodule Ripple.GameManager do
                          required: true,
                          doc: "The lobby id to add the player to."
                        ],
+                       player_id: [
+                         type: :string,
+                         required: true,
+                         doc: "The id of the player to add to the lobby."
+                       ],
                        player_name: [
                          type: :string,
                          required: true,
@@ -58,7 +68,7 @@ defmodule Ripple.GameManager do
                                   required: true,
                                   doc: "The lobby id of the game."
                                 ],
-                                player_name: [
+                                player_id: [
                                   type: :string,
                                   required: true,
                                   doc: "The name of the player to update the score for."
@@ -137,9 +147,11 @@ defmodule Ripple.GameManager do
   @impl true
   def handle_call({:create_game, game_opts}, _from, table_id) do
     lobby_id = generate_lobby_id()
-    host = Keyword.get(game_opts, :host)
+    host_id = Keyword.get(game_opts, :host_id)
+    host_name = Keyword.get(game_opts, :host_name)
     game_mode = Keyword.get(game_opts, :game_mode)
-    players = [host | Keyword.get(game_opts, :players, [])]
+    player_names = Map.put(%{}, host_id, host_name)
+    players = [host_id | Keyword.get(game_opts, :players, [])]
     status = if game_mode == :scorekeeper, do: :in_progress, else: :waiting_for_players
 
     scores =
@@ -150,9 +162,10 @@ defmodule Ripple.GameManager do
     initial_state = %{
       max_players: Keyword.get(game_opts, :max_players, 6),
       max_rounds: Keyword.get(game_opts, :max_rounds, 10),
-      host: host,
+      host_id: host_id,
       status: status,
       round: 1,
+      player_names: player_names,
       scores: scores
     }
 
@@ -164,16 +177,23 @@ defmodule Ripple.GameManager do
   @impl true
   def handle_call({:add_player, player_opts}, _from, table_id) do
     lobby_id = Keyword.get(player_opts, :lobby_id)
+    player_id = Keyword.get(player_opts, :player_id)
     player_name = Keyword.get(player_opts, :player_name)
     [{^lobby_id, game_state}] = :ets.lookup(table_id, lobby_id)
 
-    case Map.has_key?(game_state.scores, player_name) do
+    case Map.has_key?(game_state.player_names, player_id) do
       true ->
         {:reply, {:error, :already_exists}, table_id}
 
       false ->
-        updated_scores = Map.put(game_state.scores, player_name, %{"1" => 0})
-        updated_game_state = %{game_state | scores: updated_scores}
+        updated_scores = Map.put(game_state.scores, player_id, %{"1" => 0})
+        updated_player_names = Map.put(game_state.player_names, player_id, player_name)
+
+        updated_game_state =
+          game_state
+          |> Map.put(:scores, updated_scores)
+          |> Map.put(:player_names, updated_player_names)
+
         :ets.insert(table_id, {lobby_id, updated_game_state})
         {:reply, :ok, table_id}
     end
@@ -182,17 +202,17 @@ defmodule Ripple.GameManager do
   @impl true
   def handle_call({:update_player_score, score_opts}, _from, table_id) do
     lobby_id = Keyword.get(score_opts, :lobby_id)
-    player_name = Keyword.get(score_opts, :player_name)
+    player_id = Keyword.get(score_opts, :player_id)
     round = Keyword.get(score_opts, :round)
     score = Keyword.get(score_opts, :score)
     [{^lobby_id, game_state}] = :ets.lookup(table_id, lobby_id)
 
     updated_player_scores =
       game_state.scores
-      |> Map.get(player_name)
-      |> Map.put(round, score)
+      |> Map.get(player_id)
+      |> Map.put(to_string(round), score)
 
-    updated_scores = Map.put(game_state.scores, player_name, updated_player_scores)
+    updated_scores = Map.put(game_state.scores, player_id, updated_player_scores)
     updated_game_state = %{game_state | scores: updated_scores}
     :ets.insert(table_id, {lobby_id, updated_game_state})
 

@@ -1,6 +1,8 @@
 defmodule RippleWeb.Router do
   use RippleWeb, :router
 
+  alias RippleWeb.Plugs.UserIdPlug
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,6 +10,7 @@ defmodule RippleWeb.Router do
     plug :put_root_layout, html: {RippleWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug UserIdPlug
   end
 
   pipeline :api do
@@ -17,7 +20,10 @@ defmodule RippleWeb.Router do
   scope "/", RippleWeb do
     pipe_through :browser
 
-    live "/", HomeLive, :page
+    live_session :game do
+      live "/", HomeLive, :page
+      live "/game/:game_id", GameLive, :page
+    end
   end
 
   # Other scopes may use custom stacks.
