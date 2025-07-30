@@ -20,7 +20,7 @@ defmodule RippleWeb.GameLive do
 
   def render(assigns) do
     ~H"""
-    <div class="w-100 h-100 flex flex-col items-center justify-center p-4">
+    <div class="w-full flex flex-col items-center justify-center p-4">
       <h1 class="text-xl font-bold mb-4">Game Details</h1>
       <div class="flex flex-col gap-2">
         <span>Is Host: {@is_host}</span>
