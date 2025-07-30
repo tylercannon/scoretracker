@@ -19,15 +19,15 @@ defmodule Ripple.GameManager do
                           required: true,
                           doc: """
                           The game mode of the game.
-                          In scorekeeper mode, the host updates each players score and players can join the lobby as a view-only user.
-                          In party mode, each player joins the lobby and updates their own scores.
+                          In scorekeeper mode, the host updates each players score and players can join the game as a view-only user.
+                          In party mode, each player joins the game and updates their own scores.
                           """
                         ],
                         max_players: [
                           type: :pos_integer,
                           required: false,
                           default: 6,
-                          doc: "The maximum number of players that can join the lobby."
+                          doc: "The maximum number of players that can join the game."
                         ],
                         max_rounds: [
                           type: :pos_integer,
@@ -45,28 +45,28 @@ defmodule Ripple.GameManager do
                       )
 
   @add_player_schema NimbleOptions.new!(
-                       lobby_id: [
+                       game_id: [
                          type: :string,
                          required: true,
-                         doc: "The lobby id to add the player to."
+                         doc: "The game id to add the player to."
                        ],
                        player_id: [
                          type: :string,
                          required: true,
-                         doc: "The id of the player to add to the lobby."
+                         doc: "The id of the player to add to the game."
                        ],
                        player_name: [
                          type: :string,
                          required: true,
-                         doc: "The name of the player to add to the lobby."
+                         doc: "The name of the player to add to the game."
                        ]
                      )
 
   @update_player_score_schema NimbleOptions.new!(
-                                lobby_id: [
+                                game_id: [
                                   type: :string,
                                   required: true,
-                                  doc: "The lobby id of the game."
+                                  doc: "The game id of the game."
                                 ],
                                 player_id: [
                                   type: :string,
@@ -129,9 +129,9 @@ defmodule Ripple.GameManager do
   end
 
   @spec get_game(String.t()) :: {:ok, any()} | {:error, :not_found}
-  def get_game(lobby_id) do
-    case :ets.lookup(@table_name, lobby_id) do
-      [{^lobby_id, game_state}] -> {:ok, game_state}
+  def get_game(game_id) do
+    case :ets.lookup(@table_name, game_id) do
+      [{^game_id, game_state}] -> {:ok, game_state}
       [] -> {:error, :not_found}
     end
   end
@@ -146,7 +146,7 @@ defmodule Ripple.GameManager do
 
   @impl true
   def handle_call({:create_game, game_opts}, _from, table_id) do
-    lobby_id = generate_lobby_id()
+    game_id = generate_game_id()
     host_id = Keyword.get(game_opts, :host_id)
     host_name = Keyword.get(game_opts, :host_name)
     game_mode = Keyword.get(game_opts, :game_mode)
@@ -169,17 +169,17 @@ defmodule Ripple.GameManager do
       scores: scores
     }
 
-    :ets.insert(table_id, {lobby_id, initial_state})
+    :ets.insert(table_id, {game_id, initial_state})
 
-    {:reply, lobby_id, table_id}
+    {:reply, game_id, table_id}
   end
 
   @impl true
   def handle_call({:add_player, player_opts}, _from, table_id) do
-    lobby_id = Keyword.get(player_opts, :lobby_id)
+    game_id = Keyword.get(player_opts, :game_id)
     player_id = Keyword.get(player_opts, :player_id)
     player_name = Keyword.get(player_opts, :player_name)
-    [{^lobby_id, game_state}] = :ets.lookup(table_id, lobby_id)
+    [{^game_id, game_state}] = :ets.lookup(table_id, game_id)
 
     case Map.has_key?(game_state.player_names, player_id) do
       true ->
@@ -194,18 +194,18 @@ defmodule Ripple.GameManager do
           |> Map.put(:scores, updated_scores)
           |> Map.put(:player_names, updated_player_names)
 
-        :ets.insert(table_id, {lobby_id, updated_game_state})
+        :ets.insert(table_id, {game_id, updated_game_state})
         {:reply, :ok, table_id}
     end
   end
 
   @impl true
   def handle_call({:update_player_score, score_opts}, _from, table_id) do
-    lobby_id = Keyword.get(score_opts, :lobby_id)
+    game_id = Keyword.get(score_opts, :game_id)
     player_id = Keyword.get(score_opts, :player_id)
     round = Keyword.get(score_opts, :round)
     score = Keyword.get(score_opts, :score)
-    [{^lobby_id, game_state}] = :ets.lookup(table_id, lobby_id)
+    [{^game_id, game_state}] = :ets.lookup(table_id, game_id)
 
     updated_player_scores =
       game_state.scores
@@ -214,21 +214,21 @@ defmodule Ripple.GameManager do
 
     updated_scores = Map.put(game_state.scores, player_id, updated_player_scores)
     updated_game_state = %{game_state | scores: updated_scores}
-    :ets.insert(table_id, {lobby_id, updated_game_state})
+    :ets.insert(table_id, {game_id, updated_game_state})
 
     {:reply, :ok, table_id}
   end
 
   # Private helpers
 
-  defp generate_lobby_id(len \\ 8) do
+  defp generate_game_id(len \\ 8) do
     allowed_characters = ~c"ABCDEFGHJKMNPQRTUVWXYZ2346789"
-    lobby_id_characters = for _ <- 1..len, into: [], do: Enum.random(allowed_characters)
-    lobby_id = to_string(lobby_id_characters)
+    game_id_characters = for _ <- 1..len, into: [], do: Enum.random(allowed_characters)
+    game_id = to_string(game_id_characters)
 
-    case :ets.lookup(@table_name, lobby_id) do
-      [] -> lobby_id
-      _ -> generate_lobby_id(len)
+    case :ets.lookup(@table_name, game_id) do
+      [] -> game_id
+      _ -> generate_game_id(len)
     end
   end
 end

@@ -1,6 +1,7 @@
 defmodule RippleWeb.GameLive do
   use RippleWeb, :live_view
 
+  @impl true
   def mount(%{"game_id" => game_id}, session, socket) do
     # todo: handle invalid game ids
     {:ok, game} = Ripple.GameManager.get_game(game_id)
@@ -18,6 +19,7 @@ defmodule RippleWeb.GameLive do
     {:ok, socket}
   end
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="w-full flex flex-col items-center justify-center p-4">

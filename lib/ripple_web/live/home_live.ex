@@ -15,7 +15,7 @@ defmodule RippleWeb.HomeLive do
         <button phx-click={JS.show(to: "#new-game-modal")} class="p-2 rounded-md bg-teal-400">
           New Game
         </button>
-        <button class="p-2 rounded-md bg-cyan-400">
+        <button phx-click={JS.show(to: "#join-game-modal")} class="p-2 rounded-md bg-cyan-400">
           Join Game
         </button>
       </div>
@@ -29,6 +29,18 @@ defmodule RippleWeb.HomeLive do
           module={RippleWeb.CreateGameForm}
           user_id={@user_id}
           on_cancel={JS.hide(to: "#new-game-modal")}
+        />
+      </div>
+    </.modal>
+
+    <.modal id="join-game-modal" on_cancel={JS.hide(to: "#join-game-modal")}>
+      <div>
+        <h2 class="text-xl font-bold mb-4 text-white">Join Game</h2>
+        <.live_component
+          id="join-game-form"
+          module={RippleWeb.JoinGameForm}
+          user_id={@user_id}
+          on_cancel={JS.hide(to: "#join-game-modal")}
         />
       </div>
     </.modal>
