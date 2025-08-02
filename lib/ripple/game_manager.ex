@@ -92,6 +92,16 @@ defmodule Ripple.GameManager do
           unquote(NimbleOptions.option_typespec(@update_player_score_schema))
         ]
 
+  @type game() :: %{
+          max_players: non_neg_integer(),
+          max_rounds: non_neg_integer(),
+          host_id: String.t(),
+          status: :in_progress | :waiting_for_players,
+          round: non_neg_integer(),
+          player_names: map(),
+          scores: map()
+        }
+
   # Client API
 
   def start_link(opts \\ []) do
@@ -128,7 +138,7 @@ defmodule Ripple.GameManager do
     end
   end
 
-  @spec get_game(String.t()) :: {:ok, any()} | {:error, :not_found}
+  @spec get_game(String.t()) :: {:ok, game()} | {:error, :not_found}
   def get_game(game_id) do
     case :ets.lookup(@table_name, game_id) do
       [{^game_id, game_state}] -> {:ok, game_state}
