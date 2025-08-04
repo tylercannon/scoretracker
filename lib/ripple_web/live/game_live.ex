@@ -53,7 +53,7 @@ defmodule RippleWeb.GameLive do
     """
   end
 
-  defp stat_card(assigns) do
+  defp stat_card(%{label: _, value: _} = assigns) do
     ~H"""
     <div class="bg-slate-800 p-4 rounded-lg text-white text-center">
       <p class="text-sm">{@label}</p>
@@ -101,6 +101,7 @@ defmodule RippleWeb.GameLive do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_info(%{event: "joined"}, %Socket{assigns: %{game_id: game_id}} = socket) do
     {:ok, game} = Game.get(game_id)
     {:noreply, assign(socket, game: game)}
