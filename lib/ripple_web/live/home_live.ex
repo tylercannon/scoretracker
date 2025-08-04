@@ -9,7 +9,7 @@ defmodule RippleWeb.HomeLive do
   @impl true
   def render(%{user_id: _} = assigns) do
     ~H"""
-    <div class="w-full h-full flex flex-col items-center justify-center bg-slate-600 text-white">
+    <div class="w-full h-full flex flex-col items-center justify-center bg-slate-800 text-white">
       <h1>Welcome to Ripple</h1>
       <div class="flex flex-col mt-2 gap-4">
         <button phx-click={JS.show(to: "#new-game-modal")} class="p-2 rounded-md bg-teal-400">
