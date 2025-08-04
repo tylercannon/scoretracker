@@ -64,26 +64,30 @@ defmodule RippleWeb.GameLive do
 
   @impl true
   def mount(%{"game_id" => game_id}, session, socket) do
-    # todo: handle invalid game ids
-    {:ok, game} = Game.get(game_id)
-    user_id = session["user_id"]
-    is_host = game.host_id == user_id
+    case Game.get(game_id) do
+      {:ok, game} ->
+        user_id = session["user_id"]
+        is_host = game.host_id == user_id
 
-    if connected?(socket) do
-      Phoenix.PubSub.subscribe(Ripple.PubSub, Game.topic(game_id))
+        if connected?(socket) do
+          Phoenix.PubSub.subscribe(Ripple.PubSub, Game.topic(game_id))
+        end
+
+        send(self(), :after_mount)
+
+        socket =
+          assign(socket, %{
+            user_id: user_id,
+            game_id: game_id,
+            game: game,
+            is_host: is_host
+          })
+
+        {:ok, socket}
+
+      {:error, :not_found} ->
+        {:ok, push_navigate(socket, to: ~p"/")}
     end
-
-    send(self(), :after_mount)
-
-    socket =
-      assign(socket, %{
-        user_id: user_id,
-        game_id: game_id,
-        game: game,
-        is_host: is_host
-      })
-
-    {:ok, socket}
   end
 
   @impl true
