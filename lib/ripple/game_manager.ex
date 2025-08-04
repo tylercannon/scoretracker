@@ -121,7 +121,7 @@ defmodule Ripple.GameManager do
   end
 
   @spec add_player(add_player_opts()) ::
-          :ok | {:error, :already_exists | NimbleOptions.ValidationError.t()}
+          :ok | {:error, :already_exists | :not_found | NimbleOptions.ValidationError.t()}
   def add_player(player_opts) do
     with {:ok, player_opts} <- NimbleOptions.validate(player_opts, @add_player_schema) do
       GenServer.call(__MODULE__, {:add_player, player_opts})
