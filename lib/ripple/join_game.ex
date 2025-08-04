@@ -21,6 +21,7 @@ defmodule Ripple.JoinGame do
     |> validate_required([:player_name, :game_id])
     |> validate_length(:player_name, min: 1, max: 12)
     |> validate_format(:player_name, ~r/^[A-Za-z]*$/)
+    |> update_change(:game_id, &String.upcase/1)
   end
 
   def update(%__MODULE__{} = join_game, attrs) do

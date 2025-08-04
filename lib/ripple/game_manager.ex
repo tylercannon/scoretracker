@@ -191,23 +191,28 @@ defmodule Ripple.GameManager do
     game_id = Keyword.get(player_opts, :game_id)
     player_id = Keyword.get(player_opts, :player_id)
     player_name = Keyword.get(player_opts, :player_name)
-    [{^game_id, game_state}] = :ets.lookup(table_id, game_id)
 
-    case Map.has_key?(game_state.player_names, player_id) do
-      true ->
-        {:reply, {:error, :already_exists}, table_id}
+    case :ets.lookup(table_id, game_id) do
+      [{^game_id, game_state}] ->
+        case Map.has_key?(game_state.player_names, player_id) do
+          true ->
+            {:reply, {:error, :already_exists}, table_id}
 
-      false ->
-        updated_scores = Map.put(game_state.scores, player_id, %{"1" => 0})
-        updated_player_names = Map.put(game_state.player_names, player_id, player_name)
+          false ->
+            updated_scores = Map.put(game_state.scores, player_id, %{"1" => 0})
+            updated_player_names = Map.put(game_state.player_names, player_id, player_name)
 
-        updated_game_state =
-          game_state
-          |> Map.put(:scores, updated_scores)
-          |> Map.put(:player_names, updated_player_names)
+            updated_game_state =
+              game_state
+              |> Map.put(:scores, updated_scores)
+              |> Map.put(:player_names, updated_player_names)
 
-        :ets.insert(table_id, {game_id, updated_game_state})
-        {:reply, :ok, table_id}
+            :ets.insert(table_id, {game_id, updated_game_state})
+            {:reply, :ok, table_id}
+        end
+
+      _ ->
+        {:reply, {:error, :not_found}, table_id}
     end
   end
 

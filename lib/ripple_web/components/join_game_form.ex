@@ -51,16 +51,30 @@ defmodule RippleWeb.JoinGameForm do
     socket =
       case JoinGame.update(%JoinGame{}, attrs) do
         {:ok, join_game} ->
-          :ok =
+          result =
             join_game
             |> Map.from_struct()
             |> Map.put(:player_id, socket.assigns.user_id)
             |> Enum.to_list()
             |> GameManager.add_player()
 
-          socket
-          |> assign(game_id: join_game.game_id)
-          |> push_navigate(to: ~p"/game/#{join_game.game_id}")
+          case result do
+            {:error, :not_found} ->
+              attrs = Map.from_struct(join_game)
+
+              form =
+                %JoinGame{}
+                |> JoinGame.changeset(attrs)
+                |> Ecto.Changeset.add_error(:game_id, "Game not found")
+                |> to_form(action: :validate)
+
+              assign(socket, form: form)
+
+            _ ->
+              socket
+              |> assign(game_id: join_game.game_id)
+              |> push_navigate(to: ~p"/game/#{join_game.game_id}")
+          end
 
         {:error, changeset} ->
           assign(socket, form: to_form(changeset, action: :validate))
