@@ -92,11 +92,13 @@ defmodule Ripple.GameManager do
           unquote(NimbleOptions.option_typespec(@update_player_score_schema))
         ]
 
+  @type status() :: :in_progress | :waiting_for_players
+
   @type game() :: %{
           max_players: non_neg_integer(),
           max_rounds: non_neg_integer(),
           host_id: String.t(),
-          status: :in_progress | :waiting_for_players,
+          status: status(),
           round: non_neg_integer(),
           player_names: map(),
           scores: map()

@@ -7,31 +7,57 @@ defmodule RippleWeb.GameLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="w-full flex flex-col items-center justify-center p-4">
-      <h1 class="text-xl font-bold mb-4">Game Details</h1>
-      <div class="flex flex-col gap-2">
-        <span>Is Host: {@is_host}</span>
-        <span>Round: {@game.round}</span>
-        <span>Status: {@game.status}</span>
-        <span>Max Players: {@game.max_players}</span>
-        <span>Max Rounds: {@game.max_rounds}</span>
+    <div class="w-full flex flex-col items-center justify-center p-4 text-slate-800">
+      <div class="w-full flex items-center justify-between">
+        <h1 class="text-xl font-bold">Game Details</h1>
+        <div class="flex gap-2">
+          <span>Game ID:</span>
+          <span class="font-bold">{@game_id}</span>
+        </div>
       </div>
-      <table>
-        <thead class="border-b border-gray-500">
-          <tr>
-            <th class="p-2">Player</th>
-            <th class="p-2">Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%= for {player_id, player_name} <- @game.player_names do %>
-            <tr>
-              <td class="border-r border-gray-500 p-2">{player_name}</td>
-              <td class="text-center p-2">{Game.player_total_score(player_id, @game)}</td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+      <div class="w-full my-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <.stat_card label="Round" value={@game.round} />
+        <.stat_card label="Status" value={Game.get_status(@game.status)} />
+        <.stat_card label="Max Players" value={@game.max_players} />
+        <.stat_card label="Max Rounds" value={@game.max_rounds} />
+      </div>
+      <div class="w-full">
+        <h2 class="text-lg font-bold mb-2">Scoreboard</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full table-auto border-collapse text-center">
+            <thead class="bg-slate-800 text-white">
+              <tr>
+                <th class="p-3">Player</th>
+                <th :for={round <- 1..@game.max_rounds} class="p-3">{round}</th>
+                <th class="p-3">Total</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+              <tr
+                :for={{player_id, player_name} <- @game.player_names}
+                class="hover:bg-slate-800 hover:text-white"
+              >
+                <td class="p-3 font-medium">{player_name}</td>
+                <td :for={round <- 1..@game.max_rounds} class="p-3">
+                  {Map.get(@game.scores[player_id], round, "-")}
+                </td>
+                <td class="p-3 font-bold">
+                  {Game.player_total_score(player_id, @game)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp stat_card(assigns) do
+    ~H"""
+    <div class="bg-slate-800 p-4 rounded-lg text-white text-center">
+      <p class="text-sm">{@label}</p>
+      <p class="text-2xl font-bold">{@value}</p>
     </div>
     """
   end
