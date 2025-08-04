@@ -9,7 +9,8 @@ defmodule Ripple.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      compilers: [:phoenix_live_view] ++ Mix.compilers()
     ]
   end
 
@@ -32,16 +33,16 @@ defmodule Ripple.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.7.21"},
-      {:phoenix_html, "~> 4.1"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 1.0"},
-      {:floki, ">= 0.30.0", only: :test},
-      {:phoenix_live_dashboard, "~> 0.8.3"},
-      {:ecto, "~> 3.13.2"},
-      {:phoenix_ecto, "~> 4.6.5"},
-      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
-      {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
+      {:phoenix, "1.7.21"},
+      {:phoenix_html, "4.2.1"},
+      {:phoenix_live_reload, "1.6.0", only: :dev},
+      {:phoenix_live_view, "1.1.2"},
+      {:lazy_html, "0.1.3", only: :test},
+      {:phoenix_live_dashboard, "0.8.7"},
+      {:ecto, "3.13.2"},
+      {:phoenix_ecto, "4.6.5"},
+      {:esbuild, "0.10.0", runtime: Mix.env() == :dev},
+      {:tailwind, "0.3.1", runtime: Mix.env() == :dev},
       {:heroicons,
        github: "tailwindlabs/heroicons",
        tag: "v2.1.1",
@@ -49,12 +50,12 @@ defmodule Ripple.MixProject do
        app: false,
        compile: false,
        depth: 1},
-      {:telemetry_metrics, "~> 1.0"},
-      {:telemetry_poller, "~> 1.0"},
-      {:jason, "~> 1.2"},
-      {:dns_cluster, "~> 0.1.1"},
-      {:bandit, "~> 1.5"},
-      {:nimble_options, "~> 1.1.1"}
+      {:telemetry_metrics, "1.1.0"},
+      {:telemetry_poller, "1.3.0"},
+      {:jason, "1.4.4"},
+      {:dns_cluster, "0.2.0"},
+      {:bandit, "1.7.0"},
+      {:nimble_options, "1.1.1"}
     ]
   end
 
