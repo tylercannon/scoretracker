@@ -79,8 +79,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
               assign(socket, form: form)
 
             _ ->
-              socket
-              |> push_navigate(to: ~p"/game/#{socket.assigns.game_id}")
+              push_navigate(socket, to: ~p"/game/#{socket.assigns.game_id}")
           end
 
         {:error, changeset} ->

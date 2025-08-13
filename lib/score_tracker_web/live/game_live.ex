@@ -40,7 +40,7 @@ defmodule ScoreTrackerWeb.GameLive do
               >
                 <td>
                   <button
-                    :if={@is_host}
+                    :if={@is_host or (@game.game_mode == :party and player_id == @user_id)}
                     type="button"
                     class="flex items-center justify-center gap-1 px-4"
                     phx-click={JS.show(to: "#edit-#{player_id}-score")}

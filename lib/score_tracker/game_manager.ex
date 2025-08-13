@@ -195,6 +195,7 @@ defmodule ScoreTracker.GameManager do
     initial_state = %{
       max_players: Keyword.get(game_opts, :max_players, 6),
       max_rounds: Keyword.get(game_opts, :max_rounds, 10),
+      game_mode: game_mode,
       host_id: host_id,
       status: status,
       round: 1,
