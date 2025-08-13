@@ -73,7 +73,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
             aria_label="close modal"
             phx-click={JS.exec("data-cancel", to: "##{@id}")}
           >
-            <span class="text-sm">X</span>
+            <span class="text-sm hero-x-mark"></span>
           </button>
           {render_slot(@inner_block)}
         </.focus_wrap>
@@ -232,6 +232,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
   attr :field, Phoenix.HTML.FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
+  attr :class, :string, default: nil, doc: "class overrides"
   attr :errors, :list, default: []
   attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
@@ -330,7 +331,8 @@ defmodule ScoreTrackerWeb.CoreComponents do
         class={[
           "mt-2 px-4 py-2 block w-full rounded-lg text-white bg-white/5 border focus:outline-1 sm:text-sm sm:leading-6",
           @errors == [] && "border-white/10 focus:outline-white",
-          @errors != [] && "border-rose-400 focus:outline-rose-400"
+          @errors != [] && "border-rose-400 focus:outline-rose-400",
+          @class
         ]}
         {@rest}
       />
