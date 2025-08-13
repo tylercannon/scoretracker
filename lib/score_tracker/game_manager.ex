@@ -79,7 +79,7 @@ defmodule ScoreTracker.GameManager do
                                   doc: "The round of the game to update the player's score for."
                                 ],
                                 score: [
-                                  type: :pos_integer,
+                                  type: :integer,
                                   required: true,
                                   doc: "The player's score for the given round."
                                 ]
