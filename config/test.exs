@@ -2,9 +2,9 @@ import Config
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :ripple, RippleWeb.Endpoint,
+config :score_tracker, ScoreTrackerWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "vJNNZEJB6ugdG8mCzwcVxvemPUgk52tW3BeV/xw3N1EeD9SDi/ysdRvIlO72X1K3",
+  secret_key_base: "C39+dM+PtZhmD3blbXN3RYpMzuYOA8DiB94C1FHr0u1+IUgNT+BHlnjaMcq5GUND",
   server: false
 
 # Print only warnings and errors during test
