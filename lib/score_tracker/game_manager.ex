@@ -85,6 +85,14 @@ defmodule ScoreTracker.GameManager do
                                 ]
                               )
 
+  @start_game_schema NimbleOptions.new!(
+                       game_id: [
+                         type: :string,
+                         required: true,
+                         doc: "The game id of the game."
+                       ]
+                     )
+
   @advance_round_schema NimbleOptions.new!(
                           game_id: [
                             type: :string,
@@ -100,9 +108,10 @@ defmodule ScoreTracker.GameManager do
           unquote(NimbleOptions.option_typespec(@update_player_score_schema))
         ]
 
+  @type start_game_opts() :: [unquote(NimbleOptions.option_typespec(@start_game_schema))]
   @type advance_round_opts() :: [unquote(NimbleOptions.option_typespec(@advance_round_schema))]
 
-  @type status() :: :in_progress | :waiting_for_players
+  @type status() :: :in_progress | :waiting_for_players | :complete
 
   @type game() :: %{
           max_players: non_neg_integer(),
@@ -150,11 +159,26 @@ defmodule ScoreTracker.GameManager do
     end
   end
 
+  @spec start_game(start_game_opts()) ::
+          {:ok, status()}
+          | {:error,
+             :not_found
+             | :invalid_game_type
+             | :invalid_game_state
+             | NimbleOptions.ValidationError.t()}
+  def start_game(opts) do
+    with {:ok, opts} <- NimbleOptions.validate(opts, @start_game_schema) do
+      GenServer.call(__MODULE__, {:start_game, opts})
+    else
+      error -> error
+    end
+  end
+
   @spec advance_to_next_round(advance_round_opts()) ::
           {:ok, non_neg_integer()}
           | {:error, :not_found | :max_rounds_reached | NimbleOptions.ValidationError.t()}
   def advance_to_next_round(opts) do
-    with {:ok, opts} <- NimbleOptions.validate(opts, []) do
+    with {:ok, opts} <- NimbleOptions.validate(opts, @advance_round_schema) do
       GenServer.call(__MODULE__, {:advance_to_next_round, opts})
     else
       error -> error
@@ -189,7 +213,7 @@ defmodule ScoreTracker.GameManager do
 
     scores =
       Enum.reduce(players, %{}, fn player, acc ->
-        Map.put(acc, player, %{"1" => 0})
+        Map.put(acc, player, %{})
       end)
 
     initial_state = %{
@@ -221,7 +245,7 @@ defmodule ScoreTracker.GameManager do
             {:reply, {:error, :already_exists}, table_id}
 
           false ->
-            updated_scores = Map.put(game_state.scores, player_id, %{"1" => 0})
+            updated_scores = Map.put(game_state.scores, player_id, %{})
             updated_player_names = Map.put(game_state.player_names, player_id, player_name)
 
             updated_game_state =
@@ -263,6 +287,30 @@ defmodule ScoreTracker.GameManager do
     end
   end
 
+  def handle_call({:start_game, opts}, _from, table_id) do
+    game_id = Keyword.get(opts, :game_id)
+
+    case :ets.lookup(table_id, game_id) do
+      [{^game_id, game_state}] ->
+        cond do
+          game_state.game_mode == :scorekeeper ->
+            {:reply, {:error, :invalid_game_type}, table_id}
+
+          game_state.status != :waiting_for_players ->
+            {:reply, {:error, :invalid_game_state}, table_id}
+
+          true ->
+            status = :in_progress
+            :ets.insert(table_id, {game_id, %{game_state | status: status}})
+
+            {:reply, {:ok, status}, table_id}
+        end
+
+      _ ->
+        {:reply, {:error, :not_found}, table_id}
+    end
+  end
+
   def handle_call({:advance_to_next_round, opts}, _from, table_id) do
     game_id = Keyword.get(opts, :game_id)
 
@@ -270,13 +318,21 @@ defmodule ScoreTracker.GameManager do
       [{^game_id, game_state}] ->
         round = game_state.round + 1
 
+        updated_scores =
+          Enum.reduce(game_state.scores, game_state.scores, fn {player_id, round_scores}, acc ->
+            updated_round_scores = Map.put_new(round_scores, to_string(game_state.round), 0)
+            Map.put(acc, player_id, updated_round_scores)
+          end)
+
         if round <= game_state.max_rounds do
-          updated_game_state = %{game_state | round: round}
+          updated_game_state = %{game_state | scores: updated_scores, round: round}
           :ets.insert(table_id, {game_id, updated_game_state})
 
           {:reply, {:ok, round}, table_id}
         else
-          {:reply, {:error, :max_rounds_reached}, table_id}
+          updated_game_state = %{game_state | scores: updated_scores, status: :complete}
+          :ets.insert(table_id, {game_id, updated_game_state})
+          {:reply, {:ok, round}, table_id}
         end
 
       _ ->

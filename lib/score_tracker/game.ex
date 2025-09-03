@@ -14,6 +14,31 @@ defmodule ScoreTracker.Game do
   def get(game_id), do: GameManager.get_game(game_id)
 
   @doc """
+  Check whether a game is in progress
+  """
+  @spec in_progress?(GameManager.game()) :: boolean()
+  def in_progress?(game), do: game.status == :in_progress
+
+  @doc """
+  Check whether a user is the host of a game
+  """
+  @spec is_host?(GameManager.game(), String.t()) :: boolean()
+  def is_host?(game, user_id), do: game.host_id == user_id
+
+  @doc """
+  Check whether a user's score is editable
+  """
+  @spec user_score_editable?(GameManager.game(), String.t(), String.t()) :: boolean()
+  def user_score_editable?(game, player_id, user_id) do
+    cond do
+      not in_progress?(game) -> false
+      is_host?(game, user_id) -> true
+      game.game_mode == :party and player_id == user_id -> true
+      true -> false
+    end
+  end
+
+  @doc """
   Get the friendly status of a game
   """
   @spec get_status(GameManager.status()) :: String.t()
@@ -21,7 +46,15 @@ defmodule ScoreTracker.Game do
     case status do
       :in_progress -> "In Progress"
       :waiting_for_players -> "Waiting for Players"
+      :complete -> "Complete"
     end
+  end
+
+  @spec any_missing_player_round_score?(GameManager.game()) :: boolean()
+  def any_missing_player_round_score?(game) do
+    not Enum.all?(game.scores, fn {_player, player_scores} ->
+      Map.has_key?(player_scores, to_string(game.round))
+    end)
   end
 
   @doc """
