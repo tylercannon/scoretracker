@@ -40,7 +40,7 @@ defmodule ScoreTracker.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:bandit, "~> 1.7.0"},
+      {:bandit, "~> 1.8.0"},
       {:dns_cluster, "~> 0.2.0"},
       {:ecto, "~> 3.13.2"},
       {:heroicons,
@@ -51,14 +51,14 @@ defmodule ScoreTracker.MixProject do
        compile: false,
        depth: 1},
       {:jason, "~> 1.4.4"},
-      {:lazy_html, "~> 0.1.6", only: :test},
+      {:lazy_html, "~> 0.1.7", only: :test},
       {:nimble_options, "1.1.1"},
-      {:phoenix, "~> 1.8.0"},
+      {:phoenix, "~> 1.8.1"},
       {:phoenix_ecto, "~> 4.6.5"},
       {:phoenix_html, "~> 4.2.1"},
       {:phoenix_live_dashboard, "~> 0.8.7"},
-      {:phoenix_live_reload, "~> 1.6.0", only: :dev},
-      {:phoenix_live_view, "~> 1.1.3"},
+      {:phoenix_live_reload, "~> 1.6.1", only: :dev},
+      {:phoenix_live_view, "~> 1.1.11"},
       {:telemetry_metrics, "~> 1.1.0"},
       {:telemetry_poller, "~> 1.3.0"},
       {:esbuild, "~> 0.10.0", runtime: Mix.env() == :dev},
