@@ -51,7 +51,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
       <!-- Modal container -->
       <div id={"#{@id}-container"} class="h-screen flex items-center justify-center p-4">
         <!-- Overlay -->
-        <div class="absolute z-0 inset-0 bg-black/30" aria-hidden="true"></div>
+        <div class="absolute z-0 inset-0 bg-black/50" aria-hidden="true"></div>
         <!-- Modal box -->
         <.focus_wrap
           id={"#{@id}-content"}

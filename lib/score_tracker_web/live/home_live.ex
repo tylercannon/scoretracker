@@ -10,7 +10,7 @@ defmodule ScoreTrackerWeb.HomeLive do
   def render(%{user_id: _} = assigns) do
     ~H"""
     <div class="size-full flex flex-col items-center justify-center bg-background text-primary">
-      <h1>Welcome to ScoreTracker</h1>
+      <h1 class="text-3xl font-bold mb-24">Welcome to Score Tracker</h1>
       <div class="flex flex-col mt-2 gap-4">
         <button
           phx-click={JS.show(to: "#new-game-modal")}
