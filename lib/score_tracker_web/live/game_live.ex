@@ -23,8 +23,8 @@ defmodule ScoreTrackerWeb.GameLive do
         <.stat_card label="Max Rounds" value={@game.max_rounds} />
       </div>
       <div class="w-full">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-bold mb-2">Scoreboard</h2>
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-bold">Scoreboard</h2>
           <button
             :if={Game.is_host?(@game, @user_id) and @game.status == :waiting_for_players}
             type="button"
