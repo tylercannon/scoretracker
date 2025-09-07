@@ -115,13 +115,13 @@ defmodule ScoreTrackerWeb.CoreComponents do
       {@rest}
     >
       <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="h-4 w-4" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="h-4 w-4" />
+        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="size-4" />
+        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="size-4" />
         {@title}
       </p>
       <p class="mt-2 text-sm leading-5">{msg}</p>
       <button type="button" class="group absolute top-1 right-1 p-2" aria-label="close">
-        <.icon name="hero-x-mark-solid" class="h-5 w-5 opacity-40 group-hover:opacity-70" />
+        <.icon name="hero-x-mark-solid" class="size-5 opacity-40 group-hover:opacity-70" />
       </button>
     </div>
     """
@@ -363,7 +363,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
   def error(assigns) do
     ~H"""
     <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-600">
-      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" />
+      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 size-5 flex-none" />
       {render_slot(@inner_block)}
     </p>
     """
@@ -516,7 +516,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
         navigate={@navigate}
         class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
       >
-        <.icon name="hero-arrow-left-solid" class="h-3 w-3" />
+        <.icon name="hero-arrow-left-solid" class="size-3" />
         {render_slot(@inner_block)}
       </.link>
     </div>
@@ -539,7 +539,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
   ## Examples
 
       <.icon name="hero-x-mark-solid" />
-      <.icon name="hero-arrow-path" class="ml-1 w-3 h-3 animate-spin" />
+      <.icon name="hero-arrow-path" class="ml-1 size-3 animate-spin" />
   """
   attr :name, :string, required: true
   attr :class, :string, default: nil

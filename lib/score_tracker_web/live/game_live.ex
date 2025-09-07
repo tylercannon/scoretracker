@@ -8,7 +8,7 @@ defmodule ScoreTrackerWeb.GameLive do
   @impl true
   def render(%{is_host: _} = assigns) do
     ~H"""
-    <div class="w-full flex flex-col items-center justify-center p-4 text-slate-800">
+    <div class="size-full flex flex-col items-center p-4 text-primary bg-background">
       <div class="w-full flex items-center justify-between">
         <h1 class="text-xl font-bold">Game Details</h1>
         <div class="flex gap-2">
@@ -43,8 +43,8 @@ defmodule ScoreTrackerWeb.GameLive do
             id="go-to-next-round"
             on_cancel={JS.hide(to: "#go-to-next-round")}
           >
-            <div>
-              <h2 class="text-xl font-bold mb-4 text-white">
+            <div class="text-white">
+              <h2 class="text-xl font-bold mb-4">
                 {if @game.round < @game.max_rounds,
                   do: "Go to Round #{@game.round + 1}",
                   else: "End Game"}?
@@ -72,7 +72,7 @@ defmodule ScoreTrackerWeb.GameLive do
         </div>
         <div class="overflow-x-auto">
           <table class="w-full table-auto border-collapse text-center">
-            <thead class="bg-slate-800 text-white">
+            <thead class="bg-background text-primary">
               <tr>
                 <th></th>
                 <th class="p-3">Player</th>
@@ -80,10 +80,10 @@ defmodule ScoreTrackerWeb.GameLive do
                 <th class="p-3">Total</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-800">
+            <tbody class="border border-border">
               <tr
                 :for={{player_id, player_name} <- @game.player_names}
-                class="hover:bg-slate-800 hover:text-white"
+                class="hover:bg-primary hover:text-white"
               >
                 <td>
                   <button
@@ -131,7 +131,7 @@ defmodule ScoreTrackerWeb.GameLive do
 
   defp stat_card(%{label: _, value: _} = assigns) do
     ~H"""
-    <div class="bg-slate-800 p-4 rounded-lg text-white text-center">
+    <div class="bg-card p-4 rounded-lg border border-border text-card-foreground text-center">
       <p class="text-sm">{@label}</p>
       <p class="text-2xl font-bold">{@value}</p>
     </div>
