@@ -10,31 +10,46 @@
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
+    <script>
+      (() => {
+        const setTheme = (theme) => {
+          if (theme === "system") {
+            localStorage.removeItem("phx:theme");
+            document.documentElement.removeAttribute("data-theme");
+          } else {
+            localStorage.setItem("phx:theme", theme);
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+        };
+
+        if (!document.documentElement.hasAttribute("data-theme")) {
+          setTheme(localStorage.getItem("phx:theme") || "system");
+        }
+
+        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
+        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
+      })();
+    </script>
   </head>
-  <body class="w-screen h-screen">
-    <header class="h-14 px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between border-b border-zinc-100 py-3 text-sm">
-        <div class="flex items-center gap-4">
-          <a href="/">
-            <img src={~p"/images/logo.svg"} width="36" />
+  <body class="size-screen">
+    <header class="h-14 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground">
+      <div class="flex items-center justify-between border-b border-border py-3 text-sm">
+        <div class="flex items-center gap-4 font-semibold">
+          <a href="/" class="hover:text-primary-foreground/80">
+            Home
           </a>
-          <p class="bg-brand/5 text-brand rounded-full px-2 font-medium leading-6">
-            v{Application.spec(:phoenix, :vsn)}
-          </p>
         </div>
-        <div class="flex items-center gap-4 font-semibold leading-6 text-zinc-900">
-          <a href="https://twitter.com/elixirphoenix" class="hover:text-zinc-700">
-            @elixirphoenix
-          </a>
-          <a href="https://github.com/phoenixframework/phoenix" class="hover:text-zinc-700">
-            GitHub
+        <div class="flex items-center gap-4 font-semibold leading-6">
+          <a href="https://x.com/tylerrcannon" class="hover:text-primary-foreground/80">
+            @tylerrcannon
           </a>
           <a
-            href="https://hexdocs.pm/phoenix/overview.html"
-            class="rounded-lg bg-zinc-100 px-2 py-1 hover:bg-zinc-200/80"
+            href="https://github.com/tylercannon/scoretracker"
+            class="hover:text-primary-foreground/80"
           >
-            Get Started <span aria-hidden="true">&rarr;</span>
+            GitHub
           </a>
+          <Layouts.theme_toggle />
         </div>
       </div>
     </header>

@@ -8,7 +8,7 @@ defmodule ScoreTrackerWeb.GameLive do
   @impl true
   def render(%{is_host: _} = assigns) do
     ~H"""
-    <div class="w-full flex flex-col items-center justify-center p-4 text-slate-800">
+    <div class="size-full flex flex-col items-center p-4 text-primary bg-background">
       <div class="w-full flex items-center justify-between">
         <h1 class="text-xl font-bold">Game Details</h1>
         <div class="flex gap-2">
@@ -23,28 +23,28 @@ defmodule ScoreTrackerWeb.GameLive do
         <.stat_card label="Max Rounds" value={@game.max_rounds} />
       </div>
       <div class="w-full">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-bold mb-2">Scoreboard</h2>
-          <button
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-bold">Scoreboard</h2>
+          <.button
             :if={Game.is_host?(@game, @user_id) and @game.status == :waiting_for_players}
             type="button"
             phx-click="start_game"
           >
             Start Game
-          </button>
-          <button
+          </.button>
+          <.button
             :if={Game.is_host?(@game, @user_id) and Game.in_progress?(@game)}
             type="button"
             phx-click={JS.show(to: "#go-to-next-round")}
           >
             {if @game.round < @game.max_rounds, do: "Next Round", else: "End Game"}
-          </button>
+          </.button>
           <.modal
             id="go-to-next-round"
             on_cancel={JS.hide(to: "#go-to-next-round")}
           >
-            <div>
-              <h2 class="text-xl font-bold mb-4 text-white">
+            <div class="text-primary">
+              <h2 class="text-xl font-bold mb-4">
                 {if @game.round < @game.max_rounds,
                   do: "Go to Round #{@game.round + 1}",
                   else: "End Game"}?
@@ -62,17 +62,23 @@ defmodule ScoreTrackerWeb.GameLive do
                   else: "Are you sure you want to progress to the next round?"}
               </p>
               <div class="flex justify-between mt-5">
-                <button phx-click={JS.hide(to: "#go-to-next-round")}>Cancel</button>
-                <button phx-click={JS.hide(to: "#go-to-next-round") |> JS.push("next_round")}>
+                <.button
+                  type="button"
+                  class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  phx-click={JS.hide(to: "#go-to-next-round")}
+                >
+                  Cancel
+                </.button>
+                <.button type="button" phx-click={JS.hide(to: "#go-to-next-round") |> JS.push("next_round")}>
                   Continue
-                </button>
+                </.button>
               </div>
             </div>
           </.modal>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full table-auto border-collapse text-center">
-            <thead class="bg-slate-800 text-white">
+            <thead class="bg-background text-primary">
               <tr>
                 <th></th>
                 <th class="p-3">Player</th>
@@ -80,16 +86,16 @@ defmodule ScoreTrackerWeb.GameLive do
                 <th class="p-3">Total</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-800">
+            <tbody class="border border-border">
               <tr
                 :for={{player_id, player_name} <- @game.player_names}
-                class="hover:bg-slate-800 hover:text-white"
+                class="hover:bg-primary hover:text-primary-foreground"
               >
                 <td>
                   <button
                     :if={Game.user_score_editable?(@game, player_id, @user_id)}
                     type="button"
-                    class="flex items-center justify-center gap-1 px-4"
+                    class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
                     phx-click={JS.show(to: "#edit-#{player_id}-score")}
                   >
                     <span class="hero-pencil-square-mini"></span>
@@ -99,7 +105,7 @@ defmodule ScoreTrackerWeb.GameLive do
                     on_cancel={JS.hide(to: "#edit-#{player_id}-score")}
                   >
                     <div>
-                      <h2 class="text-xl font-bold mb-4 text-white">
+                      <h2 class="text-xl font-bold mb-4 text-primary">
                         Edit {player_name}'s Round {@game.round} Score
                       </h2>
                       <.live_component
@@ -131,7 +137,7 @@ defmodule ScoreTrackerWeb.GameLive do
 
   defp stat_card(%{label: _, value: _} = assigns) do
     ~H"""
-    <div class="bg-slate-800 p-4 rounded-lg text-white text-center">
+    <div class="bg-card p-4 rounded-lg border border-border text-card-foreground text-center">
       <p class="text-sm">{@label}</p>
       <p class="text-2xl font-bold">{@value}</p>
     </div>
