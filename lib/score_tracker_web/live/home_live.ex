@@ -14,13 +14,13 @@ defmodule ScoreTrackerWeb.HomeLive do
       <div class="flex flex-col mt-2 gap-4">
         <button
           phx-click={JS.show(to: "#new-game-modal")}
-          class="p-2 rounded-md bg-teal-400 text-white"
+          class="p-2 rounded-md bg-primary text-primary-foreground"
         >
           New Game
         </button>
         <button
           phx-click={JS.show(to: "#join-game-modal")}
-          class="p-2 rounded-md bg-cyan-400 text-white"
+          class="p-2 rounded-md bg-secondary text-secondary-foreground"
         >
           Join Game
         </button>
