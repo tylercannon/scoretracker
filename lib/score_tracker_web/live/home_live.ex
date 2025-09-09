@@ -39,7 +39,7 @@ defmodule ScoreTrackerWeb.HomeLive do
 
     <.modal id="join-game-modal" on_cancel={JS.hide(to: "#join-game-modal")}>
       <div>
-        <h2 class="text-xl font-bold mb-4 text-white">Join Game</h2>
+        <h2 class="text-xl font-bold mb-4 text-primary">Join Game</h2>
         <.live_component
           id="join-game-form"
           module={ScoreTrackerWeb.JoinGameForm}
