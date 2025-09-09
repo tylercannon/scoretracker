@@ -28,7 +28,7 @@ defmodule ScoreTrackerWeb.JoinGameForm do
         <.input field={f[:player_name]} label="Name" />
         <.input field={f[:game_id]} label="Game ID" />
         <:actions>
-          <.button type="button" phx-click={@on_cancel}>Cancel</.button>
+          <.button type="button" class="bg-secondary text-secondary-foreground hover:bg-secondary/80" phx-click={@on_cancel}>Cancel</.button>
           <.button>Join</.button>
         </:actions>
       </.simple_form>

@@ -22,7 +22,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
           label="Score"
         />
         <:actions>
-          <.button type="button" phx-click={@on_cancel}>Cancel</.button>
+          <.button type="button" class="bg-secondary text-secondary-foreground hover:bg-secondary/80" phx-click={@on_cancel}>Cancel</.button>
           <.button>Save</.button>
         </:actions>
       </.simple_form>

@@ -12,24 +12,22 @@ defmodule ScoreTrackerWeb.HomeLive do
     <div class="size-full flex flex-col items-center justify-center bg-background text-primary">
       <h1 class="text-3xl font-bold mb-24">Welcome to Score Tracker</h1>
       <div class="flex flex-col mt-2 gap-4">
-        <button
-          phx-click={JS.show(to: "#new-game-modal")}
-          class="p-2 rounded-md bg-primary text-primary-foreground"
-        >
+        <.button type="button" phx-click={JS.show(to: "#new-game-modal")}>
           New Game
-        </button>
-        <button
+        </.button>
+        <.button
+          type="button"
+          class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
           phx-click={JS.show(to: "#join-game-modal")}
-          class="p-2 rounded-md bg-secondary text-secondary-foreground"
         >
           Join Game
-        </button>
+        </.button>
       </div>
     </div>
 
     <.modal id="new-game-modal" on_cancel={JS.hide(to: "#new-game-modal")}>
       <div>
-        <h2 class="text-xl font-bold mb-4 text-white">New Game</h2>
+        <h2 class="text-xl font-bold mb-4 text-primary">New Game</h2>
         <.live_component
           id="create-game-form"
           module={ScoreTrackerWeb.CreateGameForm}

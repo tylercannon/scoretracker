@@ -25,25 +25,25 @@ defmodule ScoreTrackerWeb.GameLive do
       <div class="w-full">
         <div class="flex items-center justify-between mb-2">
           <h2 class="text-lg font-bold">Scoreboard</h2>
-          <button
+          <.button
             :if={Game.is_host?(@game, @user_id) and @game.status == :waiting_for_players}
             type="button"
             phx-click="start_game"
           >
             Start Game
-          </button>
-          <button
+          </.button>
+          <.button
             :if={Game.is_host?(@game, @user_id) and Game.in_progress?(@game)}
             type="button"
             phx-click={JS.show(to: "#go-to-next-round")}
           >
             {if @game.round < @game.max_rounds, do: "Next Round", else: "End Game"}
-          </button>
+          </.button>
           <.modal
             id="go-to-next-round"
             on_cancel={JS.hide(to: "#go-to-next-round")}
           >
-            <div class="text-white">
+            <div class="text-primary">
               <h2 class="text-xl font-bold mb-4">
                 {if @game.round < @game.max_rounds,
                   do: "Go to Round #{@game.round + 1}",
@@ -62,10 +62,16 @@ defmodule ScoreTrackerWeb.GameLive do
                   else: "Are you sure you want to progress to the next round?"}
               </p>
               <div class="flex justify-between mt-5">
-                <button phx-click={JS.hide(to: "#go-to-next-round")}>Cancel</button>
-                <button phx-click={JS.hide(to: "#go-to-next-round") |> JS.push("next_round")}>
+                <.button
+                  type="button"
+                  class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  phx-click={JS.hide(to: "#go-to-next-round")}
+                >
+                  Cancel
+                </.button>
+                <.button type="button" phx-click={JS.hide(to: "#go-to-next-round") |> JS.push("next_round")}>
                   Continue
-                </button>
+                </.button>
               </div>
             </div>
           </.modal>
@@ -83,13 +89,13 @@ defmodule ScoreTrackerWeb.GameLive do
             <tbody class="border border-border">
               <tr
                 :for={{player_id, player_name} <- @game.player_names}
-                class="hover:bg-primary hover:text-white"
+                class="hover:bg-primary hover:text-primary-foreground"
               >
                 <td>
                   <button
                     :if={Game.user_score_editable?(@game, player_id, @user_id)}
                     type="button"
-                    class="flex items-center justify-center gap-1 px-4"
+                    class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
                     phx-click={JS.show(to: "#edit-#{player_id}-score")}
                   >
                     <span class="hero-pencil-square-mini"></span>
@@ -99,7 +105,7 @@ defmodule ScoreTrackerWeb.GameLive do
                     on_cancel={JS.hide(to: "#edit-#{player_id}-score")}
                   >
                     <div>
-                      <h2 class="text-xl font-bold mb-4 text-white">
+                      <h2 class="text-xl font-bold mb-4 text-primary">
                         Edit {player_name}'s Round {@game.round} Score
                       </h2>
                       <.live_component
