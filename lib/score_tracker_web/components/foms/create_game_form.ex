@@ -26,11 +26,23 @@ defmodule ScoreTrackerWeb.CreateGameForm do
         phx-submit="save"
       >
         <.input field={f[:host_name]} label="Host" />
-        <.input field={f[:game_mode]} label="Game Mode" />
+        <.input
+          field={f[:game_mode]}
+          type="select"
+          label="Game Mode"
+          options={[Scorekeeper: "scorekeeper", Party: "party"]}
+          value="scorekeeper"
+        />
         <.input field={f[:max_players]} label="Max Players" />
         <.input field={f[:max_rounds]} label="Max Rounds" />
         <:actions>
-          <.button type="button" class="bg-secondary text-secondary-foreground hover:bg-secondary/80" phx-click={@on_cancel}>Cancel</.button>
+          <.button
+            type="button"
+            class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            phx-click={@on_cancel}
+          >
+            Cancel
+          </.button>
           <.button>Create</.button>
         </:actions>
       </.simple_form>

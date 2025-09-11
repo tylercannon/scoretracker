@@ -110,7 +110,8 @@ defmodule ScoreTrackerWeb.CoreComponents do
       class={[
         "fixed top-2 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
         @kind == :info && "bg-primary/10 text-primary ring-primary fill-primary",
-        @kind == :error && "bg-destructive/10 text-destructive shadow-md ring-destructive fill-destructive"
+        @kind == :error &&
+          "bg-destructive/10 text-destructive shadow-md ring-destructive fill-destructive"
       ]}
       {@rest}
     >
@@ -288,7 +289,12 @@ defmodule ScoreTrackerWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class="mt-2 block w-full rounded-md border border-border bg-input shadow-sm focus:border-ring focus:ring-0 sm:text-sm text-foreground"
+        class={[
+          "mt-2 px-4 py-3 block w-full rounded-lg text-foreground bg-input border focus:outline-1 sm:text-sm sm:leading-6",
+          @errors == [] && "border-border focus:outline-ring",
+          @errors != [] && "border-destructive focus:outline-destructive",
+          @class
+        ]}
         multiple={@multiple}
         {@rest}
       >
