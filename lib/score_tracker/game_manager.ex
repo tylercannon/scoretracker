@@ -1,6 +1,8 @@
 defmodule ScoreTracker.GameManager do
   use GenServer
 
+  alias Ecto.UUID
+
   @table_name :lobbies
 
   @create_game_schema NimbleOptions.new!(
@@ -207,14 +209,16 @@ defmodule ScoreTracker.GameManager do
     host_id = Keyword.get(game_opts, :host_id)
     host_name = Keyword.get(game_opts, :host_name)
     game_mode = Keyword.get(game_opts, :game_mode)
-    player_names = Map.put(%{}, host_id, host_name)
-    players = [host_id | Keyword.get(game_opts, :players, [])]
-    status = if game_mode == :scorekeeper, do: :in_progress, else: :waiting_for_players
 
-    scores =
-      Enum.reduce(players, %{}, fn player, acc ->
-        Map.put(acc, player, %{})
-      end)
+    player_names =
+      game_opts
+      |> Keyword.get(:players, [])
+      |> Enum.reduce(%{}, fn player_name, acc -> Map.put(acc, UUID.generate(), player_name) end)
+      |> Map.put(host_id, host_name)
+
+    player_ids = Map.keys(player_names)
+    status = if game_mode == :scorekeeper, do: :in_progress, else: :waiting_for_players
+    scores = Enum.reduce(player_ids, %{}, fn player, acc -> Map.put(acc, player, %{}) end)
 
     initial_state = %{
       max_players: Keyword.get(game_opts, :max_players, 6),
