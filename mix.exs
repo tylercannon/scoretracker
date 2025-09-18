@@ -42,6 +42,7 @@ defmodule ScoreTracker.MixProject do
     [
       {:bandit, "~> 1.8.0"},
       {:dns_cluster, "~> 0.2.0"},
+      {:dotenvy, "~> 1.1.0"},
       {:ecto, "~> 3.13.2"},
       {:heroicons,
        github: "tailwindlabs/heroicons",
@@ -74,7 +75,7 @@ defmodule ScoreTracker.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "assets.setup", "assets.build"],
+      setup: [&setup_env_file/1, "deps.get", "assets.setup", "assets.build"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind score_tracker", "esbuild score_tracker"],
       "assets.deploy": [
@@ -84,5 +85,9 @@ defmodule ScoreTracker.MixProject do
       ],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]
+  end
+
+  defp setup_env_file(_) do
+    System.cmd("cp", [".env.example", ".env"])
   end
 end

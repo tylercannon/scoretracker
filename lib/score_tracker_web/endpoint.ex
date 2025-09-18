@@ -1,20 +1,11 @@
 defmodule ScoreTrackerWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :score_tracker
 
-  # The session will be stored in the cookie and signed,
-  # this means its contents can be read but not tampered with.
-  # Set :encryption_salt if you would also like to encrypt it.
-  @session_options [
-    store: :cookie,
-    http_only: true,
-    key: "_score_tracker_key",
-    signing_salt: "jxDxURjj",
-    same_site: "Lax"
-  ]
+  alias ScoreTrackerWeb.SessionOptions
 
   socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]],
-    longpoll: [connect_info: [session: @session_options]]
+    websocket: [connect_info: [session: {SessionOptions, :get, []}]],
+    longpoll: [connect_info: [session: {SessionOptions, :get, []}]]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -49,6 +40,6 @@ defmodule ScoreTrackerWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
-  plug Plug.Session, @session_options
+  plug Plug.Session, SessionOptions.get()
   plug ScoreTrackerWeb.Router
 end

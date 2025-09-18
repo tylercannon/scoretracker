@@ -18,8 +18,7 @@ config :score_tracker, ScoreTrackerWeb.Endpoint,
     formats: [html: ScoreTrackerWeb.ErrorHTML, json: ScoreTrackerWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: ScoreTracker.PubSub,
-  live_view: [signing_salt: "aVOKhXOw"]
+  pubsub_server: ScoreTracker.PubSub
 
 # Configure esbuild (the version is required)
 config :esbuild,

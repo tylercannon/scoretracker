@@ -4,7 +4,6 @@ import Config
 # you can enable the server option below.
 config :score_tracker, ScoreTrackerWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "C39+dM+PtZhmD3blbXN3RYpMzuYOA8DiB94C1FHr0u1+IUgNT+BHlnjaMcq5GUND",
   server: false
 
 # Print only warnings and errors during test

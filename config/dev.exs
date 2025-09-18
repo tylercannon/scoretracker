@@ -13,7 +13,6 @@ config :score_tracker, ScoreTrackerWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "kciEbxfBNLlq+tszm273jIoiuiipTyrL2pIScEugZujvr1TkQaxYUOBxS5CUXc+Z",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:score_tracker, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:score_tracker, ~w(--watch)]}

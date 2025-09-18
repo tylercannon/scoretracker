@@ -1,4 +1,7 @@
 import Config
+import Dotenvy
+
+source([".env", System.get_env()])
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
@@ -20,19 +23,16 @@ if System.get_env("PHX_SERVER") do
   config :score_tracker, ScoreTrackerWeb.Endpoint, server: true
 end
 
-if config_env() == :prod do
-  # The secret key base is used to sign/encrypt cookies and other secrets.
-  # A default value is used in config/dev.exs and config/test.exs but you
-  # want to use a different value for prod and you most likely don't want
-  # to check this value into version control, so we use an environment
-  # variable instead.
-  secret_key_base =
-    System.get_env("SECRET_KEY_BASE") ||
-      raise """
-      environment variable SECRET_KEY_BASE is missing.
-      You can generate one by calling: mix phx.gen.secret
-      """
+config :score_tracker, ScoreTrackerWeb.Endpoint,
+  secret_key_base: env!("SCORE_TRACKER_SECRET_KEY_BASE", :string!),
+  live_view: [signing_salt: env!("SCORE_TRACKER_LIVE_VIEW_SIGNING_SALT", :string!)]
 
+config :score_tracker,
+  app: [
+    session_signing_salt: env!("SCORE_TRACKER_SESSION_SIGNING_SALT", :string!)
+  ]
+
+if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
@@ -47,8 +47,7 @@ if config_env() == :prod do
       # for details about using IPv6 vs IPv4 and loopback vs public addresses.
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
-    ],
-    secret_key_base: secret_key_base
+    ]
 
   # ## SSL Support
   #
