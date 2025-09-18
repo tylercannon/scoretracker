@@ -60,6 +60,7 @@ defmodule ScoreTracker.MixProject do
       {:phoenix_live_dashboard, "~> 0.8.7"},
       {:phoenix_live_reload, "~> 1.6.1", only: :dev},
       {:phoenix_live_view, "~> 1.1.11"},
+      {:redix, "~> 1.5.2"},
       {:telemetry_metrics, "~> 1.1.0"},
       {:telemetry_poller, "~> 1.3.0"},
       {:esbuild, "~> 0.10.0", runtime: Mix.env() == :dev},

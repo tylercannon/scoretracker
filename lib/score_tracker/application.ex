@@ -11,9 +11,7 @@ defmodule ScoreTracker.Application do
       ScoreTrackerWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:score_tracker, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: ScoreTracker.PubSub},
-      # Start a worker by calling: ScoreTracker.Worker.start_link(arg)
-      # {ScoreTracker.Worker, arg},
-      # Start to serve requests, typically the last entry
+      ScoreTracker.Cache,
       {ScoreTracker.GameManager,
        storage_backend: ScoreTracker.GameStorage.Ets,
        storage_backend_opts: [:set, :public, :named_table, {:write_concurrency, true}]},

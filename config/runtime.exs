@@ -30,6 +30,10 @@ config :score_tracker, ScoreTrackerWeb.Endpoint,
 config :score_tracker,
   app: [
     session_signing_salt: env!("SCORE_TRACKER_SESSION_SIGNING_SALT", :string!)
+  ],
+  cache: [
+    pool_size: env!("SCORE_TRACKER_CACHE_POOL_SIZE", :integer!),
+    url: env!("SCORE_TRACKER_CACHE_URL", :string!)
   ]
 
 if config_env() == :prod do
