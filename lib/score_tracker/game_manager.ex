@@ -189,23 +189,25 @@ defmodule ScoreTracker.GameManager do
 
   @spec get_game(String.t()) :: {:ok, game()} | {:error, :not_found}
   def get_game(game_id) do
-    case :ets.lookup(@table_name, game_id) do
-      [{^game_id, game_state}] -> {:ok, game_state}
-      [] -> {:error, :not_found}
-    end
+    GenServer.call(__MODULE__, {:get_game, game_id})
   end
 
   # Server callbacks
 
   @impl true
-  def init(_opts) do
-    table_id = :ets.new(@table_name, [:set, :public, :named_table, {:write_concurrency, true}])
-    {:ok, table_id}
+  def init(opts) do
+    storage_mod = Keyword.fetch!(opts, :storage_backend)
+    storage_opts = Keyword.fetch!(opts, :storage_backend_opts)
+    table_id = storage_mod.init(@table_name, storage_opts)
+
+    {:ok, %{storage_mod: storage_mod, table_id: table_id}}
   end
 
   @impl true
-  def handle_call({:create_game, game_opts}, _from, table_id) do
-    game_id = generate_game_id()
+  def handle_call({:create_game, game_opts}, _from, state) do
+    %{storage_mod: storage_mod, table_id: table_id} = state
+
+    game_id = generate_game_id(storage_mod, table_id)
     host_id = Keyword.get(game_opts, :host_id)
     host_name = Keyword.get(game_opts, :host_name)
     game_mode = Keyword.get(game_opts, :game_mode)
@@ -231,22 +233,24 @@ defmodule ScoreTracker.GameManager do
       scores: scores
     }
 
-    :ets.insert(table_id, {game_id, initial_state})
+    storage_mod.save_state(table_id, game_id, initial_state)
 
-    {:reply, game_id, table_id}
+    {:reply, game_id, state}
   end
 
   @impl true
-  def handle_call({:add_player, player_opts}, _from, table_id) do
+  def handle_call({:add_player, player_opts}, _from, state) do
+    %{storage_mod: storage_mod, table_id: table_id} = state
+
     game_id = Keyword.get(player_opts, :game_id)
     player_id = Keyword.get(player_opts, :player_id)
     player_name = Keyword.get(player_opts, :player_name)
 
-    case :ets.lookup(table_id, game_id) do
-      [{^game_id, game_state}] ->
+    case storage_mod.get_game(table_id, game_id) do
+      {:ok, game_state} ->
         case Map.has_key?(game_state.player_names, player_id) do
           true ->
-            {:reply, {:error, :already_exists}, table_id}
+            {:reply, {:error, :already_exists}, state}
 
           false ->
             updated_scores = Map.put(game_state.scores, player_id, %{})
@@ -257,24 +261,27 @@ defmodule ScoreTracker.GameManager do
               |> Map.put(:scores, updated_scores)
               |> Map.put(:player_names, updated_player_names)
 
-            :ets.insert(table_id, {game_id, updated_game_state})
-            {:reply, :ok, table_id}
+            storage_mod.save_state(table_id, game_id, updated_game_state)
+
+            {:reply, :ok, state}
         end
 
       _ ->
-        {:reply, {:error, :not_found}, table_id}
+        {:reply, {:error, :not_found}, state}
     end
   end
 
   @impl true
-  def handle_call({:update_player_score, score_opts}, _from, table_id) do
+  def handle_call({:update_player_score, score_opts}, _from, state) do
+    %{storage_mod: storage_mod, table_id: table_id} = state
+
     game_id = Keyword.get(score_opts, :game_id)
     player_id = Keyword.get(score_opts, :player_id)
     round = Keyword.get(score_opts, :round)
     score = Keyword.get(score_opts, :score)
 
-    case :ets.lookup(table_id, game_id) do
-      [{^game_id, game_state}] ->
+    case storage_mod.get_game(table_id, game_id) do
+      {:ok, game_state} ->
         updated_player_scores =
           game_state.scores
           |> Map.get(player_id)
@@ -282,44 +289,48 @@ defmodule ScoreTracker.GameManager do
 
         updated_scores = Map.put(game_state.scores, player_id, updated_player_scores)
         updated_game_state = %{game_state | scores: updated_scores}
-        :ets.insert(table_id, {game_id, updated_game_state})
+        storage_mod.save_state(table_id, game_id, updated_game_state)
 
-        {:reply, :ok, table_id}
+        {:reply, :ok, state}
 
       _ ->
-        {:reply, {:error, :not_found}, table_id}
+        {:reply, {:error, :not_found}, state}
     end
   end
 
-  def handle_call({:start_game, opts}, _from, table_id) do
+  def handle_call({:start_game, opts}, _from, state) do
+    %{storage_mod: storage_mod, table_id: table_id} = state
+
     game_id = Keyword.get(opts, :game_id)
 
-    case :ets.lookup(table_id, game_id) do
-      [{^game_id, game_state}] ->
+    case storage_mod.get_game(table_id, game_id) do
+      {:ok, game_state} ->
         cond do
           game_state.game_mode == :scorekeeper ->
-            {:reply, {:error, :invalid_game_type}, table_id}
+            {:reply, {:error, :invalid_game_type}, state}
 
           game_state.status != :waiting_for_players ->
-            {:reply, {:error, :invalid_game_state}, table_id}
+            {:reply, {:error, :invalid_game_state}, state}
 
           true ->
             status = :in_progress
-            :ets.insert(table_id, {game_id, %{game_state | status: status}})
+            storage_mod.save_state(table_id, game_id, %{game_state | status: status})
 
-            {:reply, {:ok, status}, table_id}
+            {:reply, {:ok, status}, state}
         end
 
       _ ->
-        {:reply, {:error, :not_found}, table_id}
+        {:reply, {:error, :not_found}, state}
     end
   end
 
-  def handle_call({:advance_to_next_round, opts}, _from, table_id) do
+  def handle_call({:advance_to_next_round, opts}, _from, state) do
+    %{storage_mod: storage_mod, table_id: table_id} = state
+
     game_id = Keyword.get(opts, :game_id)
 
-    case :ets.lookup(table_id, game_id) do
-      [{^game_id, game_state}] ->
+    case storage_mod.get_game(table_id, game_id) do
+      {:ok, game_state} ->
         round = game_state.round + 1
 
         updated_scores =
@@ -330,30 +341,43 @@ defmodule ScoreTracker.GameManager do
 
         if round <= game_state.max_rounds do
           updated_game_state = %{game_state | scores: updated_scores, round: round}
-          :ets.insert(table_id, {game_id, updated_game_state})
+          storage_mod.save_state(table_id, game_id, updated_game_state)
 
-          {:reply, {:ok, round}, table_id}
+          {:reply, {:ok, round}, state}
         else
           updated_game_state = %{game_state | scores: updated_scores, status: :complete}
-          :ets.insert(table_id, {game_id, updated_game_state})
-          {:reply, {:ok, round}, table_id}
+          storage_mod.save_state(table_id, game_id, updated_game_state)
+
+          {:reply, {:ok, round}, state}
         end
 
       _ ->
-        {:reply, {:error, :not_found}, table_id}
+        {:reply, {:error, :not_found}, state}
+    end
+  end
+
+  def handle_call({:get_game, game_id}, _from, state) do
+    %{storage_mod: storage_mod, table_id: table_id} = state
+
+    case storage_mod.get_game(table_id, game_id) do
+      {:ok, game_state} ->
+        {:reply, {:ok, game_state}, state}
+
+      _ ->
+        {:reply, {:error, :not_found}, state}
     end
   end
 
   # Private helpers
 
-  defp generate_game_id(len \\ 8) do
+  defp generate_game_id(storage_mod, table_id, len \\ 8) do
     allowed_characters = ~c"ABCDEFGHJKMNPQRTUVWXYZ2346789"
     game_id_characters = for _ <- 1..len, into: [], do: Enum.random(allowed_characters)
     game_id = to_string(game_id_characters)
 
-    case :ets.lookup(@table_name, game_id) do
-      [] -> game_id
-      _ -> generate_game_id(len)
+    case storage_mod.get_game(table_id, game_id) do
+      {:ok, _} -> generate_game_id(storage_mod, table_id, len)
+      _ -> game_id
     end
   end
 end

@@ -14,7 +14,9 @@ defmodule ScoreTracker.Application do
       # Start a worker by calling: ScoreTracker.Worker.start_link(arg)
       # {ScoreTracker.Worker, arg},
       # Start to serve requests, typically the last entry
-      ScoreTracker.GameManager,
+      {ScoreTracker.GameManager,
+       storage_backend: ScoreTracker.GameStorage.Ets,
+       storage_backend_opts: [:set, :public, :named_table, {:write_concurrency, true}]},
       ScoreTrackerWeb.Endpoint
     ]
 
