@@ -4,7 +4,7 @@ defmodule ScoreTracker.GameStorage do
   @doc """
   Initialize the game storage backend
   """
-  @callback init(prefix :: atom(), opts: keyword()) :: atom()
+  @callback init(prefix :: atom(), opts :: keyword()) :: atom()
 
   @doc """
   Save the current state of a game to the storage backend
