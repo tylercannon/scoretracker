@@ -11,9 +11,21 @@ defmodule ScoreTrackerWeb.GameLive do
     <div class="size-full flex flex-col items-center p-4 text-primary bg-background">
       <div class="w-full flex items-center justify-between">
         <h1 class="text-xl font-bold">Game Details</h1>
-        <div class="flex gap-2">
+        <div
+          class="flex items-center gap-2"
+          phx-hook="CopyToClipboard"
+          id="game-id-wrapper"
+          data-copy-text={@game_id}
+        >
           <span>Game ID:</span>
           <span class="font-bold">{@game_id}</span>
+          <button
+            type="button"
+            aria-label="copy to clipboard"
+            class="cursor-pointer hover:text-primary/80"
+          >
+            <.icon name="hero-clipboard-document" class="size-5" />
+          </button>
         </div>
       </div>
       <div class="w-full my-4 grid grid-cols-2 md:grid-cols-4 gap-4">

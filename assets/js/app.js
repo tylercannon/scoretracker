@@ -26,8 +26,22 @@ import { hooks as colocatedHooks } from "phoenix-colocated/score_tracker"
 import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
+const hooks = {
+  CopyToClipboard: {
+    mounted() {
+      this.el.addEventListener("click", (_e) => {
+        const textToCopy = this.el.dataset.copyText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          console.log("Copied to clipboard: ", textToCopy);
+        });
+      });
+    },
+  }
+};
+
 const liveSocket = new LiveSocket("/live", Socket, {
-  hooks: { ...colocatedHooks },
+  hooks: { ...colocatedHooks, ...hooks },
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },
 })
