@@ -33,7 +33,19 @@ const hooks = {
       this.el.addEventListener("click", (_e) => {
         const textToCopy = this.el.dataset.copyText;
         navigator.clipboard.writeText(textToCopy).then(() => {
-          console.log("Copied to clipboard: ", textToCopy);
+          const copyIconClass = "hero-clipboard-document";
+          const copyConfirmedIconClass = "hero-clipboard-document-check";
+          const icon = this.el.querySelector(`.${copyIconClass}`);
+
+          if (icon) {
+            icon.classList.remove(copyIconClass);
+            icon.classList.add(copyConfirmedIconClass);
+
+            setTimeout(() => {
+              icon.classList.remove(copyConfirmedIconClass);
+              icon.classList.add(copyIconClass);
+            }, 1500);
+          }
         });
       });
     },

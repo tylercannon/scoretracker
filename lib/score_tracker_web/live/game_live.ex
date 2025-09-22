@@ -21,7 +21,7 @@ defmodule ScoreTrackerWeb.GameLive do
           <span class="font-bold">{@game_id}</span>
           <button
             type="button"
-            aria-label="copy to clipboard"
+            aria-label="Copy to clipboard"
             class="cursor-pointer hover:text-primary/80"
           >
             <.icon name="hero-clipboard-document" class="size-5" />
