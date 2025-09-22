@@ -274,7 +274,6 @@ defmodule ScoreTrackerWeb.CoreComponents do
           checked={@checked}
           class={[
             "cursor-pointer size-6 border text-input bg-input",
-            "checked:fill-foreground",
             "focus:outline-0 focus:ring-offset-0",
             @errors == [] && "border-border focus:ring-ring",
             @errors != [] && "border-destructive focus:ring-destructive"
