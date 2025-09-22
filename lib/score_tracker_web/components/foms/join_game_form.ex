@@ -1,8 +1,7 @@
 defmodule ScoreTrackerWeb.JoinGameForm do
   use ScoreTrackerWeb, :live_component
 
-  alias ScoreTracker.JoinGame
-  alias ScoreTracker.GameManager
+  alias ScoreTracker.{JoinGame, Game, GameManager}
 
   @impl true
   def update(assigns, socket) do
@@ -28,7 +27,13 @@ defmodule ScoreTrackerWeb.JoinGameForm do
         <.input field={f[:player_name]} label="Name" />
         <.input field={f[:game_id]} label="Game ID" />
         <:actions>
-          <.button type="button" class="bg-secondary text-secondary-foreground hover:bg-secondary/80" phx-click={@on_cancel}>Cancel</.button>
+          <.button
+            type="button"
+            class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            phx-click={@on_cancel}
+          >
+            Cancel
+          </.button>
           <.button>Join</.button>
         </:actions>
       </.simple_form>
@@ -59,13 +64,14 @@ defmodule ScoreTrackerWeb.JoinGameForm do
             |> GameManager.add_player()
 
           case result do
-            {:error, :not_found} ->
+            {:error, error_code} ->
+              message = Game.get_join_error_message(error_code)
               attrs = Map.from_struct(join_game)
 
               form =
                 %JoinGame{}
                 |> JoinGame.changeset(attrs)
-                |> Ecto.Changeset.add_error(:game_id, "Game not found")
+                |> Ecto.Changeset.add_error(:game_id, message)
                 |> to_form(action: :validate)
 
               assign(socket, form: form)

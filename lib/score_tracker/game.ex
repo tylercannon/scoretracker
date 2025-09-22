@@ -50,6 +50,18 @@ defmodule ScoreTracker.Game do
     end
   end
 
+  @doc """
+  Get the friendly error message for a given join game error code
+  """
+  @spec get_join_error_message(GameManager.join_error_code()) :: String.t()
+  def get_join_error_message(error_code) do
+    case error_code do
+      :already_exists -> "Player already exists"
+      :not_found -> "Game not found"
+      :not_joinable -> "Game not joinable"
+    end
+  end
+
   @spec any_missing_player_round_score?(GameManager.game()) :: boolean()
   def any_missing_player_round_score?(game) do
     not Enum.all?(game.scores, fn {_player, player_scores} ->

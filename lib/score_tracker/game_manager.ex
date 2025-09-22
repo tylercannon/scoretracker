@@ -115,6 +115,8 @@ defmodule ScoreTracker.GameManager do
 
   @type status() :: :in_progress | :waiting_for_players | :complete
 
+  @type join_error_code() :: :already_exists | :not_found | :not_joinable
+
   @type game() :: %{
           max_players: non_neg_integer(),
           max_rounds: non_neg_integer(),
@@ -142,7 +144,7 @@ defmodule ScoreTracker.GameManager do
   end
 
   @spec add_player(add_player_opts()) ::
-          :ok | {:error, :already_exists | :not_found | NimbleOptions.ValidationError.t()}
+          :ok | {:error, join_error_code() | NimbleOptions.ValidationError.t()}
   def add_player(player_opts) do
     with {:ok, player_opts} <- NimbleOptions.validate(player_opts, @add_player_schema) do
       GenServer.call(__MODULE__, {:add_player, player_opts})
@@ -248,11 +250,17 @@ defmodule ScoreTracker.GameManager do
 
     case storage_mod.get_game(table_id, game_id) do
       {:ok, game_state} ->
-        case Map.has_key?(game_state.player_names, player_id) do
-          true ->
+        cond do
+          Map.has_key?(game_state.player_names, player_id) ->
             {:reply, {:error, :already_exists}, state}
 
-          false ->
+          game_state.game_mode == :scorekeeper ->
+            {:reply, {:error, :not_joinable}, state}
+
+          game_state.game_mode == :party and game_state.status != :waiting_for_players ->
+            {:reply, {:error, :not_joinable}, state}
+
+          true ->
             updated_scores = Map.put(game_state.scores, player_id, %{})
             updated_player_names = Map.put(game_state.player_names, player_id, player_name)
 
