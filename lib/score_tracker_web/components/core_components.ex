@@ -264,7 +264,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
 
     ~H"""
     <div>
-      <label class="flex items-center gap-4 text-sm leading-6 text-foreground">
+      <label class="flex items-center gap-4 text-sm leading-6 text-foreground select-none">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
@@ -272,7 +272,13 @@ defmodule ScoreTrackerWeb.CoreComponents do
           name={@name}
           value="true"
           checked={@checked}
-          class="rounded border-border text-primary focus:ring-0 bg-input"
+          class={[
+            "cursor-pointer size-6 border text-input bg-input",
+            "checked:fill-foreground",
+            "focus:outline-0 focus:ring-offset-0",
+            @errors == [] && "border-border focus:ring-ring",
+            @errors != [] && "border-destructive focus:ring-destructive"
+          ]}
           {@rest}
         />
         {@label}
@@ -290,9 +296,9 @@ defmodule ScoreTrackerWeb.CoreComponents do
         id={@id}
         name={@name}
         class={[
-          "mt-2 px-4 py-3 block w-full rounded-lg text-foreground bg-input border focus:outline-1 sm:text-sm sm:leading-6",
-          @errors == [] && "border-border focus:outline-ring",
-          @errors != [] && "border-destructive focus:outline-destructive",
+          "mt-2 px-4 py-2 block w-full rounded-lg text-foreground bg-input border focus:outline-0 sm:text-sm sm:leading-6",
+          @errors == [] && "border-border focus:ring-ring",
+          @errors != [] && "border-destructive focus:ring-destructive",
           @class
         ]}
         multiple={@multiple}
@@ -314,9 +320,9 @@ defmodule ScoreTrackerWeb.CoreComponents do
         id={@id}
         name={@name}
         class={[
-          "mt-2 block w-full rounded-lg text-foreground bg-input border-border focus:ring-0 sm:text-sm sm:leading-6 min-h-[6rem]",
-          @errors == [] && "border-border focus:border-ring",
-          @errors != [] && "border-destructive focus:border-destructive"
+          "mt-2 block w-full rounded-lg text-foreground bg-input border-border focus:outline-0 sm:text-sm sm:leading-6 min-h-[6rem]",
+          @errors == [] && "border-border focus:ring-ring",
+          @errors != [] && "border-destructive focus:ring-destructive"
         ]}
         {@rest}
       >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -336,9 +342,9 @@ defmodule ScoreTrackerWeb.CoreComponents do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 px-4 py-2 block w-full rounded-lg text-foreground bg-input border focus:outline-1 sm:text-sm sm:leading-6",
-          @errors == [] && "border-border focus:outline-ring",
-          @errors != [] && "border-destructive focus:outline-destructive",
+          "mt-2 px-4 py-2 block w-full rounded-lg text-foreground bg-input border focus:outline-0 sm:text-sm sm:leading-6",
+          @errors == [] && "border-border focus:ring-ring",
+          @errors != [] && "border-destructive focus:ring-destructive",
           @class
         ]}
         {@rest}

@@ -69,7 +69,10 @@ defmodule ScoreTrackerWeb.GameLive do
                 >
                   Cancel
                 </.button>
-                <.button type="button" phx-click={JS.hide(to: "#go-to-next-round") |> JS.push("next_round")}>
+                <.button
+                  type="button"
+                  phx-click={JS.hide(to: "#go-to-next-round") |> JS.push("next_round")}
+                >
                   Continue
                 </.button>
               </div>
