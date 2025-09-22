@@ -21,6 +21,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
           label="Game Mode"
           options={[Scorekeeper: "scorekeeper", Party: "party"]}
         />
+        <.input field={f[:allow_spectators]} label="Allow Spectators?" type="checkbox" />
         <.input field={f[:max_players]} label="Max Players" />
         <.input field={f[:max_rounds]} label="Max Rounds" />
         <div :if={@show_players?} class="space-y-4">

@@ -25,6 +25,12 @@ defmodule ScoreTracker.GameManager do
                           In party mode, each player joins the game and updates their own scores.
                           """
                         ],
+                        allow_spectators: [
+                          type: :boolean,
+                          required: false,
+                          default: true,
+                          doc: "Whether spectators are allowed to view the game."
+                        ],
                         max_players: [
                           type: :pos_integer,
                           required: false,
@@ -118,6 +124,8 @@ defmodule ScoreTracker.GameManager do
   @type join_error_code() :: :already_exists | :not_found | :not_joinable
 
   @type game() :: %{
+          game_mode: :scorekeeper | :party,
+          allow_spectators: boolean(),
           max_players: non_neg_integer(),
           max_rounds: non_neg_integer(),
           host_id: String.t(),
@@ -225,9 +233,10 @@ defmodule ScoreTracker.GameManager do
     scores = Enum.reduce(player_ids, %{}, fn player, acc -> Map.put(acc, player, %{}) end)
 
     initial_state = %{
+      game_mode: game_mode,
+      allow_spectators: Keyword.get(game_opts, :allow_spectators, true),
       max_players: Keyword.get(game_opts, :max_players, 6),
       max_rounds: Keyword.get(game_opts, :max_rounds, 10),
-      game_mode: game_mode,
       host_id: host_id,
       status: status,
       round: 1,
@@ -254,11 +263,19 @@ defmodule ScoreTracker.GameManager do
           Map.has_key?(game_state.player_names, player_id) ->
             {:reply, {:error, :already_exists}, state}
 
-          game_state.game_mode == :scorekeeper ->
+          not game_state.allow_spectators and game_state.game_mode == :scorekeeper ->
             {:reply, {:error, :not_joinable}, state}
 
-          game_state.game_mode == :party and game_state.status != :waiting_for_players ->
+          not game_state.allow_spectators and game_state.game_mode == :party and
+              game_state.status != :waiting_for_players ->
             {:reply, {:error, :not_joinable}, state}
+
+          game_state.allow_spectators and game_state.game_mode == :scorekeeper ->
+            {:reply, :ok, state}
+
+          game_state.allow_spectators and game_state.game_mode == :party and
+              game_state.status != :waiting_for_players ->
+            {:reply, :ok, state}
 
           true ->
             updated_scores = Map.put(game_state.scores, player_id, %{})
