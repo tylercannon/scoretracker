@@ -2,6 +2,7 @@ defmodule ScoreTracker.GameManager do
   use GenServer
 
   alias Ecto.UUID
+  alias ScoreTracker.GameType
 
   @table_name :lobbies
 
@@ -25,6 +26,14 @@ defmodule ScoreTracker.GameManager do
                           In party mode, each player joins the game and updates their own scores.
                           """
                         ],
+                        game_type: [
+                          type: {:in, [:rummy, :ripple, :custom]},
+                          required: true,
+                          doc: """
+                          The game type.
+                          Each type of game has custom settings, such as the maximum number of players or rounds.
+                          """
+                        ],
                         allow_spectators: [
                           type: :boolean,
                           required: false,
@@ -33,14 +42,12 @@ defmodule ScoreTracker.GameManager do
                         ],
                         max_players: [
                           type: :pos_integer,
-                          required: false,
-                          default: 6,
+                          required: true,
                           doc: "The maximum number of players that can join the game."
                         ],
                         max_rounds: [
                           type: :pos_integer,
-                          required: false,
-                          default: 10,
+                          required: true,
                           doc: "The maximum number of rounds in the game."
                         ],
                         players: [
@@ -125,6 +132,7 @@ defmodule ScoreTracker.GameManager do
 
   @type game() :: %{
           game_mode: :scorekeeper | :party,
+          game_type: GameType.game_type(),
           allow_spectators: boolean(),
           max_players: non_neg_integer(),
           max_rounds: non_neg_integer(),
@@ -234,9 +242,10 @@ defmodule ScoreTracker.GameManager do
 
     initial_state = %{
       game_mode: game_mode,
+      game_type: Keyword.get(game_opts, :game_type),
       allow_spectators: Keyword.get(game_opts, :allow_spectators, true),
-      max_players: Keyword.get(game_opts, :max_players, 6),
-      max_rounds: Keyword.get(game_opts, :max_rounds, 10),
+      max_players: Keyword.get(game_opts, :max_players),
+      max_rounds: Keyword.get(game_opts, :max_rounds),
       host_id: host_id,
       status: status,
       round: 1,

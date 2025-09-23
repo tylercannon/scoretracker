@@ -22,8 +22,16 @@ defmodule ScoreTrackerWeb.CreateGameForm do
           options={[Scorekeeper: "scorekeeper", Party: "party"]}
         />
         <.input field={f[:allow_spectators]} label="Allow Spectators?" type="checkbox" />
-        <.input field={f[:max_players]} label="Max Players" />
-        <.input field={f[:max_rounds]} label="Max Rounds" />
+        <.input
+          field={f[:game_type]}
+          type="select"
+          label="Game Type"
+          options={[Rummy: "rummy", Ripple: "ripple", Custom: "custom"]}
+        />
+        <div :if={@custom_game?} class="space-y-4">
+          <.input field={f[:max_players]} label="Max Players" />
+          <.input field={f[:max_rounds]} label="Max Rounds" />
+        </div>
         <div :if={@show_players?} class="space-y-4">
           <span class="text-sm font-semibold leading-6 text-foreground">Players</span>
           <.inputs_for :let={pf} field={@form[:players]} as={:players}>
@@ -74,10 +82,12 @@ defmodule ScoreTrackerWeb.CreateGameForm do
     changeset =
       CreateGame.changeset(%CreateGame{
         game_mode: :scorekeeper,
+        game_type: :rummy,
         players: [%Player{name: ""}]
       })
 
     show_players? = Ecto.Changeset.get_field(changeset, :game_mode) == :scorekeeper
+    custom_game? = Ecto.Changeset.get_field(changeset, :game_type) == :custom
 
     socket =
       socket
@@ -85,6 +95,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
       |> assign(
         form: to_form(changeset),
         show_players?: show_players?,
+        custom_game?: custom_game?,
         max_players_reached?: false
       )
 
@@ -95,6 +106,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
   def handle_event("validate", attrs, socket) do
     changeset = CreateGame.changeset(%CreateGame{}, attrs)
     show_players? = Ecto.Changeset.get_field(changeset, :game_mode) == :scorekeeper
+    custom_game? = Ecto.Changeset.get_field(changeset, :game_type) == :custom
 
     players_count =
       changeset
@@ -108,6 +120,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
      assign(socket,
        form: to_form(changeset, action: :validate),
        show_players?: show_players?,
+       custom_game?: custom_game?,
        max_players_reached?: max_players_reached?
      )}
   end

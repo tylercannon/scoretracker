@@ -126,8 +126,9 @@ defmodule ScoreTrackerWeb.GameLive do
                       <.live_component
                         id={"edit-#{player_id}-score-form"}
                         module={ScoreTrackerWeb.UpdateScoreForm}
-                        player_id={player_id}
                         game_id={@game_id}
+                        player_id={player_id}
+                        game_type={@game.game_type}
                         round={@game.round}
                         on_cancel={JS.hide(to: "#edit-#{player_id}-score")}
                       />

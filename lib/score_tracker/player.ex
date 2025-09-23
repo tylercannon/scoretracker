@@ -1,6 +1,6 @@
 defmodule ScoreTracker.Player do
   use Ecto.Schema
-  import Ecto.Changeset
+  use ScoreTracker.Changeset
 
   @type t :: %__MODULE__{
           name: String.t()
@@ -17,7 +17,6 @@ defmodule ScoreTracker.Player do
     player
     |> cast(attrs, [:name])
     |> validate_required(:name)
-    |> validate_length(:name, min: 1, max: 12)
-    |> validate_format(:name, ~r/^[A-Za-z]*$/)
+    |> validate_player_name(:name)
   end
 end

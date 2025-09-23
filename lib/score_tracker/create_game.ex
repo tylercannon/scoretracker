@@ -1,12 +1,13 @@
 defmodule ScoreTracker.CreateGame do
   use Ecto.Schema
-  import Ecto.Changeset
+  use ScoreTracker.Changeset
 
-  alias ScoreTracker.Player
+  alias ScoreTracker.{GameType, Player}
 
   @type t :: %__MODULE__{
           host_name: String.t(),
           game_mode: :scorekeeper | :party,
+          game_type: GameType.game_type(),
           allow_spectators: boolean(),
           max_players: non_neg_integer(),
           max_rounds: non_neg_integer(),
@@ -17,6 +18,7 @@ defmodule ScoreTracker.CreateGame do
   embedded_schema do
     field :host_name, :string
     field :game_mode, Ecto.Enum, values: [:scorekeeper, :party]
+    field :game_type, Ecto.Enum, values: [:rummy, :ripple, :custom]
     field :allow_spectators, :boolean, default: true
     field :max_players, :integer, default: 6
     field :max_rounds, :integer, default: 10
@@ -27,17 +29,24 @@ defmodule ScoreTracker.CreateGame do
   @spec changeset(struct(), map()) :: Ecto.Changeset.t()
   def changeset(create_game, attrs \\ %{}) do
     create_game
-    |> cast(attrs, [:host_name, :game_mode, :allow_spectators, :max_players, :max_rounds])
+    |> cast(attrs, [
+      :host_name,
+      :game_mode,
+      :game_type,
+      :allow_spectators,
+      :max_players,
+      :max_rounds
+    ])
     |> cast_embed(:players,
       with: &Player.changeset/2,
       sort_param: :players_sort,
       drop_param: :players_drop
     )
-    |> validate_required([:host_name, :game_mode])
-    |> validate_length(:host_name, min: 1, max: 12)
-    |> validate_format(:host_name, ~r/^[A-Za-z]*$/)
+    |> validate_required([:host_name, :game_mode, :game_type])
+    |> validate_player_name(:host_name)
     |> validate_number(:max_players, greater_than_or_equal_to: 2, less_than_or_equal_to: 10)
     |> validate_number(:max_rounds, greater_than_or_equal_to: 1, less_than_or_equal_to: 20)
+    |> put_built_in_game_info()
   end
 
   def update(%__MODULE__{} = create_game, attrs) do

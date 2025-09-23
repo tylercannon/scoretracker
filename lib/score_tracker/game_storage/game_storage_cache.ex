@@ -24,7 +24,7 @@ defmodule ScoreTracker.GameStorage.Cache do
          {:ok, game_state} <- Jason.decode(state) do
       game_state =
         Enum.reduce(game_state, %{}, fn
-          {key, value}, acc when key in ["status", "game_mode"] ->
+          {key, value}, acc when key in ["status", "game_mode", "game_type"] ->
             Map.put(acc, String.to_existing_atom(key), String.to_existing_atom(value))
 
           {key, value}, acc ->

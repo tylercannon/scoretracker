@@ -1,11 +1,10 @@
 defmodule ScoreTrackerWeb.UpdateScoreForm do
   use ScoreTrackerWeb, :live_component
 
-  alias ScoreTracker.UpdateScore
-  alias ScoreTracker.GameManager
+  alias ScoreTracker.{GameManager, UpdateScore}
 
   @impl true
-  def render(%{on_cancel: _} = assigns) do
+  def render(%{game_id: _, player_id: _, game_type: _, round: _, on_cancel: _} = assigns) do
     ~H"""
     <div>
       <.simple_form
@@ -38,19 +37,23 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
 
   @impl true
   def update(assigns, socket) do
+    game_type = assigns.game_type
+
     socket =
       socket
       |> assign(assigns)
-      |> assign(form: to_form(UpdateScore.changeset(%UpdateScore{})))
+      |> assign(form: to_form(UpdateScore.changeset(%UpdateScore{}, game_type)))
 
     {:ok, socket}
   end
 
   @impl true
   def handle_event("validate", attrs, socket) do
+    game_type = socket.assigns.game_type
+
     form =
       %UpdateScore{}
-      |> UpdateScore.changeset(attrs)
+      |> UpdateScore.changeset(game_type, attrs)
       |> to_form(action: :validate)
 
     {:noreply, assign(socket, form: form)}
@@ -58,8 +61,10 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
 
   @impl true
   def handle_event("save", attrs, socket) do
+    game_type = socket.assigns.game_type
+
     socket =
-      case UpdateScore.update(%UpdateScore{}, attrs) do
+      case UpdateScore.update(%UpdateScore{}, game_type, attrs) do
         {:ok, update_score} ->
           result =
             update_score
@@ -78,7 +83,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
 
               form =
                 %UpdateScore{}
-                |> UpdateScore.changeset(attrs)
+                |> UpdateScore.changeset(game_type, attrs)
                 |> Ecto.Changeset.add_error(:score, "Game not found")
                 |> to_form(action: :validate)
 

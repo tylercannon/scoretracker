@@ -1,6 +1,6 @@
 defmodule ScoreTracker.JoinGame do
   use Ecto.Schema
-  import Ecto.Changeset
+  use ScoreTracker.Changeset
 
   @type t :: %__MODULE__{
           player_name: String.t(),
@@ -19,8 +19,7 @@ defmodule ScoreTracker.JoinGame do
     join_game
     |> cast(attrs, [:player_name, :game_id])
     |> validate_required([:player_name, :game_id])
-    |> validate_length(:player_name, min: 1, max: 12)
-    |> validate_format(:player_name, ~r/^[A-Za-z]*$/)
+    |> validate_player_name(:player_name)
     |> update_change(:game_id, &String.upcase/1)
   end
 
