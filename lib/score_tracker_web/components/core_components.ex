@@ -69,7 +69,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
         >
           <button
             type="button"
-            class="absolute top-6 right-6 text-muted-foreground hover:text-foreground flex space-x-1 items-center"
+            class="absolute top-6 right-6 text-muted-foreground hover:text-foreground flex space-x-1 items-center cursor-pointer"
             aria_label="close modal"
             phx-click={JS.exec("data-cancel", to: "##{@id}")}
           >
@@ -273,7 +273,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
           value="true"
           checked={@checked}
           class={[
-            "cursor-pointer size-6 border text-input bg-input",
+            "cursor-pointer size-6 border text-checkbox bg-checkbox",
             "focus:outline-0 focus:ring-offset-0",
             @errors == [] && "border-border focus:ring-ring",
             @errors != [] && "border-destructive focus:ring-destructive"
