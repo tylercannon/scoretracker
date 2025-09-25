@@ -1,4 +1,9 @@
 defmodule ScoreTrackerWeb.UpdateScoreForm do
+  @moduledoc """
+  Form used to collect and update
+  a player's score for a given round
+  """
+
   use ScoreTrackerWeb, :live_component
 
   alias ScoreTracker.{GameManager, UpdateScore}

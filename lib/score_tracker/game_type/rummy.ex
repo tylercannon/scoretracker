@@ -1,4 +1,9 @@
 defmodule ScoreTracker.GameType.Rummy do
+  @moduledoc """
+  Game rules and validation functions
+  for the rummy game type
+  """
+
   @behaviour ScoreTracker.GameType
 
   @impl ScoreTracker.GameType

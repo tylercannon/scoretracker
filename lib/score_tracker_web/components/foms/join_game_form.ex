@@ -1,7 +1,12 @@
 defmodule ScoreTrackerWeb.JoinGameForm do
+  @moduledoc """
+  Form used to handle player attempts
+  to join an existing game
+  """
+
   use ScoreTrackerWeb, :live_component
 
-  alias ScoreTracker.{JoinGame, Game, GameManager}
+  alias ScoreTracker.{Game, GameManager, JoinGame}
 
   @impl true
   def update(assigns, socket) do

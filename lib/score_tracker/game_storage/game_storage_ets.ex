@@ -1,4 +1,9 @@
 defmodule ScoreTracker.GameStorage.Ets do
+  @moduledoc """
+  Game storage backend for storing game
+  state to ETS
+  """
+
   @behaviour ScoreTracker.GameStorage
 
   @impl ScoreTracker.GameStorage

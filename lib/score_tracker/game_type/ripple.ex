@@ -1,4 +1,9 @@
 defmodule ScoreTracker.GameType.Ripple do
+  @moduledoc """
+  Game rules and validation functions
+  for the ripple game type
+  """
+
   @behaviour ScoreTracker.GameType
 
   @impl ScoreTracker.GameType

@@ -41,6 +41,7 @@ defmodule ScoreTracker.MixProject do
   defp deps do
     [
       {:bandit, "~> 1.8.0"},
+      {:credo, "~> 1.7.12", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.2.0"},
       {:dotenvy, "~> 1.1.0"},
       {:ecto, "~> 3.13.2"},
@@ -61,6 +62,7 @@ defmodule ScoreTracker.MixProject do
       {:phoenix_live_reload, "~> 1.6.1", only: :dev},
       {:phoenix_live_view, "~> 1.1.11"},
       {:redix, "~> 1.5.2"},
+      {:sobelow, "~> 0.14.0", only: [:dev, :test], runtime: false},
       {:telemetry_metrics, "~> 1.1.0"},
       {:telemetry_poller, "~> 1.3.0"},
       {:esbuild, "~> 0.10.0", runtime: Mix.env() == :dev},
@@ -83,6 +85,11 @@ defmodule ScoreTracker.MixProject do
         "tailwind score_tracker --minify",
         "esbuild score_tracker --minify",
         "phx.digest"
+      ],
+      check: [
+        "format --check-formatted",
+        "credo --strict",
+        "sobelow --compact --private --skip --exit"
       ],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]

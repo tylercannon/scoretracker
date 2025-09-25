@@ -1,4 +1,9 @@
 defmodule ScoreTracker.GameType do
+  @moduledoc """
+  Behaviour for game rules and validation
+  functions for a built-in game type
+  """
+
   alias Ecto.Changeset
   alias ScoreTracker.GameType.{Ripple, Rummy}
 

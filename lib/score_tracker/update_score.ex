@@ -1,4 +1,10 @@
 defmodule ScoreTracker.UpdateScore do
+  @moduledoc """
+  Module defining the schema and
+  validation functions used on the
+  update score form
+  """
+
   use Ecto.Schema
   use ScoreTracker.Changeset
 

@@ -38,14 +38,14 @@ defmodule ScoreTrackerWeb.GameLive do
         <div class="flex items-center justify-between mb-2">
           <h2 class="text-lg font-bold">Scoreboard</h2>
           <.button
-            :if={Game.is_host?(@game, @user_id) and @game.status == :waiting_for_players}
+            :if={Game.host?(@game, @user_id) and @game.status == :waiting_for_players}
             type="button"
             phx-click="start_game"
           >
             Start Game
           </.button>
           <.button
-            :if={Game.is_host?(@game, @user_id) and Game.in_progress?(@game)}
+            :if={Game.host?(@game, @user_id) and Game.in_progress?(@game)}
             type="button"
             phx-click={JS.show(to: "#go-to-next-round")}
           >
@@ -165,7 +165,7 @@ defmodule ScoreTrackerWeb.GameLive do
     case Game.get(game_id) do
       {:ok, game} ->
         user_id = session["user_id"]
-        is_host = Game.is_host?(game, user_id)
+        is_host = Game.host?(game, user_id)
 
         if connected?(socket) do
           Phoenix.PubSub.subscribe(ScoreTracker.PubSub, Game.topic(game_id))

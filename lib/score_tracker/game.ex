@@ -1,4 +1,9 @@
 defmodule ScoreTracker.Game do
+  @moduledoc """
+  Helper functions related to displaying
+  game state in the UI
+  """
+
   alias ScoreTracker.{GameManager, GameType}
 
   @doc """
@@ -22,8 +27,8 @@ defmodule ScoreTracker.Game do
   @doc """
   Check whether a user is the host of a game
   """
-  @spec is_host?(GameManager.game(), String.t()) :: boolean()
-  def is_host?(game, user_id), do: game.host_id == user_id
+  @spec host?(GameManager.game(), String.t()) :: boolean()
+  def host?(game, user_id), do: game.host_id == user_id
 
   @doc """
   Check whether a user's score is editable
@@ -32,7 +37,7 @@ defmodule ScoreTracker.Game do
   def user_score_editable?(game, player_id, user_id) do
     cond do
       not in_progress?(game) -> false
-      is_host?(game, user_id) -> true
+      host?(game, user_id) -> true
       game.game_mode == :party and player_id == user_id -> true
       true -> false
     end

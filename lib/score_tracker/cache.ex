@@ -33,6 +33,7 @@ defmodule ScoreTracker.Cache do
   @spec command!(Redix.command(), keyword()) :: Redix.Protocol.redis_value()
   def command!(command, opts \\ []), do: Redix.command!(random_conn(), command, opts)
 
+  # sobelow_skip ["DOS.BinToAtom"]
   defp conn_name(index), do: :"cache_#{index}"
   defp random_conn, do: 0..(pool_size() - 1) |> Enum.random() |> conn_name()
   defp pool_size, do: ScoreTracker.Config.get().cache.pool_size

@@ -1,4 +1,10 @@
 defmodule ScoreTracker.JoinGame do
+  @moduledoc """
+  Module defining the schema and
+  validation functions used on the
+  join game form
+  """
+
   use Ecto.Schema
   use ScoreTracker.Changeset
 

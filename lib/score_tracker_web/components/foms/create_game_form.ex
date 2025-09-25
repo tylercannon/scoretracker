@@ -1,4 +1,9 @@
 defmodule ScoreTrackerWeb.CreateGameForm do
+  @moduledoc """
+  Form used to allow a game host to
+  customize and start a new game
+  """
+
   use ScoreTrackerWeb, :live_component
 
   alias ScoreTracker.{CreateGame, GameManager, Player}

@@ -1,4 +1,9 @@
 defmodule ScoreTracker.GameManager do
+  @moduledoc """
+  Module responsible for maintaining the state of
+  every game and persisting that state to storage
+  """
+
   use GenServer
 
   alias Ecto.UUID
@@ -152,30 +157,36 @@ defmodule ScoreTracker.GameManager do
   @spec create_game(create_game_opts()) ::
           String.t() | {:error, NimbleOptions.ValidationError.t()}
   def create_game(game_opts) do
-    with {:ok, game_opts} <- NimbleOptions.validate(game_opts, @create_game_schema) do
-      GenServer.call(__MODULE__, {:create_game, game_opts})
-    else
-      error -> error
+    case NimbleOptions.validate(game_opts, @create_game_schema) do
+      {:ok, game_opts} ->
+        GenServer.call(__MODULE__, {:create_game, game_opts})
+
+      error ->
+        error
     end
   end
 
   @spec add_player(add_player_opts()) ::
           :ok | {:error, join_error_code() | NimbleOptions.ValidationError.t()}
   def add_player(player_opts) do
-    with {:ok, player_opts} <- NimbleOptions.validate(player_opts, @add_player_schema) do
-      GenServer.call(__MODULE__, {:add_player, player_opts})
-    else
-      error -> error
+    case NimbleOptions.validate(player_opts, @add_player_schema) do
+      {:ok, player_opts} ->
+        GenServer.call(__MODULE__, {:add_player, player_opts})
+
+      error ->
+        error
     end
   end
 
   @spec update_player_score(update_player_score_opts()) ::
           :ok | {:error, :not_found | NimbleOptions.ValidationError.t()}
   def update_player_score(score_opts) do
-    with {:ok, score_opts} <- NimbleOptions.validate(score_opts, @update_player_score_schema) do
-      GenServer.call(__MODULE__, {:update_player_score, score_opts})
-    else
-      error -> error
+    case NimbleOptions.validate(score_opts, @update_player_score_schema) do
+      {:ok, score_opts} ->
+        GenServer.call(__MODULE__, {:update_player_score, score_opts})
+
+      error ->
+        error
     end
   end
 
@@ -187,10 +198,12 @@ defmodule ScoreTracker.GameManager do
              | :invalid_game_state
              | NimbleOptions.ValidationError.t()}
   def start_game(opts) do
-    with {:ok, opts} <- NimbleOptions.validate(opts, @start_game_schema) do
-      GenServer.call(__MODULE__, {:start_game, opts})
-    else
-      error -> error
+    case NimbleOptions.validate(opts, @start_game_schema) do
+      {:ok, opts} ->
+        GenServer.call(__MODULE__, {:start_game, opts})
+
+      error ->
+        error
     end
   end
 
@@ -198,10 +211,12 @@ defmodule ScoreTracker.GameManager do
           {:ok, non_neg_integer()}
           | {:error, :not_found | :max_rounds_reached | NimbleOptions.ValidationError.t()}
   def advance_to_next_round(opts) do
-    with {:ok, opts} <- NimbleOptions.validate(opts, @advance_round_schema) do
-      GenServer.call(__MODULE__, {:advance_to_next_round, opts})
-    else
-      error -> error
+    case NimbleOptions.validate(opts, @advance_round_schema) do
+      {:ok, opts} ->
+        GenServer.call(__MODULE__, {:advance_to_next_round, opts})
+
+      error ->
+        error
     end
   end
 
@@ -268,37 +283,29 @@ defmodule ScoreTracker.GameManager do
 
     case storage_mod.get_game(table_id, game_id) do
       {:ok, game_state} ->
-        cond do
-          Map.has_key?(game_state.player_names, player_id) ->
-            {:reply, {:error, :already_exists}, state}
+        result =
+          case validate_add_player(game_state, player_id) do
+            {:error, _} = error ->
+              error
 
-          not game_state.allow_spectators and game_state.game_mode == :scorekeeper ->
-            {:reply, {:error, :not_joinable}, state}
+            {:ok, :spectator} ->
+              :ok
 
-          not game_state.allow_spectators and game_state.game_mode == :party and
-              game_state.status != :waiting_for_players ->
-            {:reply, {:error, :not_joinable}, state}
+            {:ok, :player} ->
+              updated_scores = Map.put(game_state.scores, player_id, %{})
+              updated_player_names = Map.put(game_state.player_names, player_id, player_name)
 
-          game_state.allow_spectators and game_state.game_mode == :scorekeeper ->
-            {:reply, :ok, state}
+              updated_game_state =
+                game_state
+                |> Map.put(:scores, updated_scores)
+                |> Map.put(:player_names, updated_player_names)
 
-          game_state.allow_spectators and game_state.game_mode == :party and
-              game_state.status != :waiting_for_players ->
-            {:reply, :ok, state}
+              storage_mod.save_state(table_id, game_id, updated_game_state)
 
-          true ->
-            updated_scores = Map.put(game_state.scores, player_id, %{})
-            updated_player_names = Map.put(game_state.player_names, player_id, player_name)
+              :ok
+          end
 
-            updated_game_state =
-              game_state
-              |> Map.put(:scores, updated_scores)
-              |> Map.put(:player_names, updated_player_names)
-
-            storage_mod.save_state(table_id, game_id, updated_game_state)
-
-            {:reply, :ok, state}
-        end
+        {:reply, result, state}
 
       _ ->
         {:reply, {:error, :not_found}, state}
@@ -414,4 +421,30 @@ defmodule ScoreTracker.GameManager do
       _ -> game_id
     end
   end
+
+  defp validate_add_player(%{player_names: player_names}, player_id)
+       when is_map(player_names) and is_map_key(player_names, player_id),
+       do: {:error, :already_exists}
+
+  defp validate_add_player(%{allow_spectators: false, game_mode: :scorekeeper}, _player_id),
+    do: {:error, :not_joinable}
+
+  defp validate_add_player(
+         %{allow_spectators: false, game_mode: :party, status: status},
+         _player_id
+       )
+       when status != :waiting_for_players,
+       do: {:error, :not_joinable}
+
+  defp validate_add_player(%{allow_spectators: true, game_mode: :scorekeeper}, _player_id),
+    do: {:ok, :spectator}
+
+  defp validate_add_player(
+         %{allow_spectators: true, game_mode: :party, status: status},
+         _player_id
+       )
+       when status != :waiting_for_players,
+       do: {:ok, :spectator}
+
+  defp validate_add_player(_game_state, _player_id), do: {:ok, :player}
 end

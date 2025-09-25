@@ -1,4 +1,9 @@
 defmodule ScoreTrackerWeb.SessionOptions do
+  @moduledoc """
+  Functions for runtime configuration
+  of sessions
+  """
+
   @doc """
   Get the session options for the endpoint
   """

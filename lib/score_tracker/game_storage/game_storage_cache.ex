@@ -1,4 +1,9 @@
 defmodule ScoreTracker.GameStorage.Cache do
+  @moduledoc """
+  Game storage backend for storing game
+  state to an external cache service
+  """
+
   @behaviour ScoreTracker.GameStorage
 
   alias ScoreTracker.Cache

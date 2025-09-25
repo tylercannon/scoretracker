@@ -1,4 +1,9 @@
 defmodule ScoreTracker.GameStorage do
+  @moduledoc """
+  Behaviour for saving and retrieving
+  game state from a storage backend
+  """
+
   alias ScoreTracker.GameManager
 
   @doc """
