@@ -8,6 +8,7 @@ defmodule ScoreTracker.Config do
 
   @type t :: %{
           app: %{
+            session_encryption_salt: String.t(),
             session_signing_salt: String.t(),
             version: String.t()
           },
@@ -27,6 +28,7 @@ defmodule ScoreTracker.Config do
 
     %{
       app: %{
+        session_encryption_salt: Keyword.fetch!(app, :session_encryption_salt),
         session_signing_salt: Keyword.fetch!(app, :session_signing_salt),
         version: @version
       },

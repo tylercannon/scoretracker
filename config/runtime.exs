@@ -29,6 +29,7 @@ config :score_tracker, ScoreTrackerWeb.Endpoint,
 
 config :score_tracker,
   app: [
+    session_encryption_salt: env!("SCORE_TRACKER_SESSION_ENCRYPTION_SALT", :string!),
     session_signing_salt: env!("SCORE_TRACKER_SESSION_SIGNING_SALT", :string!)
   ],
   cache: [

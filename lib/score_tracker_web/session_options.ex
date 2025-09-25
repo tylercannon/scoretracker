@@ -11,18 +11,30 @@ defmodule ScoreTrackerWeb.SessionOptions do
   def get do
     [
       store: :cookie,
-      http_only: true,
       key: "_score_tracker_key",
-      signing_salt: {__MODULE__, :session_signing_salt, []},
-      same_site: "Lax"
+      http_only: true,
+      secure: true,
+      encrypt: true,
+      sign: true,
+      encryption_salt: {__MODULE__, :encryption_salt, []},
+      signing_salt: {__MODULE__, :signing_salt, []},
+      same_site: "Strict"
     ]
+  end
+
+  @doc """
+  Get the session encryption salt value
+  """
+  @spec encryption_salt() :: String.t()
+  def encryption_salt do
+    ScoreTracker.Config.get().app.session_encryption_salt
   end
 
   @doc """
   Get the session signing salt value
   """
-  @spec session_signing_salt() :: String.t()
-  def session_signing_salt do
+  @spec signing_salt() :: String.t()
+  def signing_salt do
     ScoreTracker.Config.get().app.session_signing_salt
   end
 end
