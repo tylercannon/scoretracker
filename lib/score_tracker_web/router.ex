@@ -1,6 +1,8 @@
 defmodule ScoreTrackerWeb.Router do
   use ScoreTrackerWeb, :router
 
+  import ScoreTrackerWeb.ContentSecurityPolicy, only: [put_content_security_policy: 2]
+
   alias ScoreTrackerWeb.Plugs.UserIdPlug
 
   pipeline :browser do
@@ -9,7 +11,15 @@ defmodule ScoreTrackerWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {ScoreTrackerWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_secure_browser_headers
+
+    # sobelow_skip ["Config.CSP"]
+    plug :put_secure_browser_headers, %{
+      "referrer-policy" => "strict-origin-when-cross-origin",
+      "x-content-type-options" => "nosniff",
+      "x-permitted-cross-domain-policies" => "none"
+    }
+
+    plug :put_content_security_policy
     plug UserIdPlug
   end
 

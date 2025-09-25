@@ -89,9 +89,16 @@ defmodule ScoreTracker.MixProject do
       check: [
         "format --check-formatted",
         "credo --strict",
-        "sobelow --compact --private --skip --exit"
+        "sobelow"
       ],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: [
+        "compile --warning-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "credo",
+        "sobelow",
+        "test"
+      ]
     ]
   end
 

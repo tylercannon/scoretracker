@@ -1,0 +1,15 @@
+[
+  verbose: false,
+  private: true,
+  skip: true,
+  router: nil,
+  exit: :low,
+  format: "compact",
+  out: nil,
+  threshold: :low,
+  # CSP is handled by a dedicated function plug
+  # HTTPS is handled by load balancer
+  ignore: ["Config.CSP", "Config.HTTPS"],
+  ignore_files: [],
+  version: false
+]
