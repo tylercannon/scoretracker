@@ -54,6 +54,7 @@ defmodule ScoreTracker.MixProject do
        depth: 1},
       {:jason, "~> 1.4.4"},
       {:lazy_html, "~> 0.1.7", only: :test},
+      {:mox, "~> 1.2.0", only: :test},
       {:nimble_options, "1.1.1"},
       {:phoenix, "~> 1.8.1"},
       {:phoenix_ecto, "~> 4.6.5"},
@@ -89,14 +90,14 @@ defmodule ScoreTracker.MixProject do
       check: [
         "format --check-formatted",
         "credo --strict",
-        "sobelow"
+        "sobelow --config"
       ],
       precommit: [
         "compile --warning-as-errors",
         "deps.unlock --unused",
         "format",
-        "credo",
-        "sobelow",
+        "credo --strict",
+        "sobelow --config",
         "test"
       ]
     ]

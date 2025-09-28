@@ -135,13 +135,14 @@ defmodule ScoreTrackerWeb.CreateGameForm do
     socket =
       case CreateGame.update(%CreateGame{}, attrs) do
         {:ok, create_game} ->
-          game_id =
+          game_opts =
             create_game
             |> Map.from_struct()
             |> Map.put(:host_id, socket.assigns.user_id)
             |> Map.update(:players, [], &Enum.map(&1, fn player -> player.name end))
             |> Enum.to_list()
-            |> GameManager.create_game()
+
+          game_id = GameManager.create_game(GameManager, game_opts)
 
           socket
           |> assign(game_id: game_id)

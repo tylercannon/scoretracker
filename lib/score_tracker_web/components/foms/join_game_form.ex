@@ -61,14 +61,13 @@ defmodule ScoreTrackerWeb.JoinGameForm do
     socket =
       case JoinGame.update(%JoinGame{}, attrs) do
         {:ok, join_game} ->
-          result =
+          player_opts =
             join_game
             |> Map.from_struct()
             |> Map.put(:player_id, socket.assigns.user_id)
             |> Enum.to_list()
-            |> GameManager.add_player()
 
-          case result do
+          case GameManager.add_player(GameManager, player_opts) do
             {:error, error_code} ->
               message = Game.get_join_error_message(error_code)
               attrs = Map.from_struct(join_game)

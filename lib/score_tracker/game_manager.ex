@@ -151,78 +151,80 @@ defmodule ScoreTracker.GameManager do
   # Client API
 
   def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+    name = Keyword.fetch!(opts, :name)
+    GenServer.start_link(__MODULE__, opts, name: name)
   end
 
-  @spec create_game(create_game_opts()) ::
+  @spec create_game(game_manager :: module(), game_opts :: create_game_opts()) ::
           String.t() | {:error, NimbleOptions.ValidationError.t()}
-  def create_game(game_opts) do
+  def create_game(game_manager, game_opts) do
     case NimbleOptions.validate(game_opts, @create_game_schema) do
       {:ok, game_opts} ->
-        GenServer.call(__MODULE__, {:create_game, game_opts})
+        GenServer.call(game_manager, {:create_game, game_opts})
 
       error ->
         error
     end
   end
 
-  @spec add_player(add_player_opts()) ::
+  @spec add_player(game_manager :: module(), player_opts :: add_player_opts()) ::
           :ok | {:error, join_error_code() | NimbleOptions.ValidationError.t()}
-  def add_player(player_opts) do
+  def add_player(game_manager, player_opts) do
     case NimbleOptions.validate(player_opts, @add_player_schema) do
       {:ok, player_opts} ->
-        GenServer.call(__MODULE__, {:add_player, player_opts})
+        GenServer.call(game_manager, {:add_player, player_opts})
 
       error ->
         error
     end
   end
 
-  @spec update_player_score(update_player_score_opts()) ::
+  @spec update_player_score(game_manager :: module(), score_opts :: update_player_score_opts()) ::
           :ok | {:error, :not_found | NimbleOptions.ValidationError.t()}
-  def update_player_score(score_opts) do
+  def update_player_score(game_manager, score_opts) do
     case NimbleOptions.validate(score_opts, @update_player_score_schema) do
       {:ok, score_opts} ->
-        GenServer.call(__MODULE__, {:update_player_score, score_opts})
+        GenServer.call(game_manager, {:update_player_score, score_opts})
 
       error ->
         error
     end
   end
 
-  @spec start_game(start_game_opts()) ::
+  @spec start_game(game_manager :: module(), start_opts :: start_game_opts()) ::
           {:ok, status()}
           | {:error,
              :not_found
              | :invalid_game_type
              | :invalid_game_state
              | NimbleOptions.ValidationError.t()}
-  def start_game(opts) do
-    case NimbleOptions.validate(opts, @start_game_schema) do
+  def start_game(game_manager, start_opts) do
+    case NimbleOptions.validate(start_opts, @start_game_schema) do
       {:ok, opts} ->
-        GenServer.call(__MODULE__, {:start_game, opts})
+        GenServer.call(game_manager, {:start_game, opts})
 
       error ->
         error
     end
   end
 
-  @spec advance_to_next_round(advance_round_opts()) ::
+  @spec advance_to_next_round(game_manager :: module(), round_opts :: advance_round_opts()) ::
           {:ok, non_neg_integer()}
           | {:error, :not_found | :max_rounds_reached | NimbleOptions.ValidationError.t()}
-  def advance_to_next_round(opts) do
-    case NimbleOptions.validate(opts, @advance_round_schema) do
+  def advance_to_next_round(game_manager, round_opts) do
+    case NimbleOptions.validate(round_opts, @advance_round_schema) do
       {:ok, opts} ->
-        GenServer.call(__MODULE__, {:advance_to_next_round, opts})
+        GenServer.call(game_manager, {:advance_to_next_round, opts})
 
       error ->
         error
     end
   end
 
-  @spec get_game(String.t()) :: {:ok, game()} | {:error, :not_found}
-  def get_game(game_id) do
-    GenServer.call(__MODULE__, {:get_game, game_id})
+  @spec get_game(game_manager :: module(), game_id :: String.t()) ::
+          {:ok, game()} | {:error, :not_found}
+  def get_game(game_manager, game_id) do
+    GenServer.call(game_manager, {:get_game, game_id})
   end
 
   # Server callbacks
