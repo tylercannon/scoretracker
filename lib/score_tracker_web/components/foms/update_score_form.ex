@@ -71,7 +71,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
     socket =
       case UpdateScore.update(%UpdateScore{}, game_type, attrs) do
         {:ok, update_score} ->
-          result =
+          score_opts =
             update_score
             |> Map.from_struct()
             |> Map.merge(%{
@@ -80,9 +80,8 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
               round: socket.assigns.round
             })
             |> Enum.to_list()
-            |> GameManager.update_player_score()
 
-          case result do
+          case GameManager.update_player_score(GameManager, score_opts) do
             {:error, :not_found} ->
               attrs = Map.from_struct(update_score)
 

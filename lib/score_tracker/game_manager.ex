@@ -151,78 +151,80 @@ defmodule ScoreTracker.GameManager do
   # Client API
 
   def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+    name = Keyword.fetch!(opts, :name)
+    GenServer.start_link(__MODULE__, opts, name: name)
   end
 
-  @spec create_game(create_game_opts()) ::
+  @spec create_game(game_manager :: module(), game_opts :: create_game_opts()) ::
           String.t() | {:error, NimbleOptions.ValidationError.t()}
-  def create_game(game_opts) do
+  def create_game(game_manager, game_opts) do
     case NimbleOptions.validate(game_opts, @create_game_schema) do
       {:ok, game_opts} ->
-        GenServer.call(__MODULE__, {:create_game, game_opts})
+        GenServer.call(game_manager, {:create_game, game_opts})
 
       error ->
         error
     end
   end
 
-  @spec add_player(add_player_opts()) ::
+  @spec add_player(game_manager :: module(), player_opts :: add_player_opts()) ::
           :ok | {:error, join_error_code() | NimbleOptions.ValidationError.t()}
-  def add_player(player_opts) do
+  def add_player(game_manager, player_opts) do
     case NimbleOptions.validate(player_opts, @add_player_schema) do
       {:ok, player_opts} ->
-        GenServer.call(__MODULE__, {:add_player, player_opts})
+        GenServer.call(game_manager, {:add_player, player_opts})
 
       error ->
         error
     end
   end
 
-  @spec update_player_score(update_player_score_opts()) ::
-          :ok | {:error, :not_found | NimbleOptions.ValidationError.t()}
-  def update_player_score(score_opts) do
+  @spec update_player_score(game_manager :: module(), score_opts :: update_player_score_opts()) ::
+          :ok | {:error, :not_found | :player_not_found | NimbleOptions.ValidationError.t()}
+  def update_player_score(game_manager, score_opts) do
     case NimbleOptions.validate(score_opts, @update_player_score_schema) do
       {:ok, score_opts} ->
-        GenServer.call(__MODULE__, {:update_player_score, score_opts})
+        GenServer.call(game_manager, {:update_player_score, score_opts})
 
       error ->
         error
     end
   end
 
-  @spec start_game(start_game_opts()) ::
+  @spec start_game(game_manager :: module(), start_opts :: start_game_opts()) ::
           {:ok, status()}
           | {:error,
              :not_found
              | :invalid_game_type
              | :invalid_game_state
              | NimbleOptions.ValidationError.t()}
-  def start_game(opts) do
-    case NimbleOptions.validate(opts, @start_game_schema) do
+  def start_game(game_manager, start_opts) do
+    case NimbleOptions.validate(start_opts, @start_game_schema) do
       {:ok, opts} ->
-        GenServer.call(__MODULE__, {:start_game, opts})
+        GenServer.call(game_manager, {:start_game, opts})
 
       error ->
         error
     end
   end
 
-  @spec advance_to_next_round(advance_round_opts()) ::
+  @spec advance_to_next_round(game_manager :: module(), round_opts :: advance_round_opts()) ::
           {:ok, non_neg_integer()}
           | {:error, :not_found | :max_rounds_reached | NimbleOptions.ValidationError.t()}
-  def advance_to_next_round(opts) do
-    case NimbleOptions.validate(opts, @advance_round_schema) do
+  def advance_to_next_round(game_manager, round_opts) do
+    case NimbleOptions.validate(round_opts, @advance_round_schema) do
       {:ok, opts} ->
-        GenServer.call(__MODULE__, {:advance_to_next_round, opts})
+        GenServer.call(game_manager, {:advance_to_next_round, opts})
 
       error ->
         error
     end
   end
 
-  @spec get_game(String.t()) :: {:ok, game()} | {:error, :not_found}
-  def get_game(game_id) do
-    GenServer.call(__MODULE__, {:get_game, game_id})
+  @spec get_game(game_manager :: module(), game_id :: String.t()) ::
+          {:ok, game()} | {:error, :not_found}
+  def get_game(game_manager, game_id) do
+    GenServer.call(game_manager, {:get_game, game_id})
   end
 
   # Server callbacks
@@ -323,16 +325,22 @@ defmodule ScoreTracker.GameManager do
 
     case storage_mod.get_game(table_id, game_id) do
       {:ok, game_state} ->
-        updated_player_scores =
-          game_state.scores
-          |> Map.get(player_id)
-          |> Map.put(to_string(round), score)
+        result =
+          case Map.get(game_state.scores, player_id) do
+            nil ->
+              {:error, :player_not_found}
 
-        updated_scores = Map.put(game_state.scores, player_id, updated_player_scores)
-        updated_game_state = %{game_state | scores: updated_scores}
-        storage_mod.save_state(table_id, game_id, updated_game_state)
+            player_scores ->
+              updated_player_scores = Map.put(player_scores, to_string(round), score)
+              updated_scores = Map.put(game_state.scores, player_id, updated_player_scores)
+              updated_game_state = %{game_state | scores: updated_scores}
 
-        {:reply, :ok, state}
+              storage_mod.save_state(table_id, game_id, updated_game_state)
+
+              :ok
+          end
+
+        {:reply, result, state}
 
       _ ->
         {:reply, {:error, :not_found}, state}
@@ -346,19 +354,22 @@ defmodule ScoreTracker.GameManager do
 
     case storage_mod.get_game(table_id, game_id) do
       {:ok, game_state} ->
-        cond do
-          game_state.game_mode == :scorekeeper ->
-            {:reply, {:error, :invalid_game_type}, state}
+        result =
+          cond do
+            game_state.game_mode == :scorekeeper ->
+              {:error, :invalid_game_type}
 
-          game_state.status != :waiting_for_players ->
-            {:reply, {:error, :invalid_game_state}, state}
+            game_state.status != :waiting_for_players ->
+              {:error, :invalid_game_state}
 
-          true ->
-            status = :in_progress
-            storage_mod.save_state(table_id, game_id, %{game_state | status: status})
+            true ->
+              status = :in_progress
+              storage_mod.save_state(table_id, game_id, %{game_state | status: status})
 
-            {:reply, {:ok, status}, state}
-        end
+              {:ok, status}
+          end
+
+        {:reply, result, state}
 
       _ ->
         {:reply, {:error, :not_found}, state}
@@ -380,17 +391,20 @@ defmodule ScoreTracker.GameManager do
             Map.put(acc, player_id, updated_round_scores)
           end)
 
-        if round <= game_state.max_rounds do
-          updated_game_state = %{game_state | scores: updated_scores, round: round}
-          storage_mod.save_state(table_id, game_id, updated_game_state)
+        result =
+          if round <= game_state.max_rounds do
+            updated_game_state = %{game_state | scores: updated_scores, round: round}
+            storage_mod.save_state(table_id, game_id, updated_game_state)
 
-          {:reply, {:ok, round}, state}
-        else
-          updated_game_state = %{game_state | scores: updated_scores, status: :complete}
-          storage_mod.save_state(table_id, game_id, updated_game_state)
+            {:ok, round}
+          else
+            updated_game_state = %{game_state | scores: updated_scores, status: :complete}
+            storage_mod.save_state(table_id, game_id, updated_game_state)
 
-          {:reply, {:ok, round}, state}
-        end
+            {:ok, game_state.round}
+          end
+
+        {:reply, result, state}
 
       _ ->
         {:reply, {:error, :not_found}, state}

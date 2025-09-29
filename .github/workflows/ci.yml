@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    env:
+      MIX_ENV: test
+      # Values from .env.example
+      SCORE_TRACKER_SECRET_KEY_BASE: "hQxqLAdGePykqr4yIGvW0xIWkVX8EPC2Clt3CrSrH0mDgyy7yRrymz1dEA3Vw8P+"
+      SCORE_TRACKER_LIVE_VIEW_SIGNING_SALT: "Eym7G0NcGR4X+Fg1k13J8FnW2ya9eJ0Q"
+      SCORE_TRACKER_SESSION_ENCRYPTION_SALT: "Cn3tctEZr8jv4OiPGCWiCWedfjmWbL6S"
+      SCORE_TRACKER_SESSION_SIGNING_SALT: "dl+FpTlZFshOqAJGRFr7YSG3GkX2fPM9"
+      SCORE_TRACKER_CACHE_POOL_SIZE: 5
+      SCORE_TRACKER_CACHE_URL: valkey://localhost:6379
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: erlef/setup-beam@e6d7c94229049569db56a7ad5a540c051a010af9 # v1.20.4
+        with:
+          version-file: .tool-versions
+          version-type: strict
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Remove compiled application files
+        run: mix clean
+      - name: Compile and lint dependencies
+        run: mix compile --warnings-as-errors
+      - name: Check code formatting
+        run: mix format --check-formatted
+      - name: Run credo
+        run: mix credo --strict
+      - name: Run sobelow
+        run: mix sobelow --config
+      - name: Run tests
+        run: mix test

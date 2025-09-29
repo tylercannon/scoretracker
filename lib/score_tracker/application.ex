@@ -13,7 +13,9 @@ defmodule ScoreTracker.Application do
       {Phoenix.PubSub, name: ScoreTracker.PubSub},
       ScoreTracker.Cache,
       {ScoreTracker.GameManager,
-       storage_backend: ScoreTracker.GameStorage.Cache, storage_backend_opts: []},
+       name: ScoreTracker.GameManager,
+       storage_backend: ScoreTracker.GameStorage.Cache,
+       storage_backend_opts: []},
       ScoreTrackerWeb.Endpoint
     ]
 

@@ -195,14 +195,14 @@ defmodule ScoreTrackerWeb.GameLive do
 
   @impl true
   def handle_event("start_game", _params, %Socket{assigns: %{game_id: game_id}} = socket) do
-    {:ok, status} = GameManager.start_game(game_id: game_id)
+    {:ok, status} = GameManager.start_game(GameManager, game_id: game_id)
     ScoreTrackerWeb.Endpoint.broadcast(Game.topic(game_id), "start_game", %{status: status})
     {:noreply, socket}
   end
 
   @impl true
   def handle_event("next_round", _params, %Socket{assigns: %{game_id: game_id}} = socket) do
-    {:ok, _} = GameManager.advance_to_next_round(game_id: game_id)
+    {:ok, _} = GameManager.advance_to_next_round(GameManager, game_id: game_id)
     ScoreTrackerWeb.Endpoint.broadcast(Game.topic(game_id), "next_round", %{})
     {:noreply, socket}
   end
