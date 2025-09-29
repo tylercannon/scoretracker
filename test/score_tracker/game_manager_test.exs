@@ -194,6 +194,11 @@ defmodule ScoreTracker.GameManagerTest do
       refute player_id in game.player_names
     end
 
+    test "rejects when game not found", %{game_manager: game_manager} do
+      player_opts = [game_id: "invalid-game-id", player_id: "player1", player_name: "PlayerOne"]
+      assert {:error, :not_found} == GameManager.add_player(game_manager, player_opts)
+    end
+
     test "rejects player that already exists in a party game", %{
       game_manager: game_manager,
       party_game_opts: game_opts
@@ -234,14 +239,179 @@ defmodule ScoreTracker.GameManagerTest do
   end
 
   describe "update_player_score/1" do
+    setup do
+      game_opts = [
+        host_id: "game-host",
+        host_name: "Host",
+        game_mode: :scorekeeper,
+        game_type: :rummy,
+        max_players: Rummy.max_rounds(),
+        max_rounds: Rummy.max_players(),
+        players: ["PlayerTwo"]
+      ]
+
+      %{game_opts: game_opts}
+    end
+
+    test "updates player score", %{game_manager: game_manager, game_opts: game_opts} do
+      game_id = GameManager.create_game(game_manager, game_opts)
+
+      score_opts = [game_id: game_id, player_id: "game-host", round: 1, score: 10]
+      assert :ok == GameManager.update_player_score(game_manager, score_opts)
+
+      {:ok, game} = GameManager.get_game(game_manager, game_id)
+      assert 10 == game.scores["game-host"]["1"]
+    end
+
+    test "rejects when game not found", %{game_manager: game_manager} do
+      score_opts = [game_id: "invalid-game-id", player_id: "game-host", round: 1, score: 10]
+      assert {:error, :not_found} == GameManager.update_player_score(game_manager, score_opts)
+    end
+
+    test "rejects when player not found", %{game_manager: game_manager, game_opts: game_opts} do
+      game_id = GameManager.create_game(game_manager, game_opts)
+
+      score_opts = [game_id: game_id, player_id: "invalid-player-id", round: 1, score: 10]
+
+      assert {:error, :player_not_found} ==
+               GameManager.update_player_score(game_manager, score_opts)
+    end
   end
 
   describe "start_game/1" do
+    setup do
+      party_game_opts = [
+        allow_spectators: true,
+        host_id: "game-host",
+        host_name: "Example",
+        game_mode: :party,
+        game_type: :ripple,
+        max_players: Ripple.max_players(),
+        max_rounds: Ripple.max_rounds()
+      ]
+
+      scorekeeper_game_opts = [
+        allow_spectators: true,
+        host_id: "game-host",
+        host_name: "Example",
+        game_mode: :scorekeeper,
+        game_type: :custom,
+        max_players: 4,
+        max_rounds: 5,
+        players: ["PlayerTwo", "PlayerThree"]
+      ]
+
+      %{party_game_opts: party_game_opts, scorekeeper_game_opts: scorekeeper_game_opts}
+    end
+
+    test "starts a party game", %{game_manager: game_manager, party_game_opts: game_opts} do
+      game_id = GameManager.create_game(game_manager, game_opts)
+
+      assert {:ok, :in_progress} == GameManager.start_game(game_manager, game_id: game_id)
+    end
+
+    test "rejects when game not found", %{game_manager: game_manager} do
+      assert {:error, :not_found} ==
+               GameManager.start_game(game_manager, game_id: "invalid-game-id")
+    end
+
+    test "rejects when game type is scorekeeper", %{
+      game_manager: game_manager,
+      scorekeeper_game_opts: game_opts
+    } do
+      game_id = GameManager.create_game(game_manager, game_opts)
+
+      assert {:error, :invalid_game_type} ==
+               GameManager.start_game(game_manager, game_id: game_id)
+    end
+
+    test "rejects when game is already in progress", %{
+      game_manager: game_manager,
+      party_game_opts: game_opts
+    } do
+      game_id = GameManager.create_game(game_manager, game_opts)
+
+      # start the game once so the game is in progress
+      {:ok, :in_progress} = GameManager.start_game(game_manager, game_id: game_id)
+
+      assert {:error, :invalid_game_state} ==
+               GameManager.start_game(game_manager, game_id: game_id)
+    end
   end
 
   describe "advance_to_next_round/1" do
+    setup do
+      game_opts = [
+        allow_spectators: true,
+        host_id: "game-host",
+        host_name: "Example",
+        game_mode: :scorekeeper,
+        game_type: :custom,
+        max_players: 4,
+        max_rounds: 2,
+        players: ["PlayerTwo", "PlayerThree"]
+      ]
+
+      %{game_opts: game_opts}
+    end
+
+    test "advances to next round", %{game_manager: game_manager, game_opts: game_opts} do
+      game_id = GameManager.create_game(game_manager, game_opts)
+      assert {:ok, 2} == GameManager.advance_to_next_round(game_manager, game_id: game_id)
+    end
+
+    test "marks game as complete when max rounds reached", %{
+      game_manager: game_manager,
+      game_opts: game_opts
+    } do
+      game_id = GameManager.create_game(game_manager, game_opts)
+
+      # advance game to last round
+      {:ok, 2} = GameManager.advance_to_next_round(game_manager, game_id: game_id)
+
+      assert {:ok, 2} == GameManager.advance_to_next_round(game_manager, game_id: game_id)
+
+      {:ok, game} = GameManager.get_game(game_manager, game_id)
+      assert game.status == :complete
+    end
+
+    test "rejects when game not found", %{game_manager: game_manager} do
+      assert {:error, :not_found} ==
+               GameManager.advance_to_next_round(game_manager, game_id: "invalid-game-id")
+    end
   end
 
   describe "get_game/1" do
+    test "gets a game's state", %{game_manager: game_manager} do
+      game_opts = [
+        host_id: "game-host",
+        host_name: "Example",
+        game_mode: :party,
+        game_type: :rummy,
+        max_players: Rummy.max_players(),
+        max_rounds: Rummy.max_rounds()
+      ]
+
+      game_id = GameManager.create_game(game_manager, game_opts)
+
+      {:ok, game} = GameManager.get_game(game_manager, game_id)
+
+      assert game == %{
+               game_mode: :party,
+               game_type: :rummy,
+               allow_spectators: true,
+               max_players: 8,
+               max_rounds: 8,
+               host_id: "game-host",
+               status: :waiting_for_players,
+               round: 1,
+               player_names: %{"game-host" => "Example"},
+               scores: %{"game-host" => %{}}
+             }
+    end
+
+    test "rejects when game not found", %{game_manager: game_manager} do
+      assert {:error, :not_found} == GameManager.get_game(game_manager, "invalid-game-id")
+    end
   end
 end
