@@ -9,6 +9,29 @@ defmodule ScoreTracker.Changeset do
   alias ScoreTracker.GameType
 
   @doc """
+  Format the errors in a changeset into
+  a more user-friendly representation
+  """
+  @spec format_errors(Ecto.Changeset.t()) :: %{required(atom()) => list(String.t())}
+  def format_errors(changeset) do
+    traverse_errors(changeset, fn {msg, opts} ->
+      case Map.new(opts) do
+        %{validation: :cast, type: type} ->
+          "must be of type: #{type}"
+
+        %{validation: :inclusion, enum: enum} ->
+          "must be one of: #{enum |> Enum.sort() |> Enum.join(" | ")}"
+
+        %{validation: :format} ->
+          "must be valid format"
+
+        opts ->
+          format_error_message(msg, opts)
+      end
+    end)
+  end
+
+  @doc """
   Add game information to the changeset
   when a built in game type is selected
   """
@@ -57,5 +80,13 @@ defmodule ScoreTracker.Changeset do
       import Ecto.Changeset
       import ScoreTracker.Changeset
     end
+  end
+
+  defp format_error_message(message, opts) do
+    Regex.replace(~r"%{(\w+)}", message, fn _, key ->
+      opts
+      |> Map.get(String.to_existing_atom(key), key)
+      |> to_string()
+    end)
   end
 end
