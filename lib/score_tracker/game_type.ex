@@ -37,7 +37,7 @@ defmodule ScoreTracker.GameType do
   @doc """
   Get the game type module associated with the given game type
   """
-  @spec mod(game_type :: built_in_game_type()) :: module()
-  def mod(:ripple), do: Ripple
-  def mod(:rummy), do: Rummy
+  @spec impl(game_type :: built_in_game_type()) :: module()
+  def impl(:ripple), do: Ripple
+  def impl(:rummy), do: Rummy
 end
