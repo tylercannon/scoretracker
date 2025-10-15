@@ -40,11 +40,11 @@ defmodule ScoreTracker.Changeset do
     game_type = Ecto.Changeset.get_field(changeset, :game_type)
 
     if GameType.built_in?(game_type) do
-      mod = GameType.mod(game_type)
+      impl = GameType.impl(game_type)
 
       changeset
-      |> put_change(:max_players, mod.max_players())
-      |> put_change(:max_rounds, mod.max_rounds())
+      |> put_change(:max_players, impl.max_players())
+      |> put_change(:max_rounds, impl.max_rounds())
     else
       changeset
     end
@@ -67,9 +67,8 @@ defmodule ScoreTracker.Changeset do
           Ecto.Changeset.t()
   def validate_round_score(changeset, field, game_type) do
     if GameType.built_in?(game_type) do
-      mod = GameType.mod(game_type)
-
-      mod.validate_round_score(changeset, field)
+      impl = GameType.impl(game_type)
+      impl.validate_round_score(changeset, field)
     else
       changeset
     end
