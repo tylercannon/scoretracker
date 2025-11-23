@@ -2,7 +2,7 @@ defmodule ScoreTracker.GameManagerTest do
   use ExUnit.Case, async: true
 
   alias NimbleOptions.ValidationError
-  alias ScoreTracker.{GameManager, GameStorage}
+  alias ScoreTracker.{Game, GameManager, GameStorage}
   alias ScoreTracker.GameType.{Ripple, Rummy}
 
   setup context do
@@ -69,7 +69,7 @@ defmodule ScoreTracker.GameManagerTest do
 
       {:ok, game} = GameManager.get_game(game_manager, game_id)
 
-      assert game == %{
+      assert game == %Game{
                game_mode: :party,
                game_type: :ripple,
                allow_spectators: true,
@@ -321,7 +321,7 @@ defmodule ScoreTracker.GameManagerTest do
     } do
       game_id = GameManager.create_game(game_manager, game_opts)
 
-      assert {:error, :invalid_game_type} ==
+      assert {:error, :invalid_game_mode} ==
                GameManager.start_game(game_manager, game_id: game_id)
     end
 
@@ -396,7 +396,7 @@ defmodule ScoreTracker.GameManagerTest do
 
       {:ok, game} = GameManager.get_game(game_manager, game_id)
 
-      assert game == %{
+      assert game == %Game{
                game_mode: :party,
                game_type: :rummy,
                allow_spectators: true,

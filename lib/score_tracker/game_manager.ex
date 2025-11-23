@@ -6,8 +6,7 @@ defmodule ScoreTracker.GameManager do
 
   use GenServer
 
-  alias Ecto.UUID
-  alias ScoreTracker.GameType
+  alias ScoreTracker.{Game, GameType}
 
   @table_name :lobbies
 
@@ -131,23 +130,6 @@ defmodule ScoreTracker.GameManager do
   @type start_game_opts() :: [unquote(NimbleOptions.option_typespec(@start_game_schema))]
   @type advance_round_opts() :: [unquote(NimbleOptions.option_typespec(@advance_round_schema))]
 
-  @type status() :: :in_progress | :waiting_for_players | :complete
-
-  @type join_error_code() :: :already_exists | :not_found | :not_joinable
-
-  @type game() :: %{
-          game_mode: :scorekeeper | :party,
-          game_type: GameType.game_type(),
-          allow_spectators: boolean(),
-          max_players: non_neg_integer(),
-          max_rounds: non_neg_integer(),
-          host_id: String.t(),
-          status: status(),
-          round: non_neg_integer(),
-          player_names: map(),
-          scores: map()
-        }
-
   # Client API
 
   def start_link(opts \\ []) do
@@ -168,7 +150,7 @@ defmodule ScoreTracker.GameManager do
   end
 
   @spec add_player(game_manager :: module(), player_opts :: add_player_opts()) ::
-          :ok | {:error, join_error_code() | NimbleOptions.ValidationError.t()}
+          :ok | {:error, Game.join_error_code() | NimbleOptions.ValidationError.t()}
   def add_player(game_manager, player_opts) do
     case NimbleOptions.validate(player_opts, @add_player_schema) do
       {:ok, player_opts} ->
@@ -192,12 +174,8 @@ defmodule ScoreTracker.GameManager do
   end
 
   @spec start_game(game_manager :: module(), start_opts :: start_game_opts()) ::
-          {:ok, status()}
-          | {:error,
-             :not_found
-             | :invalid_game_type
-             | :invalid_game_state
-             | NimbleOptions.ValidationError.t()}
+          {:ok, Game.status()}
+          | {:error, :not_found | Game.start_error_code() | NimbleOptions.ValidationError.t()}
   def start_game(game_manager, start_opts) do
     case NimbleOptions.validate(start_opts, @start_game_schema) do
       {:ok, opts} ->
@@ -222,7 +200,7 @@ defmodule ScoreTracker.GameManager do
   end
 
   @spec get_game(game_manager :: module(), game_id :: String.t()) ::
-          {:ok, game()} | {:error, :not_found}
+          {:ok, Game.t()} | {:error, :not_found}
   def get_game(game_manager, game_id) do
     GenServer.call(game_manager, {:get_game, game_id})
   end
@@ -243,34 +221,9 @@ defmodule ScoreTracker.GameManager do
     %{storage_mod: storage_mod, table_id: table_id} = state
 
     game_id = generate_game_id(storage_mod, table_id)
-    host_id = Keyword.get(game_opts, :host_id)
-    host_name = Keyword.get(game_opts, :host_name)
-    game_mode = Keyword.get(game_opts, :game_mode)
+    game = Game.new(game_opts)
 
-    player_names =
-      game_opts
-      |> Keyword.get(:players, [])
-      |> Enum.reduce(%{}, fn player_name, acc -> Map.put(acc, UUID.generate(), player_name) end)
-      |> Map.put(host_id, host_name)
-
-    player_ids = Map.keys(player_names)
-    status = if game_mode == :scorekeeper, do: :in_progress, else: :waiting_for_players
-    scores = Enum.reduce(player_ids, %{}, fn player, acc -> Map.put(acc, player, %{}) end)
-
-    initial_state = %{
-      game_mode: game_mode,
-      game_type: Keyword.get(game_opts, :game_type),
-      allow_spectators: Keyword.get(game_opts, :allow_spectators, true),
-      max_players: Keyword.get(game_opts, :max_players),
-      max_rounds: Keyword.get(game_opts, :max_rounds),
-      host_id: host_id,
-      status: status,
-      round: 1,
-      player_names: player_names,
-      scores: scores
-    }
-
-    storage_mod.save_state(table_id, game_id, initial_state)
+    storage_mod.save_state(table_id, game_id, game)
 
     {:reply, game_id, state}
   end
@@ -284,27 +237,18 @@ defmodule ScoreTracker.GameManager do
     player_name = Keyword.get(player_opts, :player_name)
 
     case storage_mod.get_game(table_id, game_id) do
-      {:ok, game_state} ->
+      {:ok, game} ->
         result =
-          case validate_add_player(game_state, player_id) do
-            {:error, _} = error ->
-              error
-
-            {:ok, :spectator} ->
+          case Game.add_player(game, player_id, player_name) do
+            {:ok, :spectator, _game} ->
               :ok
 
-            {:ok, :player} ->
-              updated_scores = Map.put(game_state.scores, player_id, %{})
-              updated_player_names = Map.put(game_state.player_names, player_id, player_name)
-
-              updated_game_state =
-                game_state
-                |> Map.put(:scores, updated_scores)
-                |> Map.put(:player_names, updated_player_names)
-
-              storage_mod.save_state(table_id, game_id, updated_game_state)
-
+            {:ok, :player, updated_game} ->
+              storage_mod.save_state(table_id, game_id, updated_game)
               :ok
+
+            {:error, reason} ->
+              {:error, reason}
           end
 
         {:reply, result, state}
@@ -324,20 +268,15 @@ defmodule ScoreTracker.GameManager do
     score = Keyword.get(score_opts, :score)
 
     case storage_mod.get_game(table_id, game_id) do
-      {:ok, game_state} ->
+      {:ok, game} ->
         result =
-          case Map.get(game_state.scores, player_id) do
-            nil ->
-              {:error, :player_not_found}
-
-            player_scores ->
-              updated_player_scores = Map.put(player_scores, to_string(round), score)
-              updated_scores = Map.put(game_state.scores, player_id, updated_player_scores)
-              updated_game_state = %{game_state | scores: updated_scores}
-
-              storage_mod.save_state(table_id, game_id, updated_game_state)
-
+          case Game.update_score(game, player_id, round, score) do
+            {:ok, updated_game} ->
+              storage_mod.save_state(table_id, game_id, updated_game)
               :ok
+
+            {:error, reason} ->
+              {:error, reason}
           end
 
         {:reply, result, state}
@@ -353,20 +292,15 @@ defmodule ScoreTracker.GameManager do
     game_id = Keyword.get(opts, :game_id)
 
     case storage_mod.get_game(table_id, game_id) do
-      {:ok, game_state} ->
+      {:ok, game} ->
         result =
-          cond do
-            game_state.game_mode == :scorekeeper ->
-              {:error, :invalid_game_type}
+          case Game.start(game) do
+            {:ok, updated_game} ->
+              storage_mod.save_state(table_id, game_id, updated_game)
+              {:ok, updated_game.status}
 
-            game_state.status != :waiting_for_players ->
-              {:error, :invalid_game_state}
-
-            true ->
-              status = :in_progress
-              storage_mod.save_state(table_id, game_id, %{game_state | status: status})
-
-              {:ok, status}
+            {:error, reason} ->
+              {:error, reason}
           end
 
         {:reply, result, state}
@@ -382,29 +316,11 @@ defmodule ScoreTracker.GameManager do
     game_id = Keyword.get(opts, :game_id)
 
     case storage_mod.get_game(table_id, game_id) do
-      {:ok, game_state} ->
-        round = game_state.round + 1
+      {:ok, game} ->
+        updated_game = Game.advance_round(game)
+        storage_mod.save_state(table_id, game_id, updated_game)
 
-        updated_scores =
-          Enum.reduce(game_state.scores, game_state.scores, fn {player_id, round_scores}, acc ->
-            updated_round_scores = Map.put_new(round_scores, to_string(game_state.round), 0)
-            Map.put(acc, player_id, updated_round_scores)
-          end)
-
-        result =
-          if round <= game_state.max_rounds do
-            updated_game_state = %{game_state | scores: updated_scores, round: round}
-            storage_mod.save_state(table_id, game_id, updated_game_state)
-
-            {:ok, round}
-          else
-            updated_game_state = %{game_state | scores: updated_scores, status: :complete}
-            storage_mod.save_state(table_id, game_id, updated_game_state)
-
-            {:ok, game_state.round}
-          end
-
-        {:reply, result, state}
+        {:reply, {:ok, updated_game.round}, state}
 
       _ ->
         {:reply, {:error, :not_found}, state}
@@ -435,30 +351,4 @@ defmodule ScoreTracker.GameManager do
       _ -> game_id
     end
   end
-
-  defp validate_add_player(%{player_names: player_names}, player_id)
-       when is_map(player_names) and is_map_key(player_names, player_id),
-       do: {:error, :already_exists}
-
-  defp validate_add_player(%{allow_spectators: false, game_mode: :scorekeeper}, _player_id),
-    do: {:error, :not_joinable}
-
-  defp validate_add_player(
-         %{allow_spectators: false, game_mode: :party, status: status},
-         _player_id
-       )
-       when status != :waiting_for_players,
-       do: {:error, :not_joinable}
-
-  defp validate_add_player(%{allow_spectators: true, game_mode: :scorekeeper}, _player_id),
-    do: {:ok, :spectator}
-
-  defp validate_add_player(
-         %{allow_spectators: true, game_mode: :party, status: status},
-         _player_id
-       )
-       when status != :waiting_for_players,
-       do: {:ok, :spectator}
-
-  defp validate_add_player(_game_state, _player_id), do: {:ok, :player}
 end

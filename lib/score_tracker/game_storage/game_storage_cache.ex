@@ -6,7 +6,7 @@ defmodule ScoreTracker.GameStorage.Cache do
 
   @behaviour ScoreTracker.GameStorage
 
-  alias ScoreTracker.Cache
+  alias ScoreTracker.{Cache, Game}
 
   @week_in_seconds 604_800
 
@@ -36,7 +36,7 @@ defmodule ScoreTracker.GameStorage.Cache do
             Map.put(acc, String.to_existing_atom(key), value)
         end)
 
-      {:ok, game_state}
+      {:ok, struct(Game, game_state)}
     else
       _ ->
         {:error, :not_found}
