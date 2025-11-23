@@ -2,15 +2,14 @@ defmodule ScoreTrackerWeb.GameLive do
   use ScoreTrackerWeb, :live_view
 
   alias Phoenix.LiveView.Socket
-  alias ScoreTracker.Game
-  alias ScoreTracker.GameManager
+  alias ScoreTracker.{Game, GameManager, GameType}
 
   @impl true
   def render(%{is_host: _} = assigns) do
     ~H"""
     <div class="size-full flex flex-col items-center p-4 text-primary bg-background">
       <div class="w-full flex items-center justify-between">
-        <h1 class="text-xl font-bold">{Game.get_game_type_header(@game.game_type)}</h1>
+        <h1 class="text-xl font-bold">{GameType.friendly_name(@game.game_type)}</h1>
         <div
           class="flex items-center gap-2"
           phx-hook="CopyToClipboard"

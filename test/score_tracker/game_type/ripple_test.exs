@@ -4,6 +4,12 @@ defmodule ScoreTracker.GameType.RippleTest do
   alias ScoreTracker.GameType.Ripple
   alias ScoreTracker.UpdateScore
 
+  describe "friendly_name/0" do
+    test "returns expected value" do
+      assert Ripple.friendly_name() == "Ripple"
+    end
+  end
+
   describe "max_players/0" do
     test "returns expected value" do
       assert Ripple.max_players() == 6

@@ -32,7 +32,7 @@ defmodule ScoreTracker.GameManager do
                           """
                         ],
                         game_type: [
-                          type: {:in, [:rummy, :ripple, :custom]},
+                          type: {:in, GameType.game_types()},
                           required: true,
                           doc: """
                           The game type.
