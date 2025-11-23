@@ -2,7 +2,8 @@ defmodule ScoreTrackerWeb.GameLive do
   use ScoreTrackerWeb, :live_view
 
   alias Phoenix.LiveView.Socket
-  alias ScoreTracker.{Game, GameManager, GameType}
+  alias ScoreTracker.{GameManager, GameType}
+  alias ScoreTrackerWeb.GameDetails
 
   @impl true
   def render(%{is_host: _} = assigns) do
@@ -29,7 +30,7 @@ defmodule ScoreTrackerWeb.GameLive do
       </div>
       <div class="w-full my-4 grid grid-cols-2 md:grid-cols-4 gap-4">
         <.stat_card label="Round" value={@game.round} />
-        <.stat_card label="Status" value={Game.get_status(@game.status)} />
+        <.stat_card label="Status" value={GameDetails.get_status(@game.status)} />
         <.stat_card label="Max Players" value={@game.max_players} />
         <.stat_card label="Max Rounds" value={@game.max_rounds} />
       </div>
@@ -37,14 +38,14 @@ defmodule ScoreTrackerWeb.GameLive do
         <div class="flex items-center justify-between mb-2">
           <h2 class="text-lg font-bold">Scoreboard</h2>
           <.button
-            :if={Game.host?(@game, @user_id) and @game.status == :waiting_for_players}
+            :if={GameDetails.host?(@game, @user_id) and @game.status == :waiting_for_players}
             type="button"
             phx-click="start_game"
           >
             Start Game
           </.button>
           <.button
-            :if={Game.host?(@game, @user_id) and Game.in_progress?(@game)}
+            :if={GameDetails.host?(@game, @user_id) and GameDetails.in_progress?(@game)}
             type="button"
             phx-click={JS.show(to: "#go-to-next-round")}
           >
@@ -61,7 +62,7 @@ defmodule ScoreTrackerWeb.GameLive do
                   else: "End Game"}?
               </h2>
               <p>
-                {if Game.any_missing_player_round_score?(@game),
+                {if GameDetails.any_missing_player_round_score?(@game),
                   do:
                     Enum.join(
                       [
@@ -107,7 +108,7 @@ defmodule ScoreTrackerWeb.GameLive do
               >
                 <td>
                   <button
-                    :if={Game.user_score_editable?(@game, player_id, @user_id)}
+                    :if={GameDetails.user_score_editable?(@game, player_id, @user_id)}
                     type="button"
                     class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
                     phx-click={JS.show(to: "#edit-#{player_id}-score")}
@@ -139,7 +140,7 @@ defmodule ScoreTrackerWeb.GameLive do
                   {Map.get(@game.scores[player_id], to_string(round), "-")}
                 </td>
                 <td class="p-3 font-bold">
-                  {Game.player_total_score(player_id, @game)}
+                  {GameDetails.player_total_score(player_id, @game)}
                 </td>
               </tr>
             </tbody>
@@ -161,13 +162,13 @@ defmodule ScoreTrackerWeb.GameLive do
 
   @impl true
   def mount(%{"game_id" => game_id}, session, socket) do
-    case Game.get(game_id) do
+    case GameDetails.get_game(game_id) do
       {:ok, game} ->
         user_id = session["user_id"]
-        is_host = Game.host?(game, user_id)
+        is_host = GameDetails.host?(game, user_id)
 
         if connected?(socket) do
-          Phoenix.PubSub.subscribe(ScoreTracker.PubSub, Game.topic(game_id))
+          Phoenix.PubSub.subscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
         end
 
         send(self(), :after_mount)
@@ -189,26 +190,28 @@ defmodule ScoreTrackerWeb.GameLive do
 
   @impl true
   def terminate(_reason, %Socket{assigns: %{game_id: game_id}}) do
-    Phoenix.PubSub.unsubscribe(ScoreTracker.PubSub, Game.topic(game_id))
+    Phoenix.PubSub.unsubscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
   end
 
   @impl true
   def handle_event("start_game", _params, %Socket{assigns: %{game_id: game_id}} = socket) do
     {:ok, status} = GameManager.start_game(GameManager, game_id: game_id)
-    ScoreTrackerWeb.Endpoint.broadcast(Game.topic(game_id), "start_game", %{status: status})
+
+    ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "start_game", %{status: status})
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_event("next_round", _params, %Socket{assigns: %{game_id: game_id}} = socket) do
     {:ok, _} = GameManager.advance_to_next_round(GameManager, game_id: game_id)
-    ScoreTrackerWeb.Endpoint.broadcast(Game.topic(game_id), "next_round", %{})
+    ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "next_round", %{})
     {:noreply, socket}
   end
 
   @impl true
   def handle_info(:after_mount, %Socket{assigns: %{game_id: game_id}} = socket) do
-    ScoreTrackerWeb.Endpoint.broadcast_from(self(), Game.topic(game_id), "joined", %{})
+    ScoreTrackerWeb.Endpoint.broadcast_from(self(), GameDetails.topic(game_id), "joined", %{})
     {:noreply, socket}
   end
 
@@ -220,7 +223,7 @@ defmodule ScoreTrackerWeb.GameLive do
   @impl true
   def handle_info(%{event: event}, %Socket{assigns: %{game_id: game_id}} = socket)
       when event in ["joined", "next_round"] do
-    {:ok, game} = Game.get(game_id)
+    {:ok, game} = GameDetails.get_game(game_id)
     {:noreply, assign(socket, game: game)}
   end
 end

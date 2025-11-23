@@ -4,6 +4,8 @@ defmodule ScoreTrackerWeb.SessionOptions do
   of sessions
   """
 
+  @secure not Application.compile_env(:score_tracker, :dev_routes, false)
+
   @doc """
   Get the session options for the endpoint
   """
@@ -13,7 +15,7 @@ defmodule ScoreTrackerWeb.SessionOptions do
       store: :cookie,
       key: "_score_tracker_key",
       http_only: true,
-      secure: true,
+      secure: @secure,
       encrypt: true,
       sign: true,
       encryption_salt: {__MODULE__, :encryption_salt, []},

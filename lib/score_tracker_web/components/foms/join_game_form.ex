@@ -6,7 +6,8 @@ defmodule ScoreTrackerWeb.JoinGameForm do
 
   use ScoreTrackerWeb, :live_component
 
-  alias ScoreTracker.{Game, GameManager, JoinGame}
+  alias ScoreTracker.{GameManager, JoinGame}
+  alias ScoreTrackerWeb.GameDetails
 
   @impl true
   def update(assigns, socket) do
@@ -69,7 +70,7 @@ defmodule ScoreTrackerWeb.JoinGameForm do
 
           case GameManager.add_player(GameManager, player_opts) do
             {:error, error_code} ->
-              message = Game.get_join_error_message(error_code)
+              message = GameDetails.get_join_error_message(error_code)
               attrs = Map.from_struct(join_game)
 
               form =
