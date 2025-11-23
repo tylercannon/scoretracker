@@ -193,6 +193,8 @@ defmodule ScoreTrackerWeb.GameLive do
     Phoenix.PubSub.unsubscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
   end
 
+  def terminate(_reason, _socket), do: :ok
+
   @impl true
   def handle_event("start_game", _params, %Socket{assigns: %{game_id: game_id}} = socket) do
     {:ok, status} = GameManager.start_game(GameManager, game_id: game_id)

@@ -22,6 +22,7 @@ defmodule ScoreTracker.Game do
           scores: %{String.t() => %{String.t() => integer()}}
         }
 
+  @derive Jason.Encoder
   defstruct [
     :game_mode,
     :game_type,
