@@ -1,4 +1,4 @@
-defmodule ScoreTracker.Game do
+defmodule ScoreTrackerWeb.GameDetails do
   @moduledoc """
   Helper functions related to displaying
   game state in the UI
@@ -15,8 +15,8 @@ defmodule ScoreTracker.Game do
   @doc """
   Get a game by it's id
   """
-  @spec get(String.t()) :: {:ok, GameManager.game()} | {:error, :not_found}
-  def get(game_id), do: GameManager.get_game(GameManager, game_id)
+  @spec get_game(String.t()) :: {:ok, GameManager.game()} | {:error, :not_found}
+  def get_game(game_id), do: GameManager.get_game(GameManager, game_id)
 
   @doc """
   Check whether a game is in progress
