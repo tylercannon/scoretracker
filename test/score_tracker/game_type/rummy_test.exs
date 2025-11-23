@@ -4,6 +4,12 @@ defmodule ScoreTracker.GameType.RummyTest do
   alias ScoreTracker.GameType.Rummy
   alias ScoreTracker.UpdateScore
 
+  describe "friendly_name/0" do
+    test "returns expected value" do
+      assert Rummy.friendly_name() == "Rummy"
+    end
+  end
+
   describe "max_players/0" do
     test "returns expected value" do
       assert Rummy.max_players() == 8
