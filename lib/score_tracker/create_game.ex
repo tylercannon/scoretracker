@@ -24,10 +24,14 @@ defmodule ScoreTracker.CreateGame do
   embedded_schema do
     field :host_name, :string
     field :game_mode, Ecto.Enum, values: [:scorekeeper, :party], default: :scorekeeper
-    field :game_type, Ecto.Enum, values: [:rummy, :ripple, :custom], default: :custom
+
+    field :game_type, Ecto.Enum,
+      values: GameType.game_types(),
+      default: GameType.default_game().type
+
     field :allow_spectators, :boolean, default: true
-    field :max_players, :integer, default: 6
-    field :max_rounds, :integer, default: 10
+    field :max_players, :integer, default: GameType.default_game().max_players
+    field :max_rounds, :integer, default: GameType.default_game().max_rounds
     embeds_many :players, Player, on_replace: :delete
   end
 

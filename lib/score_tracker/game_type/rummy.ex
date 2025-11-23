@@ -7,6 +7,9 @@ defmodule ScoreTracker.GameType.Rummy do
   @behaviour ScoreTracker.GameType
 
   @impl ScoreTracker.GameType
+  def friendly_name, do: "Rummy"
+
+  @impl ScoreTracker.GameType
   def max_players, do: 8
 
   @impl ScoreTracker.GameType

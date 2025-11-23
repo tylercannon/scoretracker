@@ -7,6 +7,9 @@ defmodule ScoreTracker.GameType.Ripple do
   @behaviour ScoreTracker.GameType
 
   @impl ScoreTracker.GameType
+  def friendly_name, do: "Ripple"
+
+  @impl ScoreTracker.GameType
   def max_players, do: 6
 
   @impl ScoreTracker.GameType

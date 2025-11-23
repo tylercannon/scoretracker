@@ -4,7 +4,7 @@ defmodule ScoreTracker.Game do
   game state in the UI
   """
 
-  alias ScoreTracker.{GameManager, GameType}
+  alias ScoreTracker.GameManager
 
   @doc """
   The PubSub topic for a game
@@ -40,18 +40,6 @@ defmodule ScoreTracker.Game do
       host?(game, user_id) -> true
       game.game_mode == :party and player_id == user_id -> true
       true -> false
-    end
-  end
-
-  @doc """
-  Get the friend game type header
-  """
-  @spec get_game_type_header(GameType.game_type()) :: String.t()
-  def get_game_type_header(game_type) do
-    case game_type do
-      :rummy -> "Rummy"
-      :ripple -> "Ripple"
-      :custom -> "Custom Game"
     end
   end
 

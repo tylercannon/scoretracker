@@ -6,7 +6,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
 
   use ScoreTrackerWeb, :live_component
 
-  alias ScoreTracker.{CreateGame, GameManager, Player}
+  alias ScoreTracker.{CreateGame, GameManager, GameType, Player}
 
   @impl true
   def render(%{on_cancel: _, max_players_reached?: _, show_players?: _} = assigns) do
@@ -31,7 +31,11 @@ defmodule ScoreTrackerWeb.CreateGameForm do
           field={f[:game_type]}
           type="select"
           label="Game Type"
-          options={[Rummy: "rummy", Ripple: "ripple", Custom: "custom"]}
+          options={
+            Enum.map(GameType.game_types(), fn type ->
+              {GameType.friendly_name(type), type}
+            end)
+          }
         />
         <div :if={@custom_game?} class="space-y-4">
           <.input field={f[:max_players]} label="Max Players" />
@@ -87,7 +91,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
     changeset =
       CreateGame.changeset(%CreateGame{
         game_mode: :scorekeeper,
-        game_type: :rummy,
+        game_type: GameType.default_game().type,
         players: [%Player{name: ""}]
       })
 
