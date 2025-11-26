@@ -4,7 +4,7 @@ defmodule ScoreTrackerWeb.GameDetails do
   game state in the UI
   """
 
-  alias ScoreTracker.GameManager
+  alias ScoreTracker.{Game, GameManager}
 
   @doc """
   The PubSub topic for a game
@@ -15,25 +15,25 @@ defmodule ScoreTrackerWeb.GameDetails do
   @doc """
   Get a game by it's id
   """
-  @spec get_game(String.t()) :: {:ok, GameManager.game()} | {:error, :not_found}
+  @spec get_game(String.t()) :: {:ok, Game.t()} | {:error, :not_found}
   def get_game(game_id), do: GameManager.get_game(GameManager, game_id)
 
   @doc """
   Check whether a game is in progress
   """
-  @spec in_progress?(GameManager.game()) :: boolean()
+  @spec in_progress?(Game.t()) :: boolean()
   def in_progress?(game), do: game.status == :in_progress
 
   @doc """
   Check whether a user is the host of a game
   """
-  @spec host?(GameManager.game(), String.t()) :: boolean()
+  @spec host?(Game.t(), String.t()) :: boolean()
   def host?(game, user_id), do: game.host_id == user_id
 
   @doc """
   Check whether a user's score is editable
   """
-  @spec user_score_editable?(GameManager.game(), String.t(), String.t()) :: boolean()
+  @spec user_score_editable?(Game.t(), String.t(), String.t()) :: boolean()
   def user_score_editable?(game, player_id, user_id) do
     cond do
       not in_progress?(game) -> false
@@ -46,7 +46,7 @@ defmodule ScoreTrackerWeb.GameDetails do
   @doc """
   Get the friendly status of a game
   """
-  @spec get_status(GameManager.status()) :: String.t()
+  @spec get_status(Game.status()) :: String.t()
   def get_status(status) do
     case status do
       :in_progress -> "In Progress"
@@ -58,7 +58,7 @@ defmodule ScoreTrackerWeb.GameDetails do
   @doc """
   Get the friendly error message for a given join game error code
   """
-  @spec get_join_error_message(GameManager.join_error_code()) :: String.t()
+  @spec get_join_error_message(Game.join_error_code()) :: String.t()
   def get_join_error_message(error_code) do
     case error_code do
       :already_exists -> "Player already exists"
@@ -67,7 +67,7 @@ defmodule ScoreTrackerWeb.GameDetails do
     end
   end
 
-  @spec any_missing_player_round_score?(GameManager.game()) :: boolean()
+  @spec any_missing_player_round_score?(Game.t()) :: boolean()
   def any_missing_player_round_score?(game) do
     not Enum.all?(game.scores, fn {_player, player_scores} ->
       Map.has_key?(player_scores, to_string(game.round))
@@ -77,7 +77,7 @@ defmodule ScoreTrackerWeb.GameDetails do
   @doc """
   Calculate a player's total score
   """
-  @spec player_total_score(String.t(), GameManager.game()) :: non_neg_integer()
+  @spec player_total_score(String.t(), Game.t()) :: non_neg_integer()
   def player_total_score(player_id, game) do
     game.scores[player_id]
     |> Map.values()

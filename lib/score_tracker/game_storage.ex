@@ -4,7 +4,7 @@ defmodule ScoreTracker.GameStorage do
   game state from a storage backend
   """
 
-  alias ScoreTracker.GameManager
+  alias ScoreTracker.Game
 
   @doc """
   Initialize the game storage backend
@@ -14,12 +14,12 @@ defmodule ScoreTracker.GameStorage do
   @doc """
   Save the current state of a game to the storage backend
   """
-  @callback save_state(prefix :: atom(), game_id :: String.t(), game_state :: GameManager.game()) ::
+  @callback save_state(prefix :: atom(), game_id :: String.t(), game_state :: Game.t()) ::
               :ok | :error
 
   @doc """
   Get a game's state from the storage backend
   """
   @callback get_game(prefix :: atom(), game_id :: String.t()) ::
-              {:ok, GameManager.game()} | {:error, :not_found}
+              {:ok, Game.t()} | {:error, :not_found}
 end
