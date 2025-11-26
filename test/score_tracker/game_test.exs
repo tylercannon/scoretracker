@@ -383,17 +383,25 @@ defmodule ScoreTracker.GameTest do
     end
 
     test "Correctly encodes a game", %{game: game} do
-      expected_encoded =
-        "{\"status\":\"in_progress\",\"round\":1,\"game_mode\":\"scorekeeper\",\"game_type\":\"custom\",\"allow_spectators\":true,\"max_players\":4,\"max_rounds\":5,\"host_id\":\"game-host\",\"player_names\":{\"game-host\":\"Example\"},\"scores\":{\"game-host\":{}}}"
-
-      assert Jason.encode!(game) == expected_encoded
+      assert game |> Jason.encode!() |> Jason.decode!() == %{
+               "status" => "in_progress",
+               "round" => 1,
+               "game_mode" => "scorekeeper",
+               "game_type" => "custom",
+               "allow_spectators" => true,
+               "max_players" => 4,
+               "max_rounds" => 5,
+               "host_id" => "game-host",
+               "player_names" => %{"game-host" => "Example"},
+               "scores" => %{"game-host" => %{}}
+             }
     end
 
     test "Correctly decodes a game", %{game: game} do
-      encoded =
-        "{\"status\":\"in_progress\",\"round\":1,\"game_mode\":\"scorekeeper\",\"game_type\":\"custom\",\"allow_spectators\":true,\"max_players\":4,\"max_rounds\":5,\"host_id\":\"game-host\",\"player_names\":{\"game-host\":\"Example\"},\"scores\":{\"game-host\":{}}}"
-
-      {:ok, decoded} = Game.from_json(encoded)
+      {:ok, decoded} =
+        game
+        |> Jason.encode!()
+        |> Game.from_json()
 
       assert decoded == game
     end
