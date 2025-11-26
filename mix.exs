@@ -11,7 +11,14 @@ defmodule ScoreTracker.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      default_release: :score_tracker,
+      releases: [
+        score_tracker: [
+          include_executables_for: [:unix],
+          applications: [runtime: :permanent]
+        ]
+      ]
     ]
   end
 
