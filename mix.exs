@@ -16,7 +16,7 @@ defmodule ScoreTracker.MixProject do
       releases: [
         score_tracker: [
           include_executables_for: [:unix],
-          applications: [runtime: :permanent]
+          applications: [runtime_tools: :permanent]
         ]
       ]
     ]
