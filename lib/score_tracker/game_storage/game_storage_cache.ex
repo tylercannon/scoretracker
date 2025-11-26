@@ -26,17 +26,8 @@ defmodule ScoreTracker.GameStorage.Cache do
   @impl ScoreTracker.GameStorage
   def get_game(prefix, game_id) do
     with {:ok, state} when not is_nil(state) <- Cache.command(["GET", key(prefix, game_id)]),
-         {:ok, game_state} <- Jason.decode(state) do
-      game_state =
-        Enum.reduce(game_state, %{}, fn
-          {key, value}, acc when key in ["status", "game_mode", "game_type"] ->
-            Map.put(acc, String.to_existing_atom(key), String.to_existing_atom(value))
-
-          {key, value}, acc ->
-            Map.put(acc, String.to_existing_atom(key), value)
-        end)
-
-      {:ok, struct(Game, game_state)}
+         {:ok, game_state} <- Game.from_json(state) do
+      {:ok, game_state}
     else
       _ ->
         {:error, :not_found}

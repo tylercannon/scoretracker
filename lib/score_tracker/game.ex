@@ -187,4 +187,27 @@ defmodule ScoreTracker.Game do
       %{game | scores: updated_scores, status: :complete}
     end
   end
+
+  @doc """
+  Decode a JSON string into a game struct
+  """
+  @spec from_json(String.t()) :: {:ok, t()} | {:error, String.t()}
+  def from_json(json) do
+    case Jason.decode(json) do
+      {:ok, game} ->
+        game =
+          Enum.reduce(game, %{}, fn
+            {key, value}, acc when key in ["status", "game_mode", "game_type"] ->
+              Map.put(acc, String.to_existing_atom(key), String.to_existing_atom(value))
+
+            {key, value}, acc ->
+              Map.put(acc, String.to_existing_atom(key), value)
+          end)
+
+        {:ok, struct(__MODULE__, game)}
+
+      {:error, _reason} ->
+        {:error, "Failed to decode game"}
+    end
+  end
 end
