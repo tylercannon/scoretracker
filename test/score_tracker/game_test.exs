@@ -7,27 +7,27 @@ defmodule ScoreTracker.GameTest do
   describe "new/1" do
     test "creates scorekeeper game with players" do
       opts = [
+        allow_spectators: false,
         host_id: "game-host",
         host_name: "Example",
         game_mode: :scorekeeper,
         game_type: :custom,
         max_players: 4,
         max_rounds: 5,
-        allow_spectators: false,
         players: ["PlayerTwo", "PlayerThree"]
       ]
 
       game = Game.new(opts)
       player_names = Map.values(game.player_names)
 
+      assert game.allow_spectators == false
+      assert game.host_id == "game-host"
       assert game.game_mode == :scorekeeper
       assert game.game_type == :custom
       assert game.max_players == 4
       assert game.max_rounds == 5
-      assert game.allow_spectators == false
-      assert game.host_id == "game-host"
-      assert game.status == :in_progress
       assert game.round == 1
+      assert game.status == :in_progress
 
       assert Enum.count(game.scores) == 3
       assert Enum.count(player_names) == 3
@@ -49,16 +49,16 @@ defmodule ScoreTracker.GameTest do
       game = Game.new(opts)
 
       assert game == %Game{
+               allow_spectators: true,
+               host_id: "game-host",
                game_mode: :party,
                game_type: :ripple,
-               allow_spectators: true,
                max_players: 6,
                max_rounds: 10,
-               host_id: "game-host",
-               status: :waiting_for_players,
                round: 1,
                player_names: %{"game-host" => "Example"},
-               scores: %{"game-host" => %{}}
+               scores: %{"game-host" => %{}},
+               status: :waiting_for_players
              }
     end
   end
@@ -259,26 +259,22 @@ defmodule ScoreTracker.GameTest do
       assert {:error, :invalid_game_mode} = Game.start(game)
     end
 
-    test "rejects starting already started game", %{party_game_opts: party_game_opts} do
-      game = Game.new(party_game_opts)
-
-      {:ok, started_game} = Game.start(game)
+    test "rejects starting an in-progress party game", %{party_game_opts: party_game_opts} do
+      {:ok, started_game} =
+        party_game_opts
+        |> Game.new()
+        |> Game.start()
 
       assert {:error, :invalid_game_state} = Game.start(started_game)
     end
 
-    test "rejects starting completed game" do
-      game =
-        Game.new(
-          host_id: "game-host",
-          host_name: "Example",
-          game_mode: :party,
-          game_type: :ripple,
-          max_players: 6,
-          max_rounds: 1
-        )
+    test "rejects starting completed game", %{party_game_opts: party_game_opts} do
+      {:ok, started_game} =
+        party_game_opts
+        |> Keyword.put(:max_rounds, 1)
+        |> Game.new()
+        |> Game.start()
 
-      {:ok, started_game} = Game.start(game)
       completed_game = Game.advance_round(started_game)
 
       assert completed_game.status == :complete
