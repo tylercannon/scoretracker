@@ -47,13 +47,13 @@ defmodule ScoreTrackerWeb.GameLive do
           <.button
             :if={GameDetails.host?(@game, @user_id) and GameDetails.in_progress?(@game)}
             type="button"
-            phx-click={JS.show(to: "#go-to-next-round")}
+            phx-click={show_modal("go-to-next-round")}
           >
             {if @game.round < @game.max_rounds, do: "Next Round", else: "End Game"}
           </.button>
           <.modal
             id="go-to-next-round"
-            on_cancel={JS.hide(to: "#go-to-next-round")}
+            on_cancel={hide_modal("go-to-next-round")}
           >
             <div class="text-primary">
               <h2 class="text-xl font-bold mb-4">
@@ -77,13 +77,13 @@ defmodule ScoreTrackerWeb.GameLive do
                 <.button
                   type="button"
                   class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  phx-click={JS.hide(to: "#go-to-next-round")}
+                  phx-click={hide_modal("go-to-next-round")}
                 >
                   Cancel
                 </.button>
                 <.button
                   type="button"
-                  phx-click={JS.hide(to: "#go-to-next-round") |> JS.push("next_round")}
+                  phx-click={hide_modal("go-to-next-round") |> JS.push("next_round")}
                 >
                   Continue
                 </.button>
@@ -111,13 +111,13 @@ defmodule ScoreTrackerWeb.GameLive do
                     :if={GameDetails.user_score_editable?(@game, player_id, @user_id)}
                     type="button"
                     class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
-                    phx-click={JS.show(to: "#edit-#{player_id}-score")}
+                    phx-click={show_modal("edit-#{player_id}-score")}
                   >
                     <span class="hero-pencil-square-mini"></span>
                   </button>
                   <.modal
                     id={"edit-#{player_id}-score"}
-                    on_cancel={JS.hide(to: "#edit-#{player_id}-score")}
+                    on_cancel={hide_modal("edit-#{player_id}-score")}
                   >
                     <div>
                       <h2 class="text-xl font-bold mb-4 text-primary">
@@ -130,7 +130,7 @@ defmodule ScoreTrackerWeb.GameLive do
                         player_id={player_id}
                         game_type={@game.game_type}
                         round={@game.round}
-                        on_cancel={JS.hide(to: "#edit-#{player_id}-score")}
+                        on_cancel={hide_modal("edit-#{player_id}-score")}
                       />
                     </div>
                   </.modal>

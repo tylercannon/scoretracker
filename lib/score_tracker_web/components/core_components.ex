@@ -49,35 +49,41 @@ defmodule ScoreTrackerWeb.CoreComponents do
       data-cancel={@on_cancel}
       class="fixed z-50 inset-0 hidden"
     >
-      <!-- Modal container -->
-      <div id={"#{@id}-container"} class="h-screen flex items-center justify-center p-4">
-        <!-- Overlay -->
-        <div class="absolute z-0 inset-0 bg-black/50" aria-hidden="true"></div>
-        <!-- Modal box -->
-        <.focus_wrap
-          id={"#{@id}-content"}
-          class={[
-            "relative max-h-full overflow-y-auto bg-card/80 backdrop-blur-xl rounded-lg shadow-xl focus-visible:outline-none border border-border",
-            "w-full p-6",
-            "max-w-xl"
-          ]}
-          role="dialog"
-          aria-modal="true"
-          tabindex="0"
-          phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
-          phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-          phx-key="escape"
-        >
-          <button
-            type="button"
-            class="absolute top-6 right-6 text-muted-foreground hover:text-foreground flex space-x-1 items-center cursor-pointer"
-            aria_label="close modal"
-            phx-click={JS.exec("data-cancel", to: "##{@id}")}
+      <!-- Backdrop -->
+      <div id={"#{@id}-bg"} class="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" />
+      <!-- Modal -->
+      <div
+        class="fixed inset-0 z-10 w-screen overflow-hidden overscroll-y-contain"
+        aria-modal="true"
+        role="dialog"
+        tabindex="0"
+      >
+        <div class="flex items-center justify-center min-h-full p-4">
+          <.focus_wrap
+            id={"#{@id}-container"}
+            phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
+            phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
+            phx-key="escape"
+            phx-mounted={@show && show_modal(@id)}
+            class={[
+              "relative max-h-[90vh] w-full max-w-xl",
+              "overflow-y-auto overscroll-contain",
+              "transform transition-all",
+              "bg-card/80 backdrop-blur-xl shadow-xl border border-border",
+              "px-4 pb-4 pt-5"
+            ]}
           >
-            <span class="text-sm hero-x-mark"></span>
-          </button>
-          {render_slot(@inner_block)}
-        </.focus_wrap>
+            <button
+              type="button"
+              class="absolute top-6 right-6 text-muted-foreground hover:text-foreground flex space-x-1 items-center cursor-pointer"
+              phx-click={JS.exec("data-cancel", to: "##{@id}")}
+            >
+              <span class="sr-only">Close</span>
+              <.icon name="hero-x-mark" class="size-6" />
+            </button>
+            {render_slot(@inner_block)}
+          </.focus_wrap>
+        </div>
       </div>
     </div>
     """
@@ -597,7 +603,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
     )
     |> show("##{id}-container")
     |> JS.add_class("overflow-hidden", to: "body")
-    |> JS.focus_first(to: "##{id}-content")
+    |> JS.focus_first(to: "##{id}-container")
   end
 
   def hide_modal(js \\ %JS{}, id) do
