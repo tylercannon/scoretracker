@@ -12,39 +12,39 @@ defmodule ScoreTrackerWeb.HomeLive do
     <div class="size-full flex flex-col items-center justify-center bg-background text-primary">
       <h1 class="text-3xl text-center font-bold mb-24">Welcome to<br />Score Tracker</h1>
       <div class="flex flex-col mt-2 gap-4">
-        <.button type="button" phx-click={JS.show(to: "#new-game-modal")}>
+        <.button type="button" phx-click={show_modal("new-game-modal")}>
           New Game
         </.button>
         <.button
           type="button"
           class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-          phx-click={JS.show(to: "#join-game-modal")}
+          phx-click={show_modal("join-game-modal")}
         >
           Join Game
         </.button>
       </div>
     </div>
 
-    <.modal id="new-game-modal" on_cancel={JS.hide(to: "#new-game-modal")}>
+    <.modal id="new-game-modal" on_cancel={hide_modal("new-game-modal")}>
       <div>
         <h2 class="text-xl font-bold mb-4 text-primary">New Game</h2>
         <.live_component
           id="create-game-form"
           module={ScoreTrackerWeb.CreateGameForm}
           user_id={@user_id}
-          on_cancel={JS.hide(to: "#new-game-modal")}
+          on_cancel={hide_modal("new-game-modal")}
         />
       </div>
     </.modal>
 
-    <.modal id="join-game-modal" on_cancel={JS.hide(to: "#join-game-modal")}>
+    <.modal id="join-game-modal" on_cancel={hide_modal("join-game-modal")}>
       <div>
         <h2 class="text-xl font-bold mb-4 text-primary">Join Game</h2>
         <.live_component
           id="join-game-form"
           module={ScoreTrackerWeb.JoinGameForm}
           user_id={@user_id}
-          on_cancel={JS.hide(to: "#join-game-modal")}
+          on_cancel={hide_modal("join-game-modal")}
         />
       </div>
     </.modal>
