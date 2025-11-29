@@ -73,6 +73,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
               "px-4 pb-4 pt-5"
             ]}
           >
+            {render_slot(@inner_block)}
             <button
               type="button"
               class="absolute top-6 right-6 text-muted-foreground hover:text-foreground flex space-x-1 items-center cursor-pointer"
@@ -81,7 +82,6 @@ defmodule ScoreTrackerWeb.CoreComponents do
               <span class="sr-only">Close</span>
               <.icon name="hero-x-mark" class="size-6" />
             </button>
-            {render_slot(@inner_block)}
           </.focus_wrap>
         </div>
       </div>
@@ -238,6 +238,10 @@ defmodule ScoreTrackerWeb.CoreComponents do
     values: ~w(checkbox color date datetime-local email file month number password
                range search select tel text textarea time url week)
 
+  attr :inputmode, :string,
+    default: "text",
+    values: ~w(none text decimal numeric tel search email url)
+
   attr :field, FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
@@ -344,6 +348,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
       <.label for={@id}>{@label}</.label>
       <input
         type={@type}
+        inputmode={@inputmode}
         name={@name}
         id={@id}
         value={Form.normalize_value(@type, @value)}
