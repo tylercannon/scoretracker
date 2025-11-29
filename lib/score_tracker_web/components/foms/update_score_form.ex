@@ -21,7 +21,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
       >
         <.input
           id={"#{@player_id}-#{@round}-score"}
-          type="number"
+          inputmode="numeric"
           field={f[:score]}
           label="Score"
         />

@@ -38,8 +38,8 @@ defmodule ScoreTrackerWeb.CreateGameForm do
           }
         />
         <div :if={@custom_game?} class="space-y-4">
-          <.input field={f[:max_players]} label="Max Players" />
-          <.input field={f[:max_rounds]} label="Max Rounds" />
+          <.input field={f[:max_players]} label="Max Players" inputmode="numeric" />
+          <.input field={f[:max_rounds]} label="Max Rounds" inputmode="numeric" />
         </div>
         <div :if={@show_players?} class="space-y-4">
           <span class="text-sm font-semibold leading-6 text-foreground">Players</span>
