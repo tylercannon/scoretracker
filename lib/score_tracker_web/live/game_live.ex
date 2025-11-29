@@ -98,8 +98,9 @@ defmodule ScoreTrackerWeb.GameLive do
               <tr>
                 <th></th>
                 <th class="p-3">Player</th>
+                <th class="md:hidden p-3">Total</th>
                 <th :for={round <- 1..@game.max_rounds} class="p-3">{round}</th>
-                <th class="p-3">Total</th>
+                <th class="hidden md:table-cell p-3">Total</th>
               </tr>
             </thead>
             <tbody class="border border-border">
@@ -137,10 +138,13 @@ defmodule ScoreTrackerWeb.GameLive do
                   </.modal>
                 </td>
                 <td class="p-3 font-medium">{player_name}</td>
+                <td class="md:hidden p-3 font-bold">
+                  {GameDetails.player_total_score(player_id, @game)}
+                </td>
                 <td :for={round <- 1..@game.max_rounds} class="p-3">
                   {Map.get(@game.scores[player_id], to_string(round), "-")}
                 </td>
-                <td class="p-3 font-bold">
+                <td class="hidden md:table-cell p-3 font-bold">
                   {GameDetails.player_total_score(player_id, @game)}
                 </td>
               </tr>
