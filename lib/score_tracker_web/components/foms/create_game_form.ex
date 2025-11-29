@@ -46,9 +46,15 @@ defmodule ScoreTrackerWeb.CreateGameForm do
           <.inputs_for :let={pf} field={@form[:players]} as={:players}>
             <input type="hidden" name="players_sort[]" value={pf.index} />
             <div class="relative">
-              <.input type="text" field={pf[:name]} placeholder="Player Name" class="pr-10" />
+              <.input
+                type="text"
+                field={pf[:name]}
+                placeholder="Player Name"
+                class="pr-10"
+                phx-mounted={if pf.index > 0, do: JS.focus()}
+              />
               <button
-                :if={String.length(Ecto.Changeset.get_field(pf.source, :name) || "") > 0}
+                :if={pf.index > 0}
                 type="button"
                 name="players_drop[]"
                 value={pf.index}
@@ -123,7 +129,8 @@ defmodule ScoreTrackerWeb.CreateGameForm do
       |> Enum.count()
 
     max_players = Ecto.Changeset.get_field(changeset, :max_players)
-    max_players_reached? = players_count >= max_players
+    # Account for host
+    max_players_reached? = players_count >= max_players - 1
 
     {:noreply,
      assign(socket,
