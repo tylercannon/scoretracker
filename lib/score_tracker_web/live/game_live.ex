@@ -31,11 +31,9 @@ defmodule ScoreTrackerWeb.GameLive do
           </button>
         </div>
       </div>
-      <div class="w-full my-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <.stat_card label="Round" value={@game.round} />
+      <div class="w-full my-4 flex justify-center gap-4">
+        <.stat_card label="Round" value={"#{@game.round} of #{@game.max_rounds}"} />
         <.stat_card label="Status" value={GameDetails.get_status(@game.status)} />
-        <.stat_card label="Max Players" value={@game.max_players} />
-        <.stat_card label="Max Rounds" value={@game.max_rounds} />
       </div>
       <div class="w-full">
         <div class="flex items-center justify-between mb-2">
@@ -156,7 +154,7 @@ defmodule ScoreTrackerWeb.GameLive do
 
   defp stat_card(%{label: _, value: _} = assigns) do
     ~H"""
-    <div class="bg-card p-4 rounded-lg border border-border text-card-foreground text-center">
+    <div class="grow bg-card p-4 rounded-lg border border-border text-card-foreground text-center">
       <p class="text-sm">{@label}</p>
       <p class="text-2xl font-bold">{@value}</p>
     </div>
