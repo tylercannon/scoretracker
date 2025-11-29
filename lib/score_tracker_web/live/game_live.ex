@@ -93,20 +93,28 @@ defmodule ScoreTrackerWeb.GameLive do
           </.modal>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full table-auto border-collapse text-center">
+          <table class="w-full text-center">
             <thead class="bg-background text-primary">
               <tr>
                 <th></th>
                 <th class="p-3">Player</th>
                 <th class="md:hidden p-3">Total</th>
-                <th :for={round <- 1..@game.max_rounds} class="p-3">{round}</th>
+                <th
+                  :for={round <- 1..@game.max_rounds}
+                  class={[
+                    "p-3",
+                    round == @game.round && "border-x-2 border-t-2 border-primary text-lg font-bold"
+                  ]}
+                >
+                  {round}
+                </th>
                 <th class="hidden md:table-cell p-3">Total</th>
               </tr>
             </thead>
             <tbody class="border border-border">
               <tr
                 :for={{player_id, player_name} <- @game.player_names}
-                class="hover:bg-primary hover:text-primary-foreground"
+                class="group hover:bg-primary hover:text-primary-foreground"
               >
                 <td>
                   <button
@@ -141,7 +149,14 @@ defmodule ScoreTrackerWeb.GameLive do
                 <td class="md:hidden p-3 font-bold">
                   {GameDetails.player_total_score(player_id, @game)}
                 </td>
-                <td :for={round <- 1..@game.max_rounds} class="p-3">
+                <td
+                  :for={round <- 1..@game.max_rounds}
+                  class={[
+                    "p-3",
+                    round == @game.round &&
+                      "border-x-2 border-primary text-lg font-bold group-last:border-b-2 group-last:border-primary"
+                  ]}
+                >
                   {Map.get(@game.scores[player_id], to_string(round), "-")}
                 </td>
                 <td class="hidden md:table-cell p-3 font-bold">
