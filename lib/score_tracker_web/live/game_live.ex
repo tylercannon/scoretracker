@@ -8,7 +8,10 @@ defmodule ScoreTrackerWeb.GameLive do
   @impl true
   def render(%{is_host: _} = assigns) do
     ~H"""
-    <div class="size-full flex flex-col items-center p-4 text-primary bg-background">
+    <div
+      class="size-full flex flex-col items-center p-4 text-primary bg-background"
+      phx-mounted={JS.remove_class("overflow-hidden", to: "body")}
+    >
       <div class="w-full flex items-center justify-between">
         <h1 class="text-xl font-bold">{GameType.friendly_name(@game.game_type)}</h1>
         <div

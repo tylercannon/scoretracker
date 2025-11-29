@@ -326,7 +326,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
         id={@id}
         name={@name}
         class={[
-          "mt-2 block w-full rounded-lg text-foreground bg-input border-border focus:outline-0 sm:text-sm sm:leading-6 min-h-[6rem]",
+          "mt-2 block w-full rounded-lg text-foreground bg-input border-border focus:outline-0 sm:text-sm sm:leading-6 min-h-24",
           @errors == [] && "border-border focus:ring-ring",
           @errors != [] && "border-destructive focus:ring-destructive"
         ]}
@@ -446,7 +446,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
 
     ~H"""
     <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
-      <table class="w-[40rem] mt-11 sm:w-full">
+      <table class="w-160 mt-11 sm:w-full">
         <thead class="text-sm text-left leading-6 text-muted-foreground">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal">{col[:label]}</th>
