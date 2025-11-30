@@ -120,6 +120,14 @@ defmodule ScoreTracker.GameManager do
                           ]
                         )
 
+  @reset_game_schema NimbleOptions.new!(
+                       game_id: [
+                         type: :string,
+                         required: true,
+                         doc: "The game id of the game."
+                       ]
+                     )
+
   @type create_game_opts() :: [unquote(NimbleOptions.option_typespec(@create_game_schema))]
   @type add_player_opts() :: [unquote(NimbleOptions.option_typespec(@add_player_schema))]
 
@@ -129,6 +137,7 @@ defmodule ScoreTracker.GameManager do
 
   @type start_game_opts() :: [unquote(NimbleOptions.option_typespec(@start_game_schema))]
   @type advance_round_opts() :: [unquote(NimbleOptions.option_typespec(@advance_round_schema))]
+  @type reset_game_opts() :: [unquote(NimbleOptions.option_typespec(@reset_game_schema))]
 
   # Client API
 
@@ -193,6 +202,18 @@ defmodule ScoreTracker.GameManager do
     case NimbleOptions.validate(round_opts, @advance_round_schema) do
       {:ok, opts} ->
         GenServer.call(game_manager, {:advance_to_next_round, opts})
+
+      error ->
+        error
+    end
+  end
+
+  @spec reset_game(game_manager :: module(), reset_opts :: reset_game_opts()) ::
+          :ok | {:error, :not_found | :invalid_game_state | NimbleOptions.ValidationError.t()}
+  def reset_game(game_manager, reset_opts) do
+    case NimbleOptions.validate(reset_opts, @reset_game_schema) do
+      {:ok, opts} ->
+        GenServer.call(game_manager, {:reset_game, opts})
 
       error ->
         error
@@ -321,6 +342,30 @@ defmodule ScoreTracker.GameManager do
         storage_mod.save_state(table_id, game_id, updated_game)
 
         {:reply, {:ok, updated_game.round}, state}
+
+      _ ->
+        {:reply, {:error, :not_found}, state}
+    end
+  end
+
+  def handle_call({:reset_game, opts}, _from, state) do
+    %{storage_mod: storage_mod, table_id: table_id} = state
+
+    game_id = Keyword.get(opts, :game_id)
+
+    case storage_mod.get_game(table_id, game_id) do
+      {:ok, game} ->
+        result =
+          case Game.reset(game) do
+            {:ok, updated_game} ->
+              storage_mod.save_state(table_id, game_id, updated_game)
+              :ok
+
+            {:error, reason} ->
+              {:error, reason}
+          end
+
+        {:reply, result, state}
 
       _ ->
         {:reply, {:error, :not_found}, state}

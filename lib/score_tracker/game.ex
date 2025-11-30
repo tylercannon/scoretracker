@@ -189,6 +189,21 @@ defmodule ScoreTracker.Game do
   end
 
   @doc """
+  Reset the game back to its initial state
+  """
+  @spec reset(t()) :: {:ok, t()} | {:error, :invalid_game_state}
+  def reset(%__MODULE__{status: status}) when status != :complete do
+    {:error, :invalid_game_state}
+  end
+
+  def reset(%__MODULE__{} = game) do
+    scores = Map.new(game.scores, fn {player_id, _round_scores} -> {player_id, %{}} end)
+    updated_game = %{game | status: :in_progress, round: 1, scores: scores}
+
+    {:ok, updated_game}
+  end
+
+  @doc """
   Decode a JSON string into a game struct
   """
   @spec from_json(String.t()) :: {:ok, t()} | {:error, String.t()}

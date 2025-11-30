@@ -45,52 +45,8 @@ defmodule ScoreTrackerWeb.GameLive do
           >
             Start Game
           </.button>
-          <.button
-            :if={GameDetails.host?(@game, @user_id) and GameDetails.in_progress?(@game)}
-            type="button"
-            phx-click={show_modal("go-to-next-round")}
-          >
-            {if @game.round < @game.max_rounds, do: "Next Round", else: "End Game"}
-          </.button>
-          <.modal
-            id="go-to-next-round"
-            on_cancel={hide_modal("go-to-next-round")}
-          >
-            <div class="text-primary">
-              <h2 class="text-xl font-bold mb-4">
-                {if @game.round < @game.max_rounds,
-                  do: "Go to Round #{@game.round + 1}",
-                  else: "End Game"}?
-              </h2>
-              <p>
-                {if GameDetails.any_missing_player_round_score?(@game),
-                  do:
-                    Enum.join(
-                      [
-                        "There are players without a score for the current round.",
-                        "Are you sure you want to progress without updating their scores?"
-                      ],
-                      " "
-                    ),
-                  else: "Are you sure you want to progress to the next round?"}
-              </p>
-              <div class="flex justify-between mt-5">
-                <.button
-                  type="button"
-                  class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  phx-click={hide_modal("go-to-next-round")}
-                >
-                  Cancel
-                </.button>
-                <.button
-                  type="button"
-                  phx-click={hide_modal("go-to-next-round") |> JS.push("next_round")}
-                >
-                  Continue
-                </.button>
-              </div>
-            </div>
-          </.modal>
+          <.next_round game={@game} user_id={@user_id} />
+          <.play_again game={@game} user_id={@user_id} />
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-center">
@@ -180,6 +136,96 @@ defmodule ScoreTrackerWeb.GameLive do
     """
   end
 
+  defp next_round(%{game: _, user_id: _} = assigns) do
+    ~H"""
+    <.button
+      :if={GameDetails.host?(@game, @user_id) and GameDetails.in_progress?(@game)}
+      type="button"
+      phx-click={show_modal("go-to-next-round")}
+    >
+      {if @game.round < @game.max_rounds, do: "Next Round", else: "End Game"}
+    </.button>
+    <.modal
+      id="go-to-next-round"
+      on_cancel={hide_modal("go-to-next-round")}
+    >
+      <div class="text-primary">
+        <h2 class="text-xl font-bold mb-4">
+          {if @game.round < @game.max_rounds,
+            do: "Go to Round #{@game.round + 1}",
+            else: "End Game"}?
+        </h2>
+        <p>
+          {if GameDetails.any_missing_player_round_score?(@game),
+            do:
+              Enum.join(
+                [
+                  "There are players without a score for the current round.",
+                  "Are you sure you want to progress without updating their scores?"
+                ],
+                " "
+              ),
+            else: "Are you sure you want to progress to the next round?"}
+        </p>
+        <div class="flex justify-between mt-5">
+          <.button
+            type="button"
+            class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            phx-click={hide_modal("go-to-next-round")}
+          >
+            Cancel
+          </.button>
+          <.button
+            type="button"
+            phx-click={hide_modal("go-to-next-round") |> JS.push("next_round")}
+          >
+            Continue
+          </.button>
+        </div>
+      </div>
+    </.modal>
+    """
+  end
+
+  defp play_again(%{game: _, user_id: _} = assigns) do
+    ~H"""
+    <.button
+      :if={GameDetails.host?(@game, @user_id) and GameDetails.complete?(@game)}
+      type="button"
+      phx-click={show_modal("play-again")}
+    >
+      Play Again
+    </.button>
+    <.modal
+      id="play-again"
+      on_cancel={hide_modal("play-again")}
+    >
+      <div class="text-primary">
+        <h2 class="text-xl font-bold mb-4">Play Again?</h2>
+        <p>
+          This will start a new game with the same players,
+          but reset all player scores and game state.
+        </p>
+        <div class="flex justify-between mt-5">
+          <.button
+            type="button"
+            class="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            phx-click={hide_modal("play-again")}
+          >
+            Cancel
+          </.button>
+          <.button
+            type="button"
+            phx-click={hide_modal("play-again") |> JS.push("play_again")}
+          >
+            Confirm
+          </.button>
+        </div>
+      </div>
+    </.modal>
+    """
+  end
+
   @impl true
   def mount(%{"game_id" => game_id}, session, socket) do
     case GameDetails.get_game(game_id) do
@@ -232,6 +278,13 @@ defmodule ScoreTrackerWeb.GameLive do
   end
 
   @impl true
+  def handle_event("play_again", _params, %Socket{assigns: %{game_id: game_id}} = socket) do
+    :ok = GameManager.reset_game(GameManager, game_id: game_id)
+    ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "play_again", %{})
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_info(:after_mount, %Socket{assigns: %{game_id: game_id}} = socket) do
     ScoreTrackerWeb.Endpoint.broadcast_from(self(), GameDetails.topic(game_id), "joined", %{})
     {:noreply, socket}
@@ -244,7 +297,7 @@ defmodule ScoreTrackerWeb.GameLive do
 
   @impl true
   def handle_info(%{event: event}, %Socket{assigns: %{game_id: game_id}} = socket)
-      when event in ["joined", "next_round"] do
+      when event in ["joined", "next_round", "play_again"] do
     {:ok, game} = GameDetails.get_game(game_id)
     {:noreply, assign(socket, game: game)}
   end
