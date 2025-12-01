@@ -445,7 +445,6 @@ defmodule ScoreTracker.GameManagerTest do
     } do
       game_id = GameManager.create_game(game_manager, game_opts)
 
-      # Try to reset an in-progress game
       assert {:error, :invalid_game_state} ==
                GameManager.reset_game(game_manager, game_id: game_id)
     end
