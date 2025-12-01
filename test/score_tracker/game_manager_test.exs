@@ -381,6 +381,98 @@ defmodule ScoreTracker.GameManagerTest do
     end
   end
 
+  describe "reset_game/1" do
+    setup do
+      game_opts = [
+        allow_spectators: true,
+        host_id: "game-host",
+        host_name: "Example",
+        game_mode: :scorekeeper,
+        game_type: :custom,
+        max_players: 4,
+        max_rounds: 2,
+        players: ["PlayerTwo", "PlayerThree"]
+      ]
+
+      %{game_opts: game_opts}
+    end
+
+    test "resets completed game", %{game_manager: game_manager, game_opts: game_opts} do
+      game_id = GameManager.create_game(game_manager, game_opts)
+      {:ok, 2} = GameManager.advance_to_next_round(game_manager, game_id: game_id)
+      {:ok, 2} = GameManager.advance_to_next_round(game_manager, game_id: game_id)
+      {:ok, game} = GameManager.get_game(game_manager, game_id)
+
+      player_two_id =
+        game.player_names
+        |> Enum.find(fn {_id, name} -> name == "PlayerTwo" end)
+        |> elem(0)
+
+      player_three_id =
+        game.player_names
+        |> Enum.find(fn {_id, name} -> name == "PlayerThree" end)
+        |> elem(0)
+
+      assert game.status == :complete
+      assert game.round == 2
+
+      :ok = GameManager.reset_game(game_manager, game_id: game_id)
+
+      {:ok, reset_game} = GameManager.get_game(game_manager, game_id)
+
+      assert reset_game.allow_spectators
+      assert reset_game.game_mode == game.game_mode
+      assert reset_game.game_type == game.game_type
+      assert reset_game.host_id == game.host_id
+      assert reset_game.max_players == game.max_players
+      assert reset_game.max_rounds == game.max_rounds
+      assert reset_game.player_names == game.player_names
+      assert reset_game.status == :in_progress
+      assert reset_game.round == 1
+      assert reset_game.scores["game-host"] == %{}
+      assert reset_game.scores[player_two_id] == %{}
+      assert reset_game.scores[player_three_id] == %{}
+    end
+
+    test "rejects when game not found", %{game_manager: game_manager} do
+      assert {:error, :not_found} ==
+               GameManager.reset_game(game_manager, game_id: "invalid-game-id")
+    end
+
+    test "rejects when scorekeeper game is not completed", %{
+      game_manager: game_manager,
+      game_opts: game_opts
+    } do
+      game_id = GameManager.create_game(game_manager, game_opts)
+
+      assert {:error, :invalid_game_state} ==
+               GameManager.reset_game(game_manager, game_id: game_id)
+    end
+
+    test "rejects when party game is not started", %{
+      game_manager: game_manager,
+      game_opts: game_opts
+    } do
+      game_opts = Keyword.put(game_opts, :game_mode, :party)
+      game_id = GameManager.create_game(game_manager, game_opts)
+
+      assert {:error, :invalid_game_state} ==
+               GameManager.reset_game(game_manager, game_id: game_id)
+    end
+
+    test "rejects when party game is not completed", %{
+      game_manager: game_manager,
+      game_opts: game_opts
+    } do
+      game_opts = Keyword.put(game_opts, :game_mode, :party)
+      game_id = GameManager.create_game(game_manager, game_opts)
+      {:ok, _} = GameManager.start_game(game_manager, game_id: game_id)
+
+      assert {:error, :invalid_game_state} ==
+               GameManager.reset_game(game_manager, game_id: game_id)
+    end
+  end
+
   describe "get_game/1" do
     test "gets a game's state", %{game_manager: game_manager} do
       game_opts = [

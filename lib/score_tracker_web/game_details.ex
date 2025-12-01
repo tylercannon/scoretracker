@@ -25,6 +25,12 @@ defmodule ScoreTrackerWeb.GameDetails do
   def in_progress?(game), do: game.status == :in_progress
 
   @doc """
+  Check whether a game is complete
+  """
+  @spec complete?(Game.t()) :: boolean()
+  def complete?(game), do: game.status == :complete
+
+  @doc """
   Check whether a user is the host of a game
   """
   @spec host?(Game.t(), String.t()) :: boolean()
