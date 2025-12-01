@@ -36,7 +36,7 @@ defmodule ScoreTrackerWeb.GameLive do
         <.stat_card label="Status" value={GameDetails.get_status(@game.status)} />
       </div>
       <div class="w-full">
-        <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold">Scoreboard</h2>
           <.button
             :if={GameDetails.host?(@game, @user_id) and @game.status == :waiting_for_players}
