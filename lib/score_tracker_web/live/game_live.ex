@@ -45,8 +45,12 @@ defmodule ScoreTrackerWeb.GameLive do
           >
             Start Game
           </.button>
-          <.next_round game={@game} user_id={@user_id} />
-          <.play_again game={@game} user_id={@user_id} />
+          <.next_round
+            :if={GameDetails.host?(@game, @user_id) and GameDetails.in_progress?(@game)}
+            game={@game}
+            user_id={@user_id}
+          />
+          <.play_again :if={GameDetails.host?(@game, @user_id) and GameDetails.complete?(@game)} />
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-center">
@@ -138,17 +142,10 @@ defmodule ScoreTrackerWeb.GameLive do
 
   defp next_round(%{game: _, user_id: _} = assigns) do
     ~H"""
-    <.button
-      :if={GameDetails.host?(@game, @user_id) and GameDetails.in_progress?(@game)}
-      type="button"
-      phx-click={show_modal("go-to-next-round")}
-    >
+    <.button type="button" phx-click={show_modal("go-to-next-round")}>
       {if @game.round < @game.max_rounds, do: "Next Round", else: "End Game"}
     </.button>
-    <.modal
-      id="go-to-next-round"
-      on_cancel={hide_modal("go-to-next-round")}
-    >
+    <.modal id="go-to-next-round" on_cancel={hide_modal("go-to-next-round")}>
       <div class="text-primary">
         <h2 class="text-xl font-bold mb-4">
           {if @game.round < @game.max_rounds,
@@ -187,24 +184,17 @@ defmodule ScoreTrackerWeb.GameLive do
     """
   end
 
-  defp play_again(%{game: _, user_id: _} = assigns) do
+  defp play_again(%{} = assigns) do
     ~H"""
-    <.button
-      :if={GameDetails.host?(@game, @user_id) and GameDetails.complete?(@game)}
-      type="button"
-      phx-click={show_modal("play-again")}
-    >
+    <.button type="button" phx-click={show_modal("play-again")}>
       Play Again
     </.button>
-    <.modal
-      id="play-again"
-      on_cancel={hide_modal("play-again")}
-    >
+    <.modal id="play-again" on_cancel={hide_modal("play-again")}>
       <div class="text-primary">
         <h2 class="text-xl font-bold mb-4">Play Again?</h2>
         <p>
-          This will start a new game with the same players,
-          but reset all player scores and game state.
+          This will clear every player's score from the scoreboard
+          and reset the game to round 1.
         </p>
         <div class="flex justify-between mt-5">
           <.button
@@ -218,7 +208,7 @@ defmodule ScoreTrackerWeb.GameLive do
             type="button"
             phx-click={hide_modal("play-again") |> JS.push("play_again")}
           >
-            Confirm
+            Continue
           </.button>
         </div>
       </div>
