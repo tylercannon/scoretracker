@@ -2,7 +2,7 @@ defmodule ScoreTracker.GameManagerTest do
   use ExUnit.Case, async: true
 
   alias NimbleOptions.ValidationError
-  alias ScoreTracker.{Game, GameManager, GameStorage}
+  alias ScoreTracker.{Game, GameManager, GameStorage, Player}
   alias ScoreTracker.GameType.{Ripple, Rummy}
 
   setup context do
@@ -44,7 +44,7 @@ defmodule ScoreTracker.GameManagerTest do
       assert game.status == :in_progress
       assert game.round == 1
 
-      player_names = Enum.map(game.players, &Map.get(&1, "name"))
+      player_names = Enum.map(game.players, &Map.get(&1, :name))
       assert Enum.count(player_names) == 3
       assert "PlayerTwo" in player_names
       assert "PlayerThree" in player_names
@@ -78,7 +78,7 @@ defmodule ScoreTracker.GameManagerTest do
                host_id: "game-host",
                status: :waiting_for_players,
                round: 1,
-               players: [%{"name" => "Example", "id" => "game-host"}],
+               players: [%Player{id: "game-host", name: "Example"}],
                scores: %{"game-host" => %{}}
              }
     end
@@ -160,7 +160,7 @@ defmodule ScoreTracker.GameManagerTest do
       :ok = GameManager.add_player(game_manager, player_opts)
 
       {:ok, game} = GameManager.get_game(game_manager, game_id)
-      assert Enum.any?(game.players, &match?(%{"name" => "PlayerOne", "id" => "player1"}, &1))
+      assert Enum.any?(game.players, &match?(%Player{id: "player1", name: "PlayerOne"}, &1))
       assert game.scores["player1"] == %{}
     end
 
@@ -175,7 +175,7 @@ defmodule ScoreTracker.GameManagerTest do
       :ok = GameManager.add_player(game_manager, player_opts)
 
       {:ok, game} = GameManager.get_game(game_manager, game_id)
-      refute Enum.any?(game.players, &match?(%{"id" => ^player_id}, &1))
+      refute Enum.any?(game.players, &match?(%Player{id: ^player_id}, &1))
     end
 
     test "adds a spectator to a party game", %{
@@ -191,7 +191,7 @@ defmodule ScoreTracker.GameManagerTest do
       :ok = GameManager.add_player(game_manager, player_opts)
 
       {:ok, game} = GameManager.get_game(game_manager, game_id)
-      refute Enum.any?(game.players, &match?(%{"id" => ^player_id}, &1))
+      refute Enum.any?(game.players, &match?(%Player{id: ^player_id}, &1))
     end
 
     test "rejects when game not found", %{game_manager: game_manager} do
@@ -405,13 +405,13 @@ defmodule ScoreTracker.GameManagerTest do
 
       player_two_id =
         game.players
-        |> Enum.find(fn %{"name" => name} -> name == "PlayerTwo" end)
-        |> Map.get("id")
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerTwo" end)
+        |> Map.get(:id)
 
       player_three_id =
         game.players
-        |> Enum.find(fn %{"name" => name} -> name == "PlayerThree" end)
-        |> Map.get("id")
+        |> Enum.find(fn %{name: name} -> name == "PlayerThree" end)
+        |> Map.get(:id)
 
       assert game.status == :complete
       assert game.round == 2
@@ -497,7 +497,7 @@ defmodule ScoreTracker.GameManagerTest do
                host_id: "game-host",
                status: :waiting_for_players,
                round: 1,
-               players: [%{"name" => "Example", "id" => "game-host"}],
+               players: [%Player{id: "game-host", name: "Example"}],
                scores: %{"game-host" => %{}}
              }
     end

@@ -1,7 +1,7 @@
 defmodule ScoreTracker.GameTest do
   use ExUnit.Case, async: true
 
-  alias ScoreTracker.Game
+  alias ScoreTracker.{Game, Player}
   alias ScoreTracker.GameType.{Ripple, Rummy}
 
   describe "new/1" do
@@ -18,7 +18,7 @@ defmodule ScoreTracker.GameTest do
       ]
 
       game = Game.new(opts)
-      player_names = Enum.map(game.players, &Map.get(&1, "name"))
+      player_names = Enum.map(game.players, &Map.get(&1, :name))
 
       refute game.allow_spectators
       assert game.host_id == "game-host"
@@ -56,7 +56,7 @@ defmodule ScoreTracker.GameTest do
                max_players: 6,
                max_rounds: 10,
                round: 1,
-               players: [%{"name" => "Example", "id" => "game-host"}],
+               players: [%Player{id: "game-host", name: "Example"}],
                scores: %{"game-host" => %{}},
                status: :waiting_for_players
              }
@@ -99,7 +99,7 @@ defmodule ScoreTracker.GameTest do
 
       assert Enum.any?(
                updated_game.players,
-               &match?(%{"name" => "PlayerTwo", "id" => "player2"}, &1)
+               &match?(%Player{id: "player2", name: "PlayerTwo"}, &1)
              )
 
       assert updated_game.scores["player2"] == %{}
@@ -118,7 +118,7 @@ defmodule ScoreTracker.GameTest do
 
       assert Enum.any?(
                updated_game.players,
-               &match?(%{"name" => "PlayerTwo", "id" => "player2"}, &1)
+               &match?(%Player{id: "player2", name: "PlayerTwo"}, &1)
              )
 
       assert updated_game.scores["player2"] == %{}
@@ -130,7 +130,7 @@ defmodule ScoreTracker.GameTest do
         |> Game.new()
         |> Game.add_player("spectator1", "Observer")
 
-      refute Enum.any?(game.players, &match?(%{"id" => "spectator1"}, &1))
+      refute Enum.any?(game.players, &match?(%Player{id: "spectator1"}, &1))
       refute Map.has_key?(game.scores, "spectator1")
     end
 
@@ -142,7 +142,7 @@ defmodule ScoreTracker.GameTest do
 
       {:ok, :spectator, game} = Game.add_player(game, "spectator1", "Observer")
 
-      refute Enum.any?(game.players, &match?(%{"id" => "spectator1"}, &1))
+      refute Enum.any?(game.players, &match?(%Player{id: "spectator1"}, &1))
     end
 
     test "rejects duplicate player", %{party_game_opts: party_game_opts} do
@@ -343,13 +343,13 @@ defmodule ScoreTracker.GameTest do
 
       player_two_id =
         game.players
-        |> Enum.find(fn %{"name" => name} -> name == "PlayerTwo" end)
-        |> Map.get("id")
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerTwo" end)
+        |> Map.get(:id)
 
       player_three_id =
         game.players
-        |> Enum.find(fn %{"name" => name} -> name == "PlayerThree" end)
-        |> Map.get("id")
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerThree" end)
+        |> Map.get(:id)
 
       assert updated_game.scores["game-host"]["1"] == 10
       assert updated_game.scores[player_two_id]["1"] == 0
@@ -398,13 +398,13 @@ defmodule ScoreTracker.GameTest do
 
       player_two_id =
         game.players
-        |> Enum.find(fn %{"name" => name} -> name == "PlayerTwo" end)
-        |> Map.get("id")
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerTwo" end)
+        |> Map.get(:id)
 
       player_three_id =
         game.players
-        |> Enum.find(fn %{"name" => name} -> name == "PlayerThree" end)
-        |> Map.get("id")
+        |> Enum.find(fn %{name: name} -> name == "PlayerThree" end)
+        |> Map.get(:id)
 
       {:ok, game} = Game.update_score(game, "game-host", 1, 10)
       {:ok, game} = Game.update_score(game, player_two_id, 1, 20)
@@ -488,7 +488,7 @@ defmodule ScoreTracker.GameTest do
                "max_players" => 4,
                "max_rounds" => 5,
                "host_id" => "game-host",
-               "players" => [%{"name" => "Example", "id" => "game-host"}],
+               "players" => [%{"id" => "game-host", "name" => "Example"}],
                "scores" => %{"game-host" => %{}}
              }
     end
