@@ -57,6 +57,7 @@ defmodule ScoreTracker.CreateGame do
     |> validate_unique_player_names()
     |> validate_number(:max_players, greater_than_or_equal_to: 2, less_than_or_equal_to: 10)
     |> validate_number(:max_rounds, greater_than_or_equal_to: 1, less_than_or_equal_to: 20)
+    |> validate_max_players()
     |> put_built_in_game_info()
   end
 
