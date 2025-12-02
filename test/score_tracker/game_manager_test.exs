@@ -410,7 +410,7 @@ defmodule ScoreTracker.GameManagerTest do
 
       player_three_id =
         game.players
-        |> Enum.find(fn %{name: name} -> name == "PlayerThree" end)
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerThree" end)
         |> Map.get(:id)
 
       assert game.status == :complete

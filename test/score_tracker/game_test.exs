@@ -403,7 +403,7 @@ defmodule ScoreTracker.GameTest do
 
       player_three_id =
         game.players
-        |> Enum.find(fn %{name: name} -> name == "PlayerThree" end)
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerThree" end)
         |> Map.get(:id)
 
       {:ok, game} = Game.update_score(game, "game-host", 1, 10)
