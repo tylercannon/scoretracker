@@ -18,7 +18,7 @@ defmodule ScoreTracker.Game do
           host_id: String.t(),
           status: status(),
           round: non_neg_integer(),
-          player_names: %{String.t() => String.t()},
+          players: list(%{String.t() => String.t()}),
           scores: %{String.t() => %{String.t() => integer()}}
         }
 
@@ -32,7 +32,7 @@ defmodule ScoreTracker.Game do
     :host_id,
     :status,
     :round,
-    :player_names,
+    :players,
     :scores
   ]
 
@@ -59,14 +59,12 @@ defmodule ScoreTracker.Game do
     host_id = Keyword.fetch!(opts, :host_id)
     host_name = Keyword.fetch!(opts, :host_name)
     game_mode = Keyword.fetch!(opts, :game_mode)
+    player_names = Keyword.get(opts, :players, [])
 
-    player_names =
-      opts
-      |> Keyword.get(:players, [])
-      |> Enum.reduce(%{}, fn player_name, acc -> Map.put(acc, UUID.generate(), player_name) end)
-      |> Map.put(host_id, host_name)
+    players = Enum.map(player_names, fn name -> %{"name" => name, "id" => UUID.generate()} end)
+    players = [%{"name" => host_name, "id" => host_id} | players]
+    player_ids = Enum.map(players, &Map.get(&1, "id"))
 
-    player_ids = Map.keys(player_names)
     status = if game_mode == :scorekeeper, do: :in_progress, else: :waiting_for_players
     scores = Enum.reduce(player_ids, %{}, fn player, acc -> Map.put(acc, player, %{}) end)
 
@@ -79,7 +77,7 @@ defmodule ScoreTracker.Game do
       host_id: host_id,
       status: status,
       round: 1,
-      player_names: player_names,
+      players: players,
       scores: scores
     }
   end
@@ -88,11 +86,6 @@ defmodule ScoreTracker.Game do
   Attempt to add a player to the game
   """
   @spec add_player(t(), String.t(), String.t()) :: add_player_result()
-  def add_player(%__MODULE__{player_names: player_names}, player_id, _player_name)
-      when is_map(player_names) and is_map_key(player_names, player_id) do
-    {:error, :already_exists}
-  end
-
   def add_player(
         %__MODULE__{allow_spectators: false, game_mode: :scorekeeper},
         _player_id,
@@ -128,11 +121,17 @@ defmodule ScoreTracker.Game do
   end
 
   def add_player(%__MODULE__{} = game, player_id, player_name) do
-    updated_scores = Map.put(game.scores, player_id, %{})
-    updated_player_names = Map.put(game.player_names, player_id, player_name)
-    updated_game = %{game | scores: updated_scores, player_names: updated_player_names}
+    already_exists? = Enum.any?(game.players, &match?(%{"id" => ^player_id}, &1))
 
-    {:ok, :player, updated_game}
+    if already_exists? do
+      {:error, :already_exists}
+    else
+      updated_scores = Map.put(game.scores, player_id, %{})
+      updated_players = Enum.concat(game.players, [%{"name" => player_name, "id" => player_id}])
+      updated_game = %{game | scores: updated_scores, players: updated_players}
+
+      {:ok, :player, updated_game}
+    end
   end
 
   @doc """

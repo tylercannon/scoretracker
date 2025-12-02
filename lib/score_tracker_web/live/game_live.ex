@@ -73,7 +73,7 @@ defmodule ScoreTrackerWeb.GameLive do
             </thead>
             <tbody class="border border-border">
               <tr
-                :for={{player_id, player_name} <- @game.player_names}
+                :for={%{"name" => player_name, "id" => player_id} <- @game.players}
                 class="group hover:bg-primary hover:text-primary-foreground"
               >
                 <td>
