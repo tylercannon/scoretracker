@@ -61,6 +61,37 @@ defmodule ScoreTracker.Changeset do
   end
 
   @doc """
+  Validate that all player names are unique
+  """
+  @spec validate_unique_player_names(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  def validate_unique_player_names(changeset) do
+    players = get_embed(changeset, :players)
+    host_name = get_field(changeset, :host_name)
+    initial = %{names: MapSet.new([host_name]), changesets: []}
+
+    players =
+      players
+      |> Enum.reduce(initial, fn changeset, %{names: names, changesets: changesets} = acc ->
+        name = get_field(changeset, :name)
+
+        cond do
+          is_nil(name) ->
+            %{acc | changesets: Enum.concat(changesets, [changeset])}
+
+          MapSet.member?(names, name) ->
+            updated_changeset = add_error(changeset, :name, "must be unique")
+            %{acc | changesets: Enum.concat(changesets, [updated_changeset])}
+
+          true ->
+            %{names: MapSet.put(names, name), changesets: Enum.concat(changesets, [changeset])}
+        end
+      end)
+      |> Map.get(:changesets)
+
+    put_embed(changeset, :players, players)
+  end
+
+  @doc """
   Validate the round score based on the given game type
   """
   @spec validate_round_score(Ecto.Changeset.t(), atom(), GameType.game_type()) ::

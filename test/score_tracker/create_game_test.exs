@@ -128,6 +128,71 @@ defmodule ScoreTracker.CreateGameTest do
                players: [%{name: ["must be valid format"]}, %{}]
              } == ScoreTracker.Changeset.format_errors(changeset)
     end
+
+    test "duplicate player names" do
+      params = %{
+        "host_name" => "Example",
+        "game_mode" => "scorekeeper",
+        "game_type" => "custom",
+        "max_players" => 4,
+        "max_rounds" => 5,
+        "players" => %{
+          "0" => %{"name" => "PlayerTwo"},
+          "1" => %{"name" => "PlayerThree"},
+          "2" => %{"name" => "PlayerTwo"}
+        }
+      }
+
+      changeset = CreateGame.changeset(%CreateGame{}, params)
+
+      refute changeset.valid?
+
+      assert %{players: [%{}, %{}, %{name: ["must be unique"]}]} ==
+               ScoreTracker.Changeset.format_errors(changeset)
+    end
+
+    test "host name conflicts with player name" do
+      params = %{
+        "host_name" => "Example",
+        "game_mode" => "scorekeeper",
+        "game_type" => "custom",
+        "max_players" => 4,
+        "max_rounds" => 5,
+        "players" => %{
+          "0" => %{"name" => "PlayerTwo"},
+          "1" => %{"name" => "Example"}
+        }
+      }
+
+      changeset = CreateGame.changeset(%CreateGame{}, params)
+
+      refute changeset.valid?
+
+      assert %{players: [%{}, %{name: ["must be unique"]}]} ==
+               ScoreTracker.Changeset.format_errors(changeset)
+    end
+
+    test "duplicate player names with no host name" do
+      params = %{
+        "game_mode" => "scorekeeper",
+        "game_type" => "custom",
+        "max_players" => 4,
+        "max_rounds" => 5,
+        "players" => %{
+          "0" => %{"name" => "PlayerTwo"},
+          "1" => %{"name" => "PlayerTwo"}
+        }
+      }
+
+      changeset = CreateGame.changeset(%CreateGame{}, params)
+
+      refute changeset.valid?
+
+      assert %{
+               host_name: ["can't be blank"],
+               players: [%{}, %{name: ["must be unique"]}]
+             } == ScoreTracker.Changeset.format_errors(changeset)
+    end
   end
 
   describe "update/2" do
