@@ -2,7 +2,7 @@ defmodule ScoreTrackerWeb.GameLive do
   use ScoreTrackerWeb, :live_view
 
   alias Phoenix.LiveView.Socket
-  alias ScoreTracker.{GameManager, GameType}
+  alias ScoreTracker.{GameManager, GameType, Player}
   alias ScoreTrackerWeb.GameDetails
 
   @impl true
@@ -73,7 +73,7 @@ defmodule ScoreTrackerWeb.GameLive do
             </thead>
             <tbody class="border border-border">
               <tr
-                :for={{player_id, player_name} <- @game.player_names}
+                :for={%Player{id: player_id, name: player_name} <- @game.players}
                 class="group hover:bg-primary hover:text-primary-foreground"
               >
                 <td>

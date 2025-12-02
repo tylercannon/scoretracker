@@ -1,9 +1,9 @@
 defmodule ScoreTracker.Player do
   @moduledoc """
-  Module defining the schema and
-  validation functions used on the
-  create game form for handling
-  players participating in a
+  Module representing a game player.
+  This module also defines the validation
+  functions used on the create game form
+  for handling players participating in a
   scorekeeper-based game
   """
 
@@ -11,11 +11,14 @@ defmodule ScoreTracker.Player do
   use ScoreTracker.Changeset
 
   @type t :: %__MODULE__{
+          id: String.t(),
           name: String.t()
         }
 
+  @derive Jason.Encoder
   @primary_key false
   embedded_schema do
+    field :id, :string
     field :name, :string
   end
 

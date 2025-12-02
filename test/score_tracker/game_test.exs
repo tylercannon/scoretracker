@@ -1,7 +1,7 @@
 defmodule ScoreTracker.GameTest do
   use ExUnit.Case, async: true
 
-  alias ScoreTracker.Game
+  alias ScoreTracker.{Game, Player}
   alias ScoreTracker.GameType.{Ripple, Rummy}
 
   describe "new/1" do
@@ -18,7 +18,7 @@ defmodule ScoreTracker.GameTest do
       ]
 
       game = Game.new(opts)
-      player_names = Map.values(game.player_names)
+      player_names = Enum.map(game.players, &Map.get(&1, :name))
 
       refute game.allow_spectators
       assert game.host_id == "game-host"
@@ -56,7 +56,7 @@ defmodule ScoreTracker.GameTest do
                max_players: 6,
                max_rounds: 10,
                round: 1,
-               player_names: %{"game-host" => "Example"},
+               players: [%Player{id: "game-host", name: "Example"}],
                scores: %{"game-host" => %{}},
                status: :waiting_for_players
              }
@@ -95,8 +95,13 @@ defmodule ScoreTracker.GameTest do
         |> Game.new()
         |> Game.add_player("player2", "PlayerTwo")
 
-      assert map_size(updated_game.player_names) == 2
-      assert updated_game.player_names["player2"] == "PlayerTwo"
+      assert Enum.count(updated_game.players) == 2
+
+      assert Enum.any?(
+               updated_game.players,
+               &match?(%Player{id: "player2", name: "PlayerTwo"}, &1)
+             )
+
       assert updated_game.scores["player2"] == %{}
     end
 
@@ -109,8 +114,13 @@ defmodule ScoreTracker.GameTest do
         |> Game.new()
         |> Game.add_player("player2", "PlayerTwo")
 
-      assert map_size(updated_game.player_names) == 2
-      assert updated_game.player_names["player2"] == "PlayerTwo"
+      assert Enum.count(updated_game.players) == 2
+
+      assert Enum.any?(
+               updated_game.players,
+               &match?(%Player{id: "player2", name: "PlayerTwo"}, &1)
+             )
+
       assert updated_game.scores["player2"] == %{}
     end
 
@@ -120,7 +130,7 @@ defmodule ScoreTracker.GameTest do
         |> Game.new()
         |> Game.add_player("spectator1", "Observer")
 
-      refute Map.has_key?(game.player_names, "spectator1")
+      refute Enum.any?(game.players, &match?(%Player{id: "spectator1"}, &1))
       refute Map.has_key?(game.scores, "spectator1")
     end
 
@@ -132,7 +142,7 @@ defmodule ScoreTracker.GameTest do
 
       {:ok, :spectator, game} = Game.add_player(game, "spectator1", "Observer")
 
-      refute Map.has_key?(game.player_names, "spectator1")
+      refute Enum.any?(game.players, &match?(%Player{id: "spectator1"}, &1))
     end
 
     test "rejects duplicate player", %{party_game_opts: party_game_opts} do
@@ -332,14 +342,14 @@ defmodule ScoreTracker.GameTest do
       updated_game = Game.advance_round(game)
 
       player_two_id =
-        game.player_names
-        |> Enum.find(fn {_id, name} -> name == "PlayerTwo" end)
-        |> elem(0)
+        game.players
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerTwo" end)
+        |> Map.get(:id)
 
       player_three_id =
-        game.player_names
-        |> Enum.find(fn {_id, name} -> name == "PlayerThree" end)
-        |> elem(0)
+        game.players
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerThree" end)
+        |> Map.get(:id)
 
       assert updated_game.scores["game-host"]["1"] == 10
       assert updated_game.scores[player_two_id]["1"] == 0
@@ -387,14 +397,14 @@ defmodule ScoreTracker.GameTest do
       game = Game.new(game_opts)
 
       player_two_id =
-        game.player_names
-        |> Enum.find(fn {_id, name} -> name == "PlayerTwo" end)
-        |> elem(0)
+        game.players
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerTwo" end)
+        |> Map.get(:id)
 
       player_three_id =
-        game.player_names
-        |> Enum.find(fn {_id, name} -> name == "PlayerThree" end)
-        |> elem(0)
+        game.players
+        |> Enum.find(fn %Player{name: name} -> name == "PlayerThree" end)
+        |> Map.get(:id)
 
       {:ok, game} = Game.update_score(game, "game-host", 1, 10)
       {:ok, game} = Game.update_score(game, player_two_id, 1, 20)
@@ -419,7 +429,7 @@ defmodule ScoreTracker.GameTest do
       assert reset_game.host_id == game.host_id
       assert reset_game.max_players == game.max_players
       assert reset_game.max_rounds == game.max_rounds
-      assert reset_game.player_names == game.player_names
+      assert reset_game.players == game.players
       assert reset_game.status == :in_progress
       assert reset_game.round == 1
       assert reset_game.scores["game-host"] == %{}
@@ -478,7 +488,7 @@ defmodule ScoreTracker.GameTest do
                "max_players" => 4,
                "max_rounds" => 5,
                "host_id" => "game-host",
-               "player_names" => %{"game-host" => "Example"},
+               "players" => [%{"id" => "game-host", "name" => "Example"}],
                "scores" => %{"game-host" => %{}}
              }
     end
