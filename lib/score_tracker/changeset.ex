@@ -50,6 +50,24 @@ defmodule ScoreTracker.Changeset do
     end
   end
 
+  @spec validate_max_players(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  def validate_max_players(changeset) do
+    players = get_embed(changeset, :players)
+    max_players = get_field(changeset, :max_players)
+    player_count = Enum.count(players)
+
+    # Count host as a valid player too
+    if player_count > max_players - 1 do
+      {valid_players, [invalid_player]} = Enum.split(players, -1)
+      invalid_player = add_error(invalid_player, :name, "must not exceed max player count")
+      updated_players = Enum.concat(valid_players, [invalid_player])
+
+      put_embed(changeset, :players, updated_players)
+    else
+      changeset
+    end
+  end
+
   @doc """
   Validate a player name length and format
   """

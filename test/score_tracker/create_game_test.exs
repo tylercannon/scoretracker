@@ -64,7 +64,7 @@ defmodule ScoreTracker.CreateGameTest do
         "game_mode" => "scorekeeper",
         "game_type" => "custom",
         "allow_spectators" => false,
-        "max_players" => 4,
+        "max_players" => 3,
         "max_rounds" => 5,
         "players" => %{
           "0" => %{"name" => "PlayerTwo"},
@@ -82,7 +82,7 @@ defmodule ScoreTracker.CreateGameTest do
                 game_mode: :scorekeeper,
                 game_type: :custom,
                 allow_spectators: false,
-                max_players: 4,
+                max_players: 3,
                 max_rounds: 5,
                 players: [
                   %Player{name: "PlayerTwo"},
@@ -125,7 +125,10 @@ defmodule ScoreTracker.CreateGameTest do
                allow_spectators: ["must be of type: boolean"],
                max_players: ["must be greater than or equal to 2"],
                max_rounds: ["must be less than or equal to 20"],
-               players: [%{name: ["must be valid format"]}, %{}]
+               players: [
+                 %{name: ["must be valid format"]},
+                 %{name: ["must not exceed max player count"]}
+               ]
              } == ScoreTracker.Changeset.format_errors(changeset)
     end
 
@@ -191,6 +194,29 @@ defmodule ScoreTracker.CreateGameTest do
       assert %{
                host_name: ["can't be blank"],
                players: [%{}, %{name: ["must be unique"]}]
+             } == ScoreTracker.Changeset.format_errors(changeset)
+    end
+
+    test "exceeds max players" do
+      params = %{
+        "host_name" => "Example",
+        "game_mode" => "scorekeeper",
+        "game_type" => "custom",
+        "max_players" => 3,
+        "max_rounds" => 5,
+        "players" => %{
+          "0" => %{"name" => "PlayerTwo"},
+          "1" => %{"name" => "PlayerThree"},
+          "2" => %{"name" => "PlayerFour"}
+        }
+      }
+
+      changeset = CreateGame.changeset(%CreateGame{}, params)
+
+      refute changeset.valid?
+
+      assert %{
+               players: [%{}, %{}, %{name: ["must not exceed max player count"]}]
              } == ScoreTracker.Changeset.format_errors(changeset)
     end
   end

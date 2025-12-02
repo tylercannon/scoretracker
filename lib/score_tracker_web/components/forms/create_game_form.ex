@@ -129,7 +129,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
       |> Enum.count()
 
     max_players = Ecto.Changeset.get_field(changeset, :max_players)
-    # Account for host
+    # Count host as a valid player too
     max_players_reached? = players_count >= max_players - 1
 
     {:noreply,
