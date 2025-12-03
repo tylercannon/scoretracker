@@ -13,7 +13,9 @@ defmodule ScoreTrackerWeb.GameLive do
       phx-mounted={JS.remove_class("overflow-hidden", to: "body")}
     >
       <div class="w-full flex items-center justify-between">
-        <h1 class="text-xl font-bold">{GameType.friendly_name(@game.game_type)}</h1>
+        <h1 class="text-xl font-bold">
+          {GameType.friendly_name(@game.game_type, @game.custom_name)}
+        </h1>
         <div
           class="flex items-center gap-2"
           phx-hook="CopyToClipboard"

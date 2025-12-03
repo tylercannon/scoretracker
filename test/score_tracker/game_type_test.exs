@@ -23,6 +23,19 @@ defmodule ScoreTracker.GameTypeTest do
     end
   end
 
+  describe "friendly_name/2" do
+    test "returns expected value" do
+      assert GameType.friendly_name(:ripple, nil) == "Ripple"
+      assert GameType.friendly_name(:ripple, "MyGame") == "Ripple"
+
+      assert GameType.friendly_name(:rummy, nil) == "Rummy"
+      assert GameType.friendly_name(:rummy, "MyGame") == "Rummy"
+
+      assert GameType.friendly_name(:custom, nil) == "Custom Game"
+      assert GameType.friendly_name(:custom, "MyGame") == "MyGame"
+    end
+  end
+
   describe "friendly_name/1" do
     test "returns expected value" do
       assert GameType.friendly_name(:ripple) == "Ripple"

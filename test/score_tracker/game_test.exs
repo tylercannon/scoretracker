@@ -21,6 +21,7 @@ defmodule ScoreTracker.GameTest do
       player_names = Enum.map(game.players, &Map.get(&1, :name))
 
       refute game.allow_spectators
+      assert is_nil(game.custom_name)
       assert game.host_id == "game-host"
       assert game.game_mode == :scorekeeper
       assert game.game_type == :custom
@@ -50,13 +51,69 @@ defmodule ScoreTracker.GameTest do
 
       assert game == %Game{
                allow_spectators: true,
-               host_id: "game-host",
+               custom_name: nil,
                game_mode: :party,
                game_type: :ripple,
+               host_id: "game-host",
                max_players: 6,
                max_rounds: 10,
-               round: 1,
                players: [%Player{id: "game-host", name: "Example"}],
+               round: 1,
+               scores: %{"game-host" => %{}},
+               status: :waiting_for_players
+             }
+    end
+
+    test "creates custom game with no name" do
+      opts = [
+        host_id: "game-host",
+        host_name: "Example",
+        game_mode: :party,
+        game_type: :custom,
+        max_players: 3,
+        max_rounds: 4
+      ]
+
+      game = Game.new(opts)
+
+      assert game == %Game{
+               allow_spectators: true,
+               custom_name: nil,
+               game_mode: :party,
+               game_type: :custom,
+               host_id: "game-host",
+               max_players: 3,
+               max_rounds: 4,
+               players: [%Player{id: "game-host", name: "Example"}],
+               round: 1,
+               scores: %{"game-host" => %{}},
+               status: :waiting_for_players
+             }
+    end
+
+    test "creates custom game with name" do
+      opts = [
+        custom_name: "MyGame",
+        host_id: "game-host",
+        host_name: "Example",
+        game_mode: :party,
+        game_type: :custom,
+        max_players: 3,
+        max_rounds: 4
+      ]
+
+      game = Game.new(opts)
+
+      assert game == %Game{
+               allow_spectators: true,
+               custom_name: "MyGame",
+               game_mode: :party,
+               game_type: :custom,
+               host_id: "game-host",
+               max_players: 3,
+               max_rounds: 4,
+               players: [%Player{id: "game-host", name: "Example"}],
+               round: 1,
                scores: %{"game-host" => %{}},
                status: :waiting_for_players
              }
@@ -487,6 +544,7 @@ defmodule ScoreTracker.GameTest do
                "allow_spectators" => true,
                "max_players" => 4,
                "max_rounds" => 5,
+               "custom_name" => nil,
                "host_id" => "game-host",
                "players" => [%{"id" => "game-host", "name" => "Example"}],
                "scores" => %{"game-host" => %{}}

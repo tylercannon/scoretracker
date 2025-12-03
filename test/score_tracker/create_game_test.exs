@@ -66,6 +66,7 @@ defmodule ScoreTracker.CreateGameTest do
         "allow_spectators" => false,
         "max_players" => 3,
         "max_rounds" => 5,
+        "custom_name" => "My Game",
         "players" => %{
           "0" => %{"name" => "PlayerTwo"},
           "1" => %{"name" => "PlayerThree"}
@@ -84,6 +85,7 @@ defmodule ScoreTracker.CreateGameTest do
                 allow_spectators: false,
                 max_players: 3,
                 max_rounds: 5,
+                custom_name: "My Game",
                 players: [
                   %Player{name: "PlayerTwo"},
                   %Player{name: "PlayerThree"}
@@ -101,6 +103,7 @@ defmodule ScoreTracker.CreateGameTest do
 
     test "invalid params" do
       params = %{
+        "custom_name" => "Invalid!",
         "host_name" => "Invalid1",
         "game_mode" => "unknown",
         "game_type" => "invalid",
@@ -122,6 +125,40 @@ defmodule ScoreTracker.CreateGameTest do
                host_name: ["must be valid format"],
                game_mode: ["must be one of: party | scorekeeper"],
                game_type: ["must be one of: custom | ripple | rummy"],
+               allow_spectators: ["must be of type: boolean"],
+               max_players: ["must be greater than or equal to 2"],
+               max_rounds: ["must be less than or equal to 20"],
+               players: [
+                 %{name: ["must be valid format"]},
+                 %{name: ["must not exceed max player count"]}
+               ]
+             } == ScoreTracker.Changeset.format_errors(changeset)
+    end
+
+    test "invalid params for custom game" do
+      params = %{
+        "custom_name" => "MyInvalidGameName!",
+        "host_name" => "Invalid1",
+        "game_mode" => "unknown",
+        "game_type" => "custom",
+        "allow_spectators" => "yes",
+        "max_players" => 1,
+        "max_rounds" => 100,
+        "players" => %{
+          "0" => %{"name" => "Player2"},
+          "1" => %{"name" => "PlayerThree"}
+        }
+      }
+
+      {:error, changeset} =
+        %CreateGame{}
+        |> CreateGame.changeset(params)
+        |> Ecto.Changeset.apply_action(:update)
+
+      assert %{
+               custom_name: ["must be valid format", "should be at most 12 character(s)"],
+               host_name: ["must be valid format"],
+               game_mode: ["must be one of: party | scorekeeper"],
                allow_spectators: ["must be of type: boolean"],
                max_players: ["must be greater than or equal to 2"],
                max_rounds: ["must be less than or equal to 20"],

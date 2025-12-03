@@ -11,10 +11,11 @@ defmodule ScoreTracker.CreateGame do
   alias ScoreTracker.{GameType, Player}
 
   @type t :: %__MODULE__{
-          host_name: String.t(),
+          allow_spectators: boolean(),
+          custom_name: String.t() | nil,
           game_mode: :scorekeeper | :party,
           game_type: GameType.game_type(),
-          allow_spectators: boolean(),
+          host_name: String.t(),
           max_players: non_neg_integer(),
           max_rounds: non_neg_integer(),
           players: list(Player.t())
@@ -22,14 +23,15 @@ defmodule ScoreTracker.CreateGame do
 
   @primary_key false
   embedded_schema do
-    field :host_name, :string
+    field :allow_spectators, :boolean, default: true
+    field :custom_name, :string
     field :game_mode, Ecto.Enum, values: [:scorekeeper, :party], default: :scorekeeper
 
     field :game_type, Ecto.Enum,
       values: GameType.game_types(),
       default: GameType.default_game().type
 
-    field :allow_spectators, :boolean, default: true
+    field :host_name, :string
     field :max_players, :integer, default: GameType.default_game().max_players
     field :max_rounds, :integer, default: GameType.default_game().max_rounds
     embeds_many :players, Player, on_replace: :delete
@@ -40,10 +42,11 @@ defmodule ScoreTracker.CreateGame do
   def changeset(create_game, attrs \\ %{}) do
     create_game
     |> cast(attrs, [
-      :host_name,
+      :allow_spectators,
+      :custom_name,
       :game_mode,
       :game_type,
-      :allow_spectators,
+      :host_name,
       :max_players,
       :max_rounds
     ])
@@ -52,12 +55,13 @@ defmodule ScoreTracker.CreateGame do
       sort_param: :players_sort,
       drop_param: :players_drop
     )
-    |> validate_required([:host_name, :game_mode, :game_type])
+    |> validate_required([:game_mode, :game_type, :host_name])
     |> validate_player_name(:host_name)
     |> validate_unique_player_names()
     |> validate_number(:max_players, greater_than_or_equal_to: 2, less_than_or_equal_to: 10)
     |> validate_number(:max_rounds, greater_than_or_equal_to: 1, less_than_or_equal_to: 20)
     |> validate_max_players()
+    |> validate_custom_name()
     |> put_built_in_game_info()
   end
 
