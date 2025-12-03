@@ -6,7 +6,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
 
   use ScoreTrackerWeb, :live_component
 
-  alias ScoreTracker.{GameManager, UpdateScore}
+  alias ScoreTracker.{GameManager, GameType, UpdateScore}
 
   @impl true
   def render(%{game_id: _, player_id: _, game_type: _, round: _, on_cancel: _} = assigns) do
@@ -22,7 +22,8 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
         <%!-- inputmode="numeric" doesn't allow for negative number input on iOS Safari --%>
         <.input
           id={"#{@player_id}-#{@round}-score"}
-          type="number"
+          type={if GameType.allows_negative_scores?(@game_type), do: "number", else: "text"}
+          inputmode={if GameType.allows_negative_scores?(@game_type), do: "text", else: "numeric"}
           field={f[:score]}
           label="Score"
         />

@@ -4,6 +4,12 @@ defmodule ScoreTracker.GameType.RippleTest do
   alias ScoreTracker.GameType.Ripple
   alias ScoreTracker.UpdateScore
 
+  describe "allows_negative_scores?/0" do
+    test "returns expected value" do
+      assert Ripple.allows_negative_scores?()
+    end
+  end
+
   describe "friendly_name/0" do
     test "returns expected value" do
       assert Ripple.friendly_name() == "Ripple"

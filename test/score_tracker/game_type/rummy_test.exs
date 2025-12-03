@@ -4,6 +4,12 @@ defmodule ScoreTracker.GameType.RummyTest do
   alias ScoreTracker.GameType.Rummy
   alias ScoreTracker.UpdateScore
 
+  describe "allows_negative_scores?/0" do
+    test "returns expected value" do
+      refute Rummy.allows_negative_scores?()
+    end
+  end
+
   describe "friendly_name/0" do
     test "returns expected value" do
       assert Rummy.friendly_name() == "Rummy"

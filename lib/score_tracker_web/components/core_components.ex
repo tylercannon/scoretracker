@@ -242,6 +242,8 @@ defmodule ScoreTrackerWeb.CoreComponents do
     default: "text",
     values: ~w(none text decimal numeric tel search email url)
 
+  attr :pattern, :string, default: nil
+
   attr :field, FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
@@ -349,6 +351,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
       <input
         type={@type}
         inputmode={@inputmode}
+        pattern={@pattern}
         name={@name}
         id={@id}
         value={Form.normalize_value(@type, @value)}

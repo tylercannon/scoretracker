@@ -15,6 +15,14 @@ defmodule ScoreTracker.GameTypeTest do
     end
   end
 
+  describe "allows_negative_scores?/1" do
+    test "returns expected value" do
+      assert GameType.allows_negative_scores?(:ripple)
+      refute GameType.allows_negative_scores?(:rummy)
+      assert GameType.allows_negative_scores?(:custom)
+    end
+  end
+
   describe "friendly_name/1" do
     test "returns expected value" do
       assert GameType.friendly_name(:ripple) == "Ripple"
