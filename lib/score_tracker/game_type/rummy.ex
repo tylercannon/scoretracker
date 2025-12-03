@@ -7,6 +7,9 @@ defmodule ScoreTracker.GameType.Rummy do
   @behaviour ScoreTracker.GameType
 
   @impl ScoreTracker.GameType
+  def allows_negative_scores?, do: false
+
+  @impl ScoreTracker.GameType
   def friendly_name, do: "Rummy"
 
   @impl ScoreTracker.GameType

@@ -7,6 +7,9 @@ defmodule ScoreTracker.GameType.Ripple do
   @behaviour ScoreTracker.GameType
 
   @impl ScoreTracker.GameType
+  def allows_negative_scores?, do: true
+
+  @impl ScoreTracker.GameType
   def friendly_name, do: "Ripple"
 
   @impl ScoreTracker.GameType

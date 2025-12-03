@@ -27,6 +27,11 @@ defmodule ScoreTracker.GameType do
   @callback friendly_name() :: String.t()
 
   @doc """
+  Whether the game type supports negative round scores
+  """
+  @callback allows_negative_scores?() :: boolean()
+
+  @doc """
   A validation function for validating the round
   score for the game type
   """
@@ -43,6 +48,13 @@ defmodule ScoreTracker.GameType do
   """
   @spec game_types() :: [game_type()]
   def game_types, do: built_in_types() ++ [:custom]
+
+  @doc """
+  Returns whether the game type supports negative round scores
+  """
+  @spec allows_negative_scores?(game_type()) :: boolean()
+  def allows_negative_scores?(:custom), do: true
+  def allows_negative_scores?(game_type), do: impl(game_type).allows_negative_scores?()
 
   @doc """
   Returns the friendly name for a game type
