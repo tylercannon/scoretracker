@@ -86,9 +86,9 @@ defmodule ScoreTracker.GameManagerTest do
     test "validation error for empty options", %{game_manager: game_manager} do
       assert {:error,
               %ValidationError{
-                key: :host_id,
+                key: :game_mode,
                 keys_path: [],
-                message: "required :host_id option not found, received options: []",
+                message: "required :game_mode option not found, received options: []",
                 value: nil
               }} == GameManager.create_game(game_manager, [])
     end

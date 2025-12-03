@@ -10,42 +10,45 @@ defmodule ScoreTracker.Game do
   @type status :: :in_progress | :waiting_for_players | :complete
 
   @type t :: %__MODULE__{
+          allow_spectators: boolean(),
+          custom_name: String.t() | nil,
           game_mode: :scorekeeper | :party,
           game_type: GameType.game_type(),
-          allow_spectators: boolean(),
+          host_id: String.t(),
           max_players: non_neg_integer(),
           max_rounds: non_neg_integer(),
-          host_id: String.t(),
-          status: status(),
-          round: non_neg_integer(),
           players: list(Player.t()),
-          scores: %{String.t() => %{String.t() => integer()}}
+          round: non_neg_integer(),
+          scores: %{String.t() => %{String.t() => integer()}},
+          status: status()
         }
 
-  @derive Jason.Encoder
-  defstruct [
-    :game_mode,
-    :game_type,
-    :allow_spectators,
-    :max_players,
-    :max_rounds,
-    :host_id,
-    :status,
-    :round,
-    :players,
-    :scores
-  ]
-
   @type new_opts :: [
-          host_id: String.t(),
-          host_name: String.t(),
+          allow_spectators: boolean(),
+          custom_name: String.t() | nil,
           game_mode: :scorekeeper | :party,
           game_type: GameType.game_type(),
-          allow_spectators: boolean(),
+          host_id: String.t(),
+          host_name: String.t(),
           max_players: pos_integer(),
           max_rounds: pos_integer(),
           players: [String.t()]
         ]
+
+  @derive Jason.Encoder
+  defstruct [
+    :allow_spectators,
+    :custom_name,
+    :game_mode,
+    :game_type,
+    :host_id,
+    :max_players,
+    :max_rounds,
+    :players,
+    :round,
+    :scores,
+    :status
+  ]
 
   @type start_error_code() :: :invalid_game_mode | :invalid_game_state
   @type join_error_code() :: :already_exists | :not_found | :not_joinable
@@ -59,6 +62,7 @@ defmodule ScoreTracker.Game do
     host_id = Keyword.fetch!(opts, :host_id)
     host_name = Keyword.fetch!(opts, :host_name)
     game_mode = Keyword.fetch!(opts, :game_mode)
+    game_type = Keyword.fetch!(opts, :game_type)
     player_names = Keyword.get(opts, :players, [])
 
     players = Enum.map(player_names, fn name -> %Player{id: UUID.generate(), name: name} end)
@@ -68,17 +72,20 @@ defmodule ScoreTracker.Game do
     status = if game_mode == :scorekeeper, do: :in_progress, else: :waiting_for_players
     scores = Enum.reduce(player_ids, %{}, fn player, acc -> Map.put(acc, player, %{}) end)
 
+    custom_name = if game_type == :custom, do: Keyword.get(opts, :custom_name), else: nil
+
     %__MODULE__{
-      game_mode: game_mode,
-      game_type: Keyword.fetch!(opts, :game_type),
       allow_spectators: Keyword.get(opts, :allow_spectators, true),
+      custom_name: custom_name,
+      game_mode: game_mode,
+      game_type: game_type,
+      host_id: host_id,
       max_players: Keyword.fetch!(opts, :max_players),
       max_rounds: Keyword.fetch!(opts, :max_rounds),
-      host_id: host_id,
-      status: status,
-      round: 1,
       players: players,
-      scores: scores
+      round: 1,
+      scores: scores,
+      status: status
     }
   end
 

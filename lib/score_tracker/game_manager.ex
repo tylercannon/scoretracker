@@ -11,15 +11,16 @@ defmodule ScoreTracker.GameManager do
   @table_name :lobbies
 
   @create_game_schema NimbleOptions.new!(
-                        host_id: [
-                          type: :string,
-                          required: true,
-                          doc: "The id of the host."
+                        allow_spectators: [
+                          type: :boolean,
+                          required: false,
+                          default: true,
+                          doc: "Whether spectators are allowed to view the game."
                         ],
-                        host_name: [
-                          type: :string,
-                          required: true,
-                          doc: "The name of the host. Automatically added to the list of players."
+                        custom_name: [
+                          type: {:or, [:string, nil]},
+                          required: false,
+                          doc: "The optional custom game name when the game type is :custom"
                         ],
                         game_mode: [
                           type: {:in, [:scorekeeper, :party]},
@@ -38,11 +39,15 @@ defmodule ScoreTracker.GameManager do
                           Each type of game has custom settings, such as the maximum number of players or rounds.
                           """
                         ],
-                        allow_spectators: [
-                          type: :boolean,
-                          required: false,
-                          default: true,
-                          doc: "Whether spectators are allowed to view the game."
+                        host_id: [
+                          type: :string,
+                          required: true,
+                          doc: "The id of the host."
+                        ],
+                        host_name: [
+                          type: :string,
+                          required: true,
+                          doc: "The name of the host. Automatically added to the list of players."
                         ],
                         max_players: [
                           type: :pos_integer,

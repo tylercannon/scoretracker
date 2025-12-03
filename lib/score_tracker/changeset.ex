@@ -50,6 +50,25 @@ defmodule ScoreTracker.Changeset do
     end
   end
 
+  @doc """
+  Validate the custom game name if supplied
+  when the game type selected is `:custom`
+  """
+  @spec validate_custom_name(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  def validate_custom_name(changeset) do
+    if get_field(changeset, :game_type) == :custom do
+      changeset
+      |> validate_length(:custom_name, min: 1, max: 12)
+      |> validate_format(:custom_name, ~r/^[A-Za-z\d\s]*$/)
+    else
+      changeset
+    end
+  end
+
+  @doc """
+  Validate that the number of players in the changeset
+  (including the host) does not exceed the max players limit
+  """
   @spec validate_max_players(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def validate_max_players(changeset) do
     players = get_embed(changeset, :players)

@@ -57,6 +57,14 @@ defmodule ScoreTracker.GameType do
   def allows_negative_scores?(game_type), do: impl(game_type).allows_negative_scores?()
 
   @doc """
+  Returns the custom game name for custom game types,
+  or the friendly name otherwise
+  """
+  @spec friendly_name(game_type(), String.t() | nil) :: String.t()
+  def friendly_name(:custom, custom_name) when is_binary(custom_name), do: custom_name
+  def friendly_name(game_type, _custom_name), do: friendly_name(game_type)
+
+  @doc """
   Returns the friendly name for a game type
   """
   @spec friendly_name(game_type()) :: String.t()
