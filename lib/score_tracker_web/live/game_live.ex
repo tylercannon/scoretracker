@@ -17,7 +17,7 @@ defmodule ScoreTrackerWeb.GameLive do
           {GameType.friendly_name(@game.game_type, @game.custom_name)}
         </h1>
         <div class="flex items-center gap-4">
-          <div>
+          <div class="flex items-center gap-1">
             <span>ID:</span>
             <span class="font-bold">{@game_id}</span>
           </div>
@@ -29,7 +29,7 @@ defmodule ScoreTrackerWeb.GameLive do
             <button
               type="button"
               aria-label="Copy to clipboard"
-              class="cursor-pointer hover:text-primary/80"
+              class="flex items-center cursor-pointer hover:text-primary/80"
             >
               <.icon name="hero-clipboard-document" class="size-5" />
             </button>
@@ -44,7 +44,7 @@ defmodule ScoreTrackerWeb.GameLive do
             <button
               type="button"
               aria-label="Share game link"
-              class="cursor-pointer hover:text-primary/80"
+              class="flex items-center cursor-pointer hover:text-primary/80"
             >
               <.icon name="hero-share" class="size-5" />
             </button>
