@@ -79,33 +79,14 @@ defmodule ScoreTrackerWeb.GameLive do
                 class="group hover:bg-primary hover:text-primary-foreground"
               >
                 <td>
-                  <button
+                  <.edit_score
                     :if={GameDetails.user_score_editable?(@game, player_id, @user_id)}
-                    type="button"
-                    class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
-                    phx-click={show_modal("edit-#{player_id}-score")}
-                  >
-                    <span class="hero-pencil-square-mini"></span>
-                  </button>
-                  <.modal
-                    id={"edit-#{player_id}-score"}
-                    on_cancel={hide_modal("edit-#{player_id}-score")}
-                  >
-                    <div>
-                      <h2 class="text-xl font-bold mb-4 text-primary">
-                        Edit {player_name}'s Round {@game.round} Score
-                      </h2>
-                      <.live_component
-                        id={"edit-#{player_id}-score-form"}
-                        module={ScoreTrackerWeb.UpdateScoreForm}
-                        game_id={@game_id}
-                        player_id={player_id}
-                        game_type={@game.game_type}
-                        round={@game.round}
-                        on_cancel={hide_modal("edit-#{player_id}-score")}
-                      />
-                    </div>
-                  </.modal>
+                    game_id={@game_id}
+                    game_type={@game.game_type}
+                    player_id={player_id}
+                    player_name={player_name}
+                    round={@game.round}
+                  />
                 </td>
                 <td class="p-3 font-medium">{player_name}</td>
                 <td class="md:hidden p-3 font-bold">
@@ -218,6 +199,37 @@ defmodule ScoreTrackerWeb.GameLive do
     """
   end
 
+  defp edit_score(%{game_id: _, game_type: _, player_id: _, player_name: _, round: _} = assigns) do
+    ~H"""
+    <button
+      type="button"
+      class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
+      phx-click={show_modal("edit-#{@player_id}-score")}
+    >
+      <span class="hero-pencil-square-mini"></span>
+    </button>
+    <.modal
+      id={"edit-#{@player_id}-score"}
+      on_cancel={hide_modal("edit-#{@player_id}-score")}
+    >
+      <div>
+        <h2 class="text-xl font-bold mb-4 text-primary">
+          Edit {@player_name}'s Round {@round} Score
+        </h2>
+        <.live_component
+          id={"edit-#{@player_id}-score-form"}
+          module={ScoreTrackerWeb.UpdateScoreForm}
+          game_id={@game_id}
+          player_id={@player_id}
+          game_type={@game_type}
+          round={@round}
+          on_cancel={hide_modal("edit-#{@player_id}-score")}
+        />
+      </div>
+    </.modal>
+    """
+  end
+
   @impl true
   def mount(%{"game_id" => game_id}, session, socket) do
     case GameDetails.get_game(game_id) do
@@ -254,25 +266,47 @@ defmodule ScoreTrackerWeb.GameLive do
   def terminate(_reason, _socket), do: :ok
 
   @impl true
-  def handle_event("start_game", _params, %Socket{assigns: %{game_id: game_id}} = socket) do
-    {:ok, status} = GameManager.start_game(GameManager, game_id: game_id)
+  def handle_event(
+        "start_game",
+        _params,
+        %Socket{assigns: %{is_host: host?, game_id: game_id}} = socket
+      ) do
+    if host? do
+      {:ok, status} = GameManager.start_game(GameManager, game_id: game_id)
 
-    ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "start_game", %{status: status})
+      ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "start_game", %{
+        status: status
+      })
+    end
 
     {:noreply, socket}
   end
 
   @impl true
-  def handle_event("next_round", _params, %Socket{assigns: %{game_id: game_id}} = socket) do
-    {:ok, _} = GameManager.advance_to_next_round(GameManager, game_id: game_id)
-    ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "next_round", %{})
+  def handle_event(
+        "next_round",
+        _params,
+        %Socket{assigns: %{is_host: host?, game_id: game_id}} = socket
+      ) do
+    if host? do
+      {:ok, _} = GameManager.advance_to_next_round(GameManager, game_id: game_id)
+      ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "next_round", %{})
+    end
+
     {:noreply, socket}
   end
 
   @impl true
-  def handle_event("play_again", _params, %Socket{assigns: %{game_id: game_id}} = socket) do
-    :ok = GameManager.reset_game(GameManager, game_id: game_id)
-    ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "play_again", %{})
+  def handle_event(
+        "play_again",
+        _params,
+        %Socket{assigns: %{is_host: host?, game_id: game_id}} = socket
+      ) do
+    if host? do
+      :ok = GameManager.reset_game(GameManager, game_id: game_id)
+      ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "play_again", %{})
+    end
+
     {:noreply, socket}
   end
 
