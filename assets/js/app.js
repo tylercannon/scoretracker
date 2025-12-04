@@ -27,29 +27,55 @@ import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
+const copyToClipboard = ({ element, textToCopy, iconClass, confirmedIconClass }) => {
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    const icon = element.querySelector(`.${iconClass}`)
+
+    if (icon) {
+      icon.classList.remove(iconClass)
+      icon.classList.add(confirmedIconClass)
+
+      setTimeout(() => {
+        icon.classList.remove(confirmedIconClass)
+        icon.classList.add(iconClass)
+      }, 1500);
+    }
+  }).catch(console.error)
+}
+
 const hooks = {
   CopyToClipboard: {
     mounted() {
       this.el.addEventListener("click", (_e) => {
-        const textToCopy = this.el.dataset.copyText;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-          const copyIconClass = "hero-clipboard-document";
-          const copyConfirmedIconClass = "hero-clipboard-document-check";
-          const icon = this.el.querySelector(`.${copyIconClass}`);
-
-          if (icon) {
-            icon.classList.remove(copyIconClass);
-            icon.classList.add(copyConfirmedIconClass);
-
-            setTimeout(() => {
-              icon.classList.remove(copyConfirmedIconClass);
-              icon.classList.add(copyIconClass);
-            }, 1500);
-          }
-        });
-      });
+        copyToClipboard({
+          element: this.el,
+          textToCopy: this.el.dataset.copyText,
+          iconClass: "hero-clipboard-document",
+          confirmedIconClass: "hero-clipboard-document-check",
+        })
+      })
     },
-  }
+  },
+  ShareLink: {
+    mounted() {
+      this.el.addEventListener("click", (_e) => {
+        const shareUrl = this.el.dataset.shareUrl
+        const shareTitle = this.el.dataset.shareTitle
+        const shareText = this.el.dataset.shareText
+
+        if (navigator.share) {
+          navigator.share({ title: shareTitle, text: shareText, url: shareUrl }).catch(console.error)
+        } else {
+          copyToClipboard({
+            element: this.el,
+            textToCopy: shareUrl,
+            iconClass: "hero-share",
+            confirmedIconClass: "hero-check",
+          })
+        }
+      })
+    },
+  },
 };
 
 const liveSocket = new LiveSocket("/live", Socket, {

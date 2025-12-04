@@ -12,25 +12,43 @@ defmodule ScoreTrackerWeb.GameLive do
       class="min-size-full flex flex-col items-center p-4 pb-12 text-primary bg-background"
       phx-mounted={JS.remove_class("overflow-hidden", to: "body")}
     >
-      <div class="w-full flex items-center justify-between">
+      <div class="w-full flex items-center justify-between gap-4">
         <h1 class="text-xl font-bold">
           {GameType.friendly_name(@game.game_type, @game.custom_name)}
         </h1>
-        <div
-          class="flex items-center gap-2"
-          phx-hook="CopyToClipboard"
-          id="game-id-wrapper"
-          data-copy-text={@game_id}
-        >
-          <span>Game ID:</span>
-          <span class="font-bold">{@game_id}</span>
-          <button
-            type="button"
-            aria-label="Copy to clipboard"
-            class="cursor-pointer hover:text-primary/80"
+        <div class="flex items-center gap-4">
+          <div>
+            <span>ID:</span>
+            <span class="font-bold">{@game_id}</span>
+          </div>
+          <div
+            phx-hook="CopyToClipboard"
+            id="game-id-wrapper"
+            data-copy-text={@game_id}
           >
-            <.icon name="hero-clipboard-document" class="size-5" />
-          </button>
+            <button
+              type="button"
+              aria-label="Copy to clipboard"
+              class="cursor-pointer hover:text-primary/80"
+            >
+              <.icon name="hero-clipboard-document" class="size-5" />
+            </button>
+          </div>
+          <div
+            phx-hook="ShareLink"
+            id="share-link-wrapper"
+            data-share-url={@share_url}
+            data-share-title={"Share #{GameType.friendly_name(@game.game_type, @game.custom_name)} game link"}
+            data-share-text="Share game link"
+          >
+            <button
+              type="button"
+              aria-label="Share game link"
+              class="cursor-pointer hover:text-primary/80"
+            >
+              <.icon name="hero-share" class="size-5" />
+            </button>
+          </div>
         </div>
       </div>
       <div class="w-full my-4 flex justify-center gap-4">
@@ -256,6 +274,16 @@ defmodule ScoreTrackerWeb.GameLive do
       {:error, :not_found} ->
         {:ok, push_navigate(socket, to: ~p"/")}
     end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_params(_params, uri, socket) do
+    parsed_uri = URI.parse(uri)
+    encoded_query = URI.encode_query(%{"join" => socket.assigns.game_id})
+    share_uri = %{parsed_uri | path: nil, query: encoded_query}
+    share_url = URI.to_string(share_uri)
+
+    {:noreply, assign(socket, share_url: share_url)}
   end
 
   @impl true
