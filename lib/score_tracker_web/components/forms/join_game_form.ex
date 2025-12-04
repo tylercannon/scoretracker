@@ -9,17 +9,7 @@ defmodule ScoreTrackerWeb.JoinGameForm do
   alias ScoreTracker.{GameManager, JoinGame}
   alias ScoreTrackerWeb.GameDetails
 
-  @impl true
-  def update(assigns, socket) do
-    socket =
-      socket
-      |> assign(assigns)
-      |> assign(form: to_form(JoinGame.changeset(%JoinGame{})))
-
-    {:ok, socket}
-  end
-
-  @impl true
+  @impl Phoenix.LiveComponent
   def render(%{on_cancel: _} = assigns) do
     ~H"""
     <div>
@@ -47,7 +37,19 @@ defmodule ScoreTrackerWeb.JoinGameForm do
     """
   end
 
-  @impl true
+  @impl Phoenix.LiveComponent
+  def update(assigns, socket) do
+    game_id = Map.get(assigns, :game_id)
+
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign(form: to_form(JoinGame.changeset(%JoinGame{game_id: game_id})))
+
+    {:ok, socket}
+  end
+
+  @impl Phoenix.LiveComponent
   def handle_event("validate", attrs, socket) do
     form =
       %JoinGame{}
@@ -57,7 +59,7 @@ defmodule ScoreTrackerWeb.JoinGameForm do
     {:noreply, assign(socket, form: form)}
   end
 
-  @impl true
+  @impl Phoenix.LiveComponent
   def handle_event("save", attrs, socket) do
     socket =
       case JoinGame.update(%JoinGame{}, attrs) do
