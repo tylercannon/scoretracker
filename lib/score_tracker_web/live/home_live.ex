@@ -1,12 +1,9 @@
 defmodule ScoreTrackerWeb.HomeLive do
   use ScoreTrackerWeb, :live_view
 
-  @impl true
-  def mount(_params, session, socket) do
-    {:ok, assign(socket, user_id: session["user_id"])}
-  end
+  alias ScoreTracker.JoinGame
 
-  @impl true
+  @impl Phoenix.LiveView
   def render(%{user_id: _} = assigns) do
     ~H"""
     <div class="size-full flex flex-col items-center justify-center bg-background text-primary">
@@ -37,17 +34,37 @@ defmodule ScoreTrackerWeb.HomeLive do
       </div>
     </.modal>
 
-    <.modal id="join-game-modal" on_cancel={hide_modal("join-game-modal")}>
+    <.modal id="join-game-modal" on_cancel={hide_modal("join-game-modal")} show={@show_join_modal}>
       <div>
         <h2 class="text-xl font-bold mb-4 text-primary">Join Game</h2>
         <.live_component
           id="join-game-form"
           module={ScoreTrackerWeb.JoinGameForm}
           user_id={@user_id}
+          game_id={@game_id}
           on_cancel={hide_modal("join-game-modal")}
         />
       </div>
     </.modal>
     """
   end
+
+  @impl Phoenix.LiveView
+  def mount(_params, session, socket) do
+    {:ok, assign(socket, user_id: session["user_id"], game_id: nil, show_join_modal: false)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_params(%{"join" => game_id}, _uri, socket) do
+    show_join_modal? = JoinGame.valid_game_id?(game_id)
+    socket = assign(socket, game_id: game_id, show_join_modal: show_join_modal?)
+
+    if show_join_modal? do
+      {:noreply, socket}
+    else
+      {:noreply, push_patch(socket, to: "/")}
+    end
+  end
+
+  def handle_params(_params, _uri, socket), do: {:noreply, socket}
 end

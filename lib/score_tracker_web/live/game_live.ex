@@ -5,32 +5,50 @@ defmodule ScoreTrackerWeb.GameLive do
   alias ScoreTracker.{GameManager, GameType, Player}
   alias ScoreTrackerWeb.GameDetails
 
-  @impl true
+  @impl Phoenix.LiveView
   def render(%{is_host: _} = assigns) do
     ~H"""
     <div
       class="min-size-full flex flex-col items-center p-4 pb-12 text-primary bg-background"
       phx-mounted={JS.remove_class("overflow-hidden", to: "body")}
     >
-      <div class="w-full flex items-center justify-between">
+      <div class="w-full flex items-center justify-between gap-4">
         <h1 class="text-xl font-bold">
           {GameType.friendly_name(@game.game_type, @game.custom_name)}
         </h1>
-        <div
-          class="flex items-center gap-2"
-          phx-hook="CopyToClipboard"
-          id="game-id-wrapper"
-          data-copy-text={@game_id}
-        >
-          <span>Game ID:</span>
-          <span class="font-bold">{@game_id}</span>
-          <button
-            type="button"
-            aria-label="Copy to clipboard"
-            class="cursor-pointer hover:text-primary/80"
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-1">
+            <span>ID:</span>
+            <span class="font-bold">{@game_id}</span>
+          </div>
+          <div
+            phx-hook="CopyToClipboard"
+            id="game-id-wrapper"
+            data-copy-text={@game_id}
           >
-            <.icon name="hero-clipboard-document" class="size-5" />
-          </button>
+            <button
+              type="button"
+              aria-label="Copy to clipboard"
+              class="flex items-center cursor-pointer hover:text-primary/80"
+            >
+              <.icon name="hero-clipboard-document" class="size-5" />
+            </button>
+          </div>
+          <div
+            phx-hook="ShareLink"
+            id="share-link-wrapper"
+            data-share-url={@share_url}
+            data-share-title={"Share #{GameType.friendly_name(@game.game_type, @game.custom_name)} game link"}
+            data-share-text="Share game link"
+          >
+            <button
+              type="button"
+              aria-label="Share game link"
+              class="flex items-center cursor-pointer hover:text-primary/80"
+            >
+              <.icon name="hero-share" class="size-5" />
+            </button>
+          </div>
         </div>
       </div>
       <div class="w-full my-4 flex justify-center gap-4">
@@ -230,7 +248,7 @@ defmodule ScoreTrackerWeb.GameLive do
     """
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def mount(%{"game_id" => game_id}, session, socket) do
     case GameDetails.get_game(game_id) do
       {:ok, game} ->
@@ -258,14 +276,24 @@ defmodule ScoreTrackerWeb.GameLive do
     end
   end
 
-  @impl true
+  @impl Phoenix.LiveView
+  def handle_params(_params, uri, socket) do
+    parsed_uri = URI.parse(uri)
+    encoded_query = URI.encode_query(%{"join" => socket.assigns.game_id})
+    share_uri = %{parsed_uri | path: nil, query: encoded_query}
+    share_url = URI.to_string(share_uri)
+
+    {:noreply, assign(socket, share_url: share_url)}
+  end
+
+  @impl Phoenix.LiveView
   def terminate(_reason, %Socket{assigns: %{game_id: game_id}}) do
     Phoenix.PubSub.unsubscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
   end
 
   def terminate(_reason, _socket), do: :ok
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event(
         "start_game",
         _params,
@@ -282,7 +310,7 @@ defmodule ScoreTrackerWeb.GameLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event(
         "next_round",
         _params,
@@ -296,7 +324,7 @@ defmodule ScoreTrackerWeb.GameLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event(
         "play_again",
         _params,
@@ -310,18 +338,18 @@ defmodule ScoreTrackerWeb.GameLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info(:after_mount, %Socket{assigns: %{game_id: game_id}} = socket) do
     ScoreTrackerWeb.Endpoint.broadcast_from(self(), GameDetails.topic(game_id), "joined", %{})
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info(%{event: "start_game", payload: %{status: status}}, socket) do
     {:noreply, update(socket, :game, &Map.put(&1, :status, status))}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info(%{event: event}, %Socket{assigns: %{game_id: game_id}} = socket)
       when event in ["joined", "next_round", "play_again"] do
     {:ok, game} = GameDetails.get_game(game_id)
