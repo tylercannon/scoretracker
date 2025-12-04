@@ -5,7 +5,7 @@ defmodule ScoreTrackerWeb.GameLive do
   alias ScoreTracker.{GameManager, GameType, Player}
   alias ScoreTrackerWeb.GameDetails
 
-  @impl true
+  @impl Phoenix.LiveView
   def render(%{is_host: _} = assigns) do
     ~H"""
     <div
@@ -248,7 +248,7 @@ defmodule ScoreTrackerWeb.GameLive do
     """
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def mount(%{"game_id" => game_id}, session, socket) do
     case GameDetails.get_game(game_id) do
       {:ok, game} ->
@@ -286,14 +286,14 @@ defmodule ScoreTrackerWeb.GameLive do
     {:noreply, assign(socket, share_url: share_url)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def terminate(_reason, %Socket{assigns: %{game_id: game_id}}) do
     Phoenix.PubSub.unsubscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
   end
 
   def terminate(_reason, _socket), do: :ok
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event(
         "start_game",
         _params,
@@ -310,7 +310,7 @@ defmodule ScoreTrackerWeb.GameLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event(
         "next_round",
         _params,
@@ -324,7 +324,7 @@ defmodule ScoreTrackerWeb.GameLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event(
         "play_again",
         _params,
@@ -338,18 +338,18 @@ defmodule ScoreTrackerWeb.GameLive do
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info(:after_mount, %Socket{assigns: %{game_id: game_id}} = socket) do
     ScoreTrackerWeb.Endpoint.broadcast_from(self(), GameDetails.topic(game_id), "joined", %{})
     {:noreply, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info(%{event: "start_game", payload: %{status: status}}, socket) do
     {:noreply, update(socket, :game, &Map.put(&1, :status, status))}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_info(%{event: event}, %Socket{assigns: %{game_id: game_id}} = socket)
       when event in ["joined", "next_round", "play_again"] do
     {:ok, game} = GameDetails.get_game(game_id)
