@@ -72,10 +72,8 @@ defmodule ScoreTrackerWeb.JoinGameForm do
 
           case GameManager.add_player(GameManager, player_opts) do
             {:error, error_code} ->
-              message = GameDetails.get_join_error_message(error_code)
+              {field, message} = GameDetails.get_join_error_details(error_code)
               attrs = Map.from_struct(join_game)
-
-              field = if error_code == :duplicate_name, do: :player_name, else: :game_id
 
               form =
                 %JoinGame{}
