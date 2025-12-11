@@ -75,10 +75,12 @@ defmodule ScoreTrackerWeb.JoinGameForm do
               message = GameDetails.get_join_error_message(error_code)
               attrs = Map.from_struct(join_game)
 
+              field = if error_code == :duplicate_name, do: :player_name, else: :game_id
+
               form =
                 %JoinGame{}
                 |> JoinGame.changeset(attrs)
-                |> Ecto.Changeset.add_error(:game_id, message)
+                |> Ecto.Changeset.add_error(field, message)
                 |> to_form(action: :validate)
 
               assign(socket, form: form)

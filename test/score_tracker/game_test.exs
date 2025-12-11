@@ -211,6 +211,15 @@ defmodule ScoreTracker.GameTest do
       assert {:error, :already_exists} = Game.add_player(game, "player1", "Player")
     end
 
+    test "rejects duplicate player name in party game", %{party_game_opts: party_game_opts} do
+      {:ok, :player, game} =
+        party_game_opts
+        |> Game.new()
+        |> Game.add_player("player1", "Player")
+
+      assert {:error, :duplicate_name} = Game.add_player(game, "player2", "Player")
+    end
+
     test "rejects adding player when spectators aren't allowed in a scorekeeper game", %{
       scorekeeper_game_opts: scorekeeper_game_opts
     } do

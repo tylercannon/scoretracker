@@ -68,6 +68,7 @@ defmodule ScoreTrackerWeb.GameDetails do
   def get_join_error_message(error_code) do
     case error_code do
       :already_exists -> "Player already exists"
+      :duplicate_name -> "Please select a different name"
       :not_found -> "Game not found"
       :not_joinable -> "Game not joinable"
     end

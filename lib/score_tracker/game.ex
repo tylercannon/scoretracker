@@ -51,7 +51,7 @@ defmodule ScoreTracker.Game do
   ]
 
   @type start_error_code() :: :invalid_game_mode | :invalid_game_state
-  @type join_error_code() :: :already_exists | :not_found | :not_joinable
+  @type join_error_code() :: :already_exists | :duplicate_name | :not_found | :not_joinable
   @type add_player_result :: {:ok, :player | :spectator, t()} | {:error, join_error_code()}
 
   @doc """
@@ -129,15 +129,21 @@ defmodule ScoreTracker.Game do
 
   def add_player(%__MODULE__{} = game, player_id, player_name) do
     already_exists? = Enum.any?(game.players, &match?(%Player{id: ^player_id}, &1))
+    duplicate_name? = Enum.any?(game.players, &match?(%Player{name: ^player_name}, &1))
 
-    if already_exists? do
-      {:error, :already_exists}
-    else
-      updated_scores = Map.put(game.scores, player_id, %{})
-      updated_players = Enum.concat(game.players, [%Player{id: player_id, name: player_name}])
-      updated_game = %{game | scores: updated_scores, players: updated_players}
+    cond do
+      already_exists? ->
+        {:error, :already_exists}
 
-      {:ok, :player, updated_game}
+      duplicate_name? ->
+        {:error, :duplicate_name}
+
+      true ->
+        updated_scores = Map.put(game.scores, player_id, %{})
+        updated_players = Enum.concat(game.players, [%Player{id: player_id, name: player_name}])
+        updated_game = %{game | scores: updated_scores, players: updated_players}
+
+        {:ok, :player, updated_game}
     end
   end
 
