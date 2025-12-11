@@ -11,44 +11,58 @@
 @plugin "../vendor/heroicons";
 @plugin "@tailwindcss/forms";
 
-/* Tangerine theme from tweakcn */
+/* 
+ * light: Tangerine theme from tweakcn
+ * dark: Perpetuity theme from tweakcn
+ */
 :root {
-  --background: oklch(0.9383 0.0042 236.4993);
-  --foreground: oklch(0.3211 0 0);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.3211 0 0);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.3211 0 0);
-  --primary: oklch(0.6397 0.1720 36.4421);
-  --primary-foreground: oklch(1.0000 0 0);
-  --secondary: oklch(0.9670 0.0029 264.5419);
-  --secondary-foreground: oklch(0.4461 0.0263 256.8018);
-  --muted: oklch(0.9846 0.0017 247.8389);
-  --muted-foreground: oklch(0.5510 0.0234 264.3637);
-  --accent: oklch(0.9119 0.0222 243.8174);
-  --accent-foreground: oklch(0.3791 0.1378 265.5222);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.9022 0.0052 247.8822);
-  --input: oklch(0.9700 0.0029 264.5420);
-  --ring: oklch(0.6397 0.1720 36.4421);
-  --chart-1: oklch(0.7156 0.0605 248.6845);
-  --chart-2: oklch(0.7875 0.0917 35.9616);
-  --chart-3: oklch(0.5778 0.0759 254.1573);
-  --chart-4: oklch(0.5016 0.0849 259.4902);
-  --chart-5: oklch(0.4241 0.0952 264.0306);
-  --sidebar: oklch(0.9030 0.0046 258.3257);
-  --sidebar-foreground: oklch(0.3211 0 0);
-  --sidebar-primary: oklch(0.6397 0.1720 36.4421);
-  --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.9119 0.0222 243.8174);
-  --sidebar-accent-foreground: oklch(0.3791 0.1378 265.5222);
-  --sidebar-border: oklch(0.9276 0.0058 264.5313);
-  --sidebar-ring: oklch(0.6397 0.1720 36.4421);
+  color-scheme: light dark;
+
   --font-sans: Source Code Pro, monospace;
   --font-serif: Source Code Pro, monospace;
   --font-mono: Source Code Pro, monospace;
   --radius: 0.125rem;
+
+  --background: light-dark(oklch(0.9383 0.0042 236.4993), oklch(0.2068 0.0247 224.4533));
+  --foreground: light-dark(oklch(0.3211 0 0), oklch(0.8520 0.1269 195.0354));
+  --card: light-dark(oklch(1.0000 0 0), oklch(0.2293 0.0276 216.0674));
+  --card-foreground: light-dark(oklch(0.3211 0 0), oklch(0.8520 0.1269 195.0354));
+  --popover: light-dark(oklch(1.0000 0 0), oklch(0.2293 0.0276 216.0674));
+  --popover-foreground: light-dark(oklch(0.3211 0 0), oklch(0.8520 0.1269 195.0354));
+  --primary: light-dark(oklch(0.6397 0.1720 36.4421), oklch(0.8520 0.1269 195.0354));
+  --primary-foreground: light-dark(oklch(1.0000 0 0), oklch(0.2068 0.0247 224.4533));
+  --secondary: light-dark(oklch(0.9670 0.0029 264.5419), oklch(0.3775 0.0564 216.5010));
+  --secondary-foreground: light-dark(oklch(0.4461 0.0263 256.8018), oklch(0.8520 0.1269 195.0354));
+  --muted: light-dark(oklch(0.9846 0.0017 247.8389), oklch(0.2894 0.0412 218.8153));
+  --muted-foreground: light-dark(oklch(0.5510 0.0234 264.3637), oklch(0.6611 0.0975 195.0526));
+  --accent: light-dark(oklch(0.9119 0.0222 243.8174), oklch(0.3775 0.0564 216.5010));
+  --accent-foreground: light-dark(oklch(0.3791 0.1378 265.5222), oklch(0.8520 0.1269 195.0354));
+  --destructive: light-dark(oklch(0.6368 0.2078 25.3313), oklch(0.6168 0.2086 25.8088));
+  --destructive-foreground: light-dark(oklch(1.0000 0 0), oklch(0.9612 0 0));
+  --border: light-dark(oklch(0.9022 0.0052 247.8822), oklch(0.3775 0.0564 216.5010));
+  --input: light-dark(oklch(0.9700 0.0029 264.5420), oklch(0.3775 0.0564 216.5010));
+  --ring: light-dark(oklch(0.6397 0.1720 36.4421), oklch(0.8520 0.1269 195.0354));
+  --chart-1: light-dark(oklch(0.7156 0.0605 248.6845), oklch(0.8520 0.1269 195.0354));
+  --chart-2: light-dark(oklch(0.7875 0.0917 35.9616), oklch(0.6611 0.0975 195.0526));
+  --chart-3: light-dark(oklch(0.5778 0.0759 254.1573), oklch(0.5804 0.0849 195.0673));
+  --chart-4: light-dark(oklch(0.5016 0.0849 259.4902), oklch(0.4269 0.0630 202.6247));
+  --chart-5: light-dark(oklch(0.4241 0.0952 264.0306), oklch(0.3142 0.0455 204.1575));
+  --sidebar: light-dark(oklch(0.9030 0.0046 258.3257), oklch(0.2068 0.0247 224.4533));
+  --sidebar-foreground: light-dark(oklch(0.3211 0 0), oklch(0.8520 0.1269 195.0354));
+  --sidebar-primary: light-dark(oklch(0.6397 0.1720 36.4421), oklch(0.8520 0.1269 195.0354));
+  --sidebar-primary-foreground: light-dark(oklch(1.0000 0 0), oklch(0.2068 0.0247 224.4533));
+  --sidebar-accent: light-dark(oklch(0.9119 0.0222 243.8174), oklch(0.3775 0.0564 216.5010));
+  --sidebar-accent-foreground: light-dark(oklch(0.3791 0.1378 265.5222), oklch(0.8520 0.1269 195.0354));
+  --sidebar-border: light-dark(oklch(0.9276 0.0058 264.5313), oklch(0.3775 0.0564 216.5010));
+  --sidebar-ring: light-dark(oklch(0.6397 0.1720 36.4421), oklch(0.8520 0.1269 195.0354));
+
+  /* Custom values */
+  --checkbox: light-dark(oklch(0.6397 0.1720 36.4421), oklch(0.3775 0.0564 216.5010));
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
   --shadow-2xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
@@ -57,49 +71,11 @@
   --shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.10), 0px 4px 6px -1px hsl(0 0% 0% / 0.10);
   --shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.10), 0px 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.25);
-
-  /* Custom values */
-  --checkbox: oklch(0.6397 0.1720 36.4421);
 }
 
-/* Perpetuity theme from tweakcn */
 [data-theme="dark"] {
-  --background: oklch(0.2068 0.0247 224.4533);
-  --foreground: oklch(0.8520 0.1269 195.0354);
-  --card: oklch(0.2293 0.0276 216.0674);
-  --card-foreground: oklch(0.8520 0.1269 195.0354);
-  --popover: oklch(0.2293 0.0276 216.0674);
-  --popover-foreground: oklch(0.8520 0.1269 195.0354);
-  --primary: oklch(0.8520 0.1269 195.0354);
-  --primary-foreground: oklch(0.2068 0.0247 224.4533);
-  --secondary: oklch(0.3775 0.0564 216.5010);
-  --secondary-foreground: oklch(0.8520 0.1269 195.0354);
-  --muted: oklch(0.2894 0.0412 218.8153);
-  --muted-foreground: oklch(0.6611 0.0975 195.0526);
-  --accent: oklch(0.3775 0.0564 216.5010);
-  --accent-foreground: oklch(0.8520 0.1269 195.0354);
-  --destructive: oklch(0.6168 0.2086 25.8088);
-  --destructive-foreground: oklch(0.9612 0 0);
-  --border: oklch(0.3775 0.0564 216.5010);
-  --input: oklch(0.3775 0.0564 216.5010);
-  --ring: oklch(0.8520 0.1269 195.0354);
-  --chart-1: oklch(0.8520 0.1269 195.0354);
-  --chart-2: oklch(0.6611 0.0975 195.0526);
-  --chart-3: oklch(0.5804 0.0849 195.0673);
-  --chart-4: oklch(0.4269 0.0630 202.6247);
-  --chart-5: oklch(0.3142 0.0455 204.1575);
-  --sidebar: oklch(0.2068 0.0247 224.4533);
-  --sidebar-foreground: oklch(0.8520 0.1269 195.0354);
-  --sidebar-primary: oklch(0.8520 0.1269 195.0354);
-  --sidebar-primary-foreground: oklch(0.2068 0.0247 224.4533);
-  --sidebar-accent: oklch(0.3775 0.0564 216.5010);
-  --sidebar-accent-foreground: oklch(0.8520 0.1269 195.0354);
-  --sidebar-border: oklch(0.3775 0.0564 216.5010);
-  --sidebar-ring: oklch(0.8520 0.1269 195.0354);
-  --font-sans: Source Code Pro, monospace;
-  --font-serif: Source Code Pro, monospace;
-  --font-mono: Source Code Pro, monospace;
-  --radius: 0.125rem;
+  color-scheme: dark;
+
   --shadow-2xs: 1px 1px 2px 0px hsl(180 70% 60% / 0.10);
   --shadow-xs: 1px 1px 2px 0px hsl(180 70% 60% / 0.10);
   --shadow-sm: 1px 1px 2px 0px hsl(180 70% 60% / 0.20), 1px 1px 2px -1px hsl(180 70% 60% / 0.20);
@@ -108,9 +84,6 @@
   --shadow-lg: 1px 1px 2px 0px hsl(180 70% 60% / 0.20), 1px 4px 6px -1px hsl(180 70% 60% / 0.20);
   --shadow-xl: 1px 1px 2px 0px hsl(180 70% 60% / 0.20), 1px 8px 10px -1px hsl(180 70% 60% / 0.20);
   --shadow-2xl: 1px 1px 2px 0px hsl(180 70% 60% / 0.50);
-
-  /* Custom values */
-  --checkbox: oklch(0.3775 0.0564 216.5010);
 }
 
 @theme inline {
@@ -173,9 +146,6 @@
 @custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
 @custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
 @custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
-
-/* Use the data attribute for dark mode  */
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-session],
