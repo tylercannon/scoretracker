@@ -64,12 +64,13 @@ defmodule ScoreTrackerWeb.GameDetails do
   @doc """
   Get the friendly error message for a given join game error code
   """
-  @spec get_join_error_message(Game.join_error_code()) :: String.t()
-  def get_join_error_message(error_code) do
+  @spec get_join_error_details(Game.join_error_code()) :: {atom(), String.t()}
+  def get_join_error_details(error_code) do
     case error_code do
-      :already_exists -> "Player already exists"
-      :not_found -> "Game not found"
-      :not_joinable -> "Game not joinable"
+      :already_exists -> {:player_name, "Player already exists"}
+      :duplicate_name -> {:player_name, "Please select a different name"}
+      :not_found -> {:game_id, "Game not found"}
+      :not_joinable -> {:game_id, "Game not joinable"}
     end
   end
 

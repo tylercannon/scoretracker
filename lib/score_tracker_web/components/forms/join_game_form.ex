@@ -72,13 +72,13 @@ defmodule ScoreTrackerWeb.JoinGameForm do
 
           case GameManager.add_player(GameManager, player_opts) do
             {:error, error_code} ->
-              message = GameDetails.get_join_error_message(error_code)
+              {field, message} = GameDetails.get_join_error_details(error_code)
               attrs = Map.from_struct(join_game)
 
               form =
                 %JoinGame{}
                 |> JoinGame.changeset(attrs)
-                |> Ecto.Changeset.add_error(:game_id, message)
+                |> Ecto.Changeset.add_error(field, message)
                 |> to_form(action: :validate)
 
               assign(socket, form: form)
