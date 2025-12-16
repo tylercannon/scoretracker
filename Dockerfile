@@ -11,9 +11,9 @@
 #   - https://pkgs.org/ - resource for finding needed packages
 #   - Ex: docker.io/hexpm/elixir:1.19.3-erlang-28.1.1-debian-bookworm-20251117-slim
 #
-ARG ELIXIR_VERSION=1.19.3
-ARG OTP_VERSION=28.1.1
-ARG DEBIAN_VERSION=bookworm-20251117-slim
+ARG ELIXIR_VERSION=1.19.4
+ARG OTP_VERSION=28.3
+ARG DEBIAN_VERSION=bookworm-20251208-slim
 
 ARG BUILDER_IMAGE="docker.io/hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="docker.io/debian:${DEBIAN_VERSION}"
