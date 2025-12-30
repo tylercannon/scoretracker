@@ -222,9 +222,7 @@ defmodule ScoreTrackerWeb.GameLive do
     <button
       type="button"
       class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
-      phx-click={
-        show_modal("edit-#{@player_id}-score") |> JS.focus(to: "##{@player_id}-#{@round}-score")
-      }
+      phx-click={show_modal("edit-#{@player_id}-score")}
     >
       <span class="hero-pencil-square-mini"></span>
     </button>
