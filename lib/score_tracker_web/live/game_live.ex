@@ -39,7 +39,7 @@ defmodule ScoreTrackerWeb.GameLive do
             id="share-link-wrapper"
             data-share-url={@share_url}
             data-share-title={"Share #{GameType.friendly_name(@game.game_type, @game.custom_name)} game link"}
-            data-share-text="Share game link"
+            data-share-text={"Join #{GameType.friendly_name(@game.game_type, @game.custom_name)}"}
           >
             <button
               type="button"
@@ -222,7 +222,9 @@ defmodule ScoreTrackerWeb.GameLive do
     <button
       type="button"
       class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
-      phx-click={show_modal("edit-#{@player_id}-score")}
+      phx-click={
+        show_modal("edit-#{@player_id}-score") |> JS.focus(to: "##{@player_id}-#{@round}-score")
+      }
     >
       <span class="hero-pencil-square-mini"></span>
     </button>
