@@ -109,10 +109,7 @@ defmodule ScoreTrackerWeb.GameLive do
                 >
                   <div class="flex gap-2 items-center justify-center">
                     <.edit_score
-                      :if={
-                        round == @game.round and
-                          GameDetails.user_score_editable?(@game, player_id, @user_id)
-                      }
+                      :if={GameDetails.user_score_editable?(@game, player_id, @user_id, round)}
                       player_id={player_id}
                       player_name={player_name}
                       round={round}
@@ -120,9 +117,7 @@ defmodule ScoreTrackerWeb.GameLive do
                     {Map.get(
                       @game.scores[player_id],
                       to_string(round),
-                      if(
-                        round == @game.round and
-                          GameDetails.user_score_editable?(@game, player_id, @user_id),
+                      if(GameDetails.user_score_editable?(@game, player_id, @user_id, round),
                         do: nil,
                         else: "-"
                       )
@@ -350,7 +345,7 @@ defmodule ScoreTrackerWeb.GameLive do
         %{"player_id" => player_id, "player_name" => player_name, "round" => round},
         %Socket{assigns: %{is_host: host?, game: game, user_id: user_id}} = socket
       ) do
-    if host? or GameDetails.user_score_editable?(game, player_id, user_id) do
+    if host? or GameDetails.user_score_editable?(game, player_id, user_id, round) do
       edit_score_details = %{
         player_id: player_id,
         player_name: player_name,
