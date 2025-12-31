@@ -28,6 +28,16 @@ defmodule ScoreTracker.GameType.RippleTest do
     end
   end
 
+  describe "round_info/1" do
+    test "returns expected value" do
+      wild_cards = "* Wild Cards: 0s, 7s, 11s, and Rage Cards"
+
+      Enum.each(1..10, fn round ->
+        assert Ripple.round_info(round) == [wild_cards]
+      end)
+    end
+  end
+
   describe "validate_round_score/2" do
     test "valid params" do
       result =

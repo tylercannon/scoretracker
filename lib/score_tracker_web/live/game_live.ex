@@ -56,6 +56,14 @@ defmodule ScoreTrackerWeb.GameLive do
         <.stat_card label="Status" value={GameDetails.get_status(@game.status)} />
       </div>
       <div class="w-full">
+        <div :if={GameType.round_info(@game.game_type, @game.round)} class="mb-4">
+          <h2 class="text-lg font-bold mb-2">Round Info</h2>
+          <div class="flex flex-col gap-2">
+            <p :for={line <- GameType.round_info(@game.game_type, @game.round)} class="mx-4">
+              {line}
+            </p>
+          </div>
+        </div>
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold">Scoreboard</h2>
           <.button
