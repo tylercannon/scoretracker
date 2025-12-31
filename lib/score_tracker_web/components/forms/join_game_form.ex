@@ -20,7 +20,7 @@ defmodule ScoreTrackerWeb.JoinGameForm do
         phx-change={JS.push("validate")}
         phx-submit="save"
       >
-        <.input field={f[:player_name]} label="Name" />
+        <.input field={f[:player_name]} label="Name" autocomplete="given-name" />
         <.input field={f[:game_id]} label="Game ID" />
         <:actions>
           <.button
