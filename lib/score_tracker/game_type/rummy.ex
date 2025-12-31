@@ -6,6 +6,19 @@ defmodule ScoreTracker.GameType.Rummy do
 
   @behaviour ScoreTracker.GameType
 
+  @prefix "* Objective:"
+  @wild_cards "* Wild Cards: 2s and Jokers"
+  @round_info %{
+    "1" => ["#{@prefix} 2 three of a kinds"],
+    "2" => ["#{@prefix} 1 three of a kind and 1 four card run"],
+    "3" => ["#{@prefix} 2 four card runs"],
+    "4" => ["#{@prefix} 3 three of a kinds"],
+    "5" => ["#{@prefix} 2 three of a kinds and 1 four card run"],
+    "6" => ["#{@prefix} 1 three of a kind and 2 four card runs"],
+    "7" => ["#{@prefix} 3 four card runs"],
+    "8" => ["#{@prefix} 4 three of a kinds"]
+  }
+
   @impl ScoreTracker.GameType
   def allows_negative_scores?, do: false
 
@@ -17,6 +30,13 @@ defmodule ScoreTracker.GameType.Rummy do
 
   @impl ScoreTracker.GameType
   def max_rounds, do: 8
+
+  @impl ScoreTracker.GameType
+  def round_info(round) do
+    @round_info
+    |> Map.get(to_string(round))
+    |> Enum.concat([@wild_cards])
+  end
 
   @impl ScoreTracker.GameType
   def validate_round_score(changeset, field) do

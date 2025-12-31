@@ -6,6 +6,9 @@ defmodule ScoreTracker.GameType.Ripple do
 
   @behaviour ScoreTracker.GameType
 
+  @wild_cards "* Wild Cards: 0s, 7s, 11s, and Rage Cards"
+  @round_info %{}
+
   @impl ScoreTracker.GameType
   def allows_negative_scores?, do: true
 
@@ -17,6 +20,13 @@ defmodule ScoreTracker.GameType.Ripple do
 
   @impl ScoreTracker.GameType
   def max_rounds, do: 10
+
+  @impl ScoreTracker.GameType
+  def round_info(round) do
+    @round_info
+    |> Map.get(to_string(round), [])
+    |> Enum.concat([@wild_cards])
+  end
 
   @impl ScoreTracker.GameType
   def validate_round_score(changeset, field) do

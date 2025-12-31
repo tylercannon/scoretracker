@@ -44,6 +44,14 @@ defmodule ScoreTracker.GameTypeTest do
     end
   end
 
+  describe "round_info/2" do
+    test "returns expected type" do
+      assert is_list(GameType.round_info(:ripple, 1))
+      assert is_list(GameType.round_info(:rummy, 1))
+      assert is_nil(GameType.round_info(:custom, 1))
+    end
+  end
+
   describe "built_in?/1" do
     test "returns expected value" do
       assert GameType.built_in?(:ripple)

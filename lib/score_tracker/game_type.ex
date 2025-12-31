@@ -12,6 +12,16 @@ defmodule ScoreTracker.GameType do
   @type game_type() :: built_in_game_type() | :custom
 
   @doc """
+  Whether the game type supports negative round scores
+  """
+  @callback allows_negative_scores?() :: boolean()
+
+  @doc """
+  The friendly name of the game type
+  """
+  @callback friendly_name() :: String.t()
+
+  @doc """
   The maximum number of players supported by the game type
   """
   @callback max_players() :: pos_integer()
@@ -22,14 +32,9 @@ defmodule ScoreTracker.GameType do
   @callback max_rounds() :: pos_integer()
 
   @doc """
-  The friendly name of the game type
+  Round-specific information for the game type
   """
-  @callback friendly_name() :: String.t()
-
-  @doc """
-  Whether the game type supports negative round scores
-  """
-  @callback allows_negative_scores?() :: boolean()
+  @callback round_info(round :: non_neg_integer()) :: list(String.t())
 
   @doc """
   A validation function for validating the round
@@ -70,6 +75,13 @@ defmodule ScoreTracker.GameType do
   @spec friendly_name(game_type()) :: String.t()
   def friendly_name(:custom), do: "Custom Game"
   def friendly_name(game_type), do: impl(game_type).friendly_name()
+
+  @doc """
+  Returns round-specific info for the given game type
+  """
+  @spec round_info(game_type(), non_neg_integer()) :: list(String.t()) | nil
+  def round_info(:custom, _round), do: nil
+  def round_info(game_type, round), do: impl(game_type).round_info(round)
 
   @doc """
   Determine whether the supplied game type is a built in game type

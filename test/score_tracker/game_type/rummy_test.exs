@@ -28,6 +28,22 @@ defmodule ScoreTracker.GameType.RummyTest do
     end
   end
 
+  describe "round_info/1" do
+    test "returns expected value" do
+      prefix = fn info -> "* Objective: #{info}" end
+      wilds = "* Wild Cards: 2s and Jokers"
+
+      assert Rummy.round_info(1) == [prefix.("2 three of a kinds"), wilds]
+      assert Rummy.round_info(2) == [prefix.("1 three of a kind and 1 four card run"), wilds]
+      assert Rummy.round_info(3) == [prefix.("2 four card runs"), wilds]
+      assert Rummy.round_info(4) == [prefix.("3 three of a kinds"), wilds]
+      assert Rummy.round_info(5) == [prefix.("2 three of a kinds and 1 four card run"), wilds]
+      assert Rummy.round_info(6) == [prefix.("1 three of a kind and 2 four card runs"), wilds]
+      assert Rummy.round_info(7) == [prefix.("3 four card runs"), wilds]
+      assert Rummy.round_info(8) == [prefix.("4 three of a kinds"), wilds]
+    end
+  end
+
   describe "validate_round_score/2" do
     test "valid params" do
       result =
