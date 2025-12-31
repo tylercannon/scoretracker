@@ -19,7 +19,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={f[:host_name]} label="Host" placeholder="Host Name" />
+        <.input field={f[:host_name]} label="Host" placeholder="Host Name" autocomplete="given-name" />
         <.input
           field={f[:game_mode]}
           type="select"
