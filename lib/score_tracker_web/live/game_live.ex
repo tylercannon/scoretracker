@@ -76,7 +76,6 @@ defmodule ScoreTrackerWeb.GameLive do
           <table class="w-full text-center">
             <thead class="bg-background text-primary">
               <tr>
-                <th></th>
                 <th class="p-3">Player</th>
                 <th class="md:hidden p-3">Total</th>
                 <th
@@ -96,16 +95,6 @@ defmodule ScoreTrackerWeb.GameLive do
                 :for={%Player{id: player_id, name: player_name} <- @game.players}
                 class="group hover:bg-primary hover:text-primary-foreground"
               >
-                <td>
-                  <.edit_score
-                    :if={GameDetails.user_score_editable?(@game, player_id, @user_id)}
-                    game_id={@game_id}
-                    game_type={@game.game_type}
-                    player_id={player_id}
-                    player_name={player_name}
-                    round={@game.round}
-                  />
-                </td>
                 <td class="p-3 font-medium">{player_name}</td>
                 <td class="md:hidden p-3 font-bold">
                   {GameDetails.player_total_score(player_id, @game)}
@@ -118,7 +107,22 @@ defmodule ScoreTrackerWeb.GameLive do
                       "border-x-2 border-primary text-lg font-bold group-last:border-b-2 group-last:border-primary"
                   ]}
                 >
-                  {Map.get(@game.scores[player_id], to_string(round), "-")}
+                  <div class="flex gap-2 items-center justify-center">
+                    <.edit_score
+                      :if={GameDetails.user_score_editable?(@game, player_id, @user_id, round)}
+                      player_id={player_id}
+                      player_name={player_name}
+                      round={round}
+                    />
+                    {Map.get(
+                      @game.scores[player_id],
+                      to_string(round),
+                      if(GameDetails.user_score_editable?(@game, player_id, @user_id, round),
+                        do: nil,
+                        else: "-"
+                      )
+                    )}
+                  </div>
                 </td>
                 <td class="hidden md:table-cell p-3 font-bold">
                   {GameDetails.player_total_score(player_id, @game)}
@@ -128,6 +132,27 @@ defmodule ScoreTrackerWeb.GameLive do
           </table>
         </div>
       </div>
+      <.modal
+        :if={is_map(@edit_score_details)}
+        id="edit-score-modal"
+        on_cancel={hide_modal("edit-score-modal") |> JS.push("cancel_edit_score")}
+        show={true}
+      >
+        <div>
+          <h2 class="text-xl font-bold mb-4 text-primary">
+            Edit {@edit_score_details.player_name}'s Round {@edit_score_details.round} Score
+          </h2>
+          <.live_component
+            id="edit-score-form"
+            module={ScoreTrackerWeb.UpdateScoreForm}
+            game_id={@game_id}
+            game_type={@game.game_type}
+            player_id={@edit_score_details.player_id}
+            round={@edit_score_details.round}
+            on_cancel={hide_modal("edit-score-modal") |> JS.push("cancel_edit_score")}
+          />
+        </div>
+      </.modal>
     </div>
     """
   end
@@ -217,34 +242,23 @@ defmodule ScoreTrackerWeb.GameLive do
     """
   end
 
-  defp edit_score(%{game_id: _, game_type: _, player_id: _, player_name: _, round: _} = assigns) do
+  defp edit_score(%{player_id: _, player_name: _, round: _} = assigns) do
     ~H"""
     <button
       type="button"
       class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
-      phx-click={show_modal("edit-#{@player_id}-score")}
+      phx-click={
+        JS.push("edit_score",
+          value: %{
+            player_id: @player_id,
+            player_name: @player_name,
+            round: @round
+          }
+        )
+      }
     >
       <span class="hero-pencil-square-mini"></span>
     </button>
-    <.modal
-      id={"edit-#{@player_id}-score"}
-      on_cancel={hide_modal("edit-#{@player_id}-score")}
-    >
-      <div>
-        <h2 class="text-xl font-bold mb-4 text-primary">
-          Edit {@player_name}'s Round {@round} Score
-        </h2>
-        <.live_component
-          id={"edit-#{@player_id}-score-form"}
-          module={ScoreTrackerWeb.UpdateScoreForm}
-          game_id={@game_id}
-          player_id={@player_id}
-          game_type={@game_type}
-          round={@round}
-          on_cancel={hide_modal("edit-#{@player_id}-score")}
-        />
-      </div>
-    </.modal>
     """
   end
 
@@ -266,7 +280,8 @@ defmodule ScoreTrackerWeb.GameLive do
             user_id: user_id,
             game_id: game_id,
             game: game,
-            is_host: is_host
+            is_host: is_host,
+            edit_score_details: nil
           })
 
         {:ok, socket}
@@ -322,6 +337,30 @@ defmodule ScoreTrackerWeb.GameLive do
     end
 
     {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event(
+        "edit_score",
+        %{"player_id" => player_id, "player_name" => player_name, "round" => round},
+        %Socket{assigns: %{is_host: host?, game: game, user_id: user_id}} = socket
+      ) do
+    if host? or GameDetails.user_score_editable?(game, player_id, user_id, round) do
+      edit_score_details = %{
+        player_id: player_id,
+        player_name: player_name,
+        round: round
+      }
+
+      {:noreply, assign(socket, edit_score_details: edit_score_details)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("cancel_edit_score", _params, socket) do
+    {:noreply, assign(socket, edit_score_details: nil)}
   end
 
   @impl Phoenix.LiveView

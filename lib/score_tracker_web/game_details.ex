@@ -39,10 +39,11 @@ defmodule ScoreTrackerWeb.GameDetails do
   @doc """
   Check whether a user's score is editable
   """
-  @spec user_score_editable?(Game.t(), String.t(), String.t()) :: boolean()
-  def user_score_editable?(game, player_id, user_id) do
+  @spec user_score_editable?(Game.t(), String.t(), String.t(), non_neg_integer()) :: boolean()
+  def user_score_editable?(game, player_id, user_id, round) do
     cond do
       not in_progress?(game) -> false
+      round != game.round -> false
       host?(game, user_id) -> true
       game.game_mode == :party and player_id == user_id -> true
       true -> false

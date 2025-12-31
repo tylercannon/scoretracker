@@ -64,7 +64,6 @@ defmodule ScoreTrackerWeb.CoreComponents do
             phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
             phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
             phx-key="escape"
-            phx-mounted={@show && show_modal(@id)}
             class={[
               "relative max-h-[90vh] w-full max-w-xl",
               "overflow-y-auto overscroll-contain",
