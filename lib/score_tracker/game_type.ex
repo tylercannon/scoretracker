@@ -64,7 +64,7 @@ defmodule ScoreTracker.GameType do
   Returns a list of all score types
   """
   @spec score_types() :: [score_type()]
-  def score_types(), do: [:highest, :lowest]
+  def score_types, do: [:highest, :lowest]
 
   @doc """
   Returns whether the game type supports negative round scores
