@@ -59,4 +59,7 @@ defmodule ScoreTracker.GameType.Rummy do
       end
     end)
   end
+
+  @impl ScoreTracker.GameType
+  def winning_score_type, do: :lowest
 end

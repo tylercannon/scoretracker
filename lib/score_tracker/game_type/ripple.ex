@@ -41,4 +41,7 @@ defmodule ScoreTracker.GameType.Ripple do
       less_than_or_equal_to: 145
     )
   end
+
+  @impl ScoreTracker.GameType
+  def winning_score_type, do: :lowest
 end

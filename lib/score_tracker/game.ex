@@ -20,7 +20,8 @@ defmodule ScoreTracker.Game do
           players: list(Player.t()),
           round: non_neg_integer(),
           scores: %{String.t() => %{String.t() => integer()}},
-          status: status()
+          status: status(),
+          winning_score_type: GameType.score_type()
         }
 
   @type new_opts :: [
@@ -32,7 +33,8 @@ defmodule ScoreTracker.Game do
           host_name: String.t(),
           max_players: pos_integer(),
           max_rounds: pos_integer(),
-          players: [String.t()]
+          players: [String.t()],
+          winning_score_type: GameType.score_type()
         ]
 
   @derive Jason.Encoder
@@ -47,7 +49,8 @@ defmodule ScoreTracker.Game do
     :players,
     :round,
     :scores,
-    :status
+    :status,
+    :winning_score_type
   ]
 
   @type start_error_code() :: :invalid_game_mode | :invalid_game_state
@@ -85,7 +88,8 @@ defmodule ScoreTracker.Game do
       players: players,
       round: 1,
       scores: scores,
-      status: status
+      status: status,
+      winning_score_type: Keyword.fetch!(opts, :winning_score_type)
     }
   end
 
@@ -224,7 +228,8 @@ defmodule ScoreTracker.Game do
       {:ok, game} ->
         game =
           Enum.reduce(game, %{}, fn
-            {key, value}, acc when key in ["status", "game_mode", "game_type"] ->
+            {key, value}, acc
+            when key in ["status", "game_mode", "game_type", "winning_score_type"] ->
               Map.put(acc, String.to_existing_atom(key), String.to_existing_atom(value))
 
             {key, value}, acc when key == "players" ->

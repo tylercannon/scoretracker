@@ -4,7 +4,7 @@ defmodule ScoreTrackerWeb.GameDetails do
   game state in the UI
   """
 
-  alias ScoreTracker.{Game, GameManager}
+  alias ScoreTracker.{Game, GameManager, Player}
 
   @doc """
   The PubSub topic for a game
@@ -83,12 +83,63 @@ defmodule ScoreTrackerWeb.GameDetails do
   end
 
   @doc """
+  Format the winners of the game
+  """
+  @spec format_winners(list(String.t())) :: String.t()
+  def format_winners(winners) when length(winners) == 2, do: Enum.join(winners, " and ")
+
+  def format_winners([winner | other_winners]) do
+    winners = Enum.join(other_winners, ", ")
+    Enum.join([winners, winner], ", and ")
+  end
+
+  @doc """
   Calculate a player's total score
   """
-  @spec player_total_score(String.t(), Game.t()) :: non_neg_integer()
+  @spec player_total_score(String.t(), Game.t()) :: integer()
   def player_total_score(player_id, game) do
     game.scores[player_id]
     |> Map.values()
     |> Enum.sum()
+  end
+
+  @doc """
+  Determine the winner(s) of the game
+  """
+  @spec winner(Game.t()) :: map()
+  def winner(game) do
+    Enum.reduce(game.players, %{}, fn %Player{id: id, name: name}, acc ->
+      score_type = game.winning_score_type
+      winner_score = Map.get(acc, :score)
+      player_score = player_total_score(id, game)
+
+      cond do
+        is_nil(winner_score) ->
+          %{type: :single, winner: name, score: player_score}
+
+        score_type == :highest and player_score > winner_score ->
+          %{type: :single, winner: name, score: player_score}
+
+        score_type == :lowest and player_score < winner_score ->
+          %{type: :single, winner: name, score: player_score}
+
+        player_score == winner_score ->
+          multiple_winners(acc, name)
+
+        true ->
+          acc
+      end
+    end)
+  end
+
+  defp multiple_winners(%{type: :single} = details, name) do
+    details
+    |> Map.put(:type, :tie)
+    |> Map.put(:winners, [details.winner, name])
+    |> Map.delete(:winner)
+  end
+
+  defp multiple_winners(%{type: :tie} = details, name) do
+    Map.put(details, :winners, [name | details.winners])
   end
 end
