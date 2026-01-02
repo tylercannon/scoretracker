@@ -274,7 +274,7 @@ defmodule ScoreTrackerWeb.GameLive do
     """
   end
 
-  defp winner_modal(%{winner: %{type: :single}} = assigns) do
+  defp winner_modal(%{winner: _} = assigns) do
     ~H"""
     <.modal
       id="winner-modal"
@@ -283,31 +283,14 @@ defmodule ScoreTrackerWeb.GameLive do
     >
       <div>
         <h2 class="text-xl font-bold mb-4 text-primary">
-          {@winner.winner} won!
+          {if(@winner.type == :tie, do: "It was a tie!", else: "#{@winner.winner} won!")}
         </h2>
-        <p>{@winner.winner} won with a score of {@winner.score}.</p>
-        <div class="flex justify-end mt-5">
-          <.button type="button" phx-click={hide_modal("winner-modal")}>
-            Close
-          </.button>
-        </div>
-      </div>
-    </.modal>
-    """
-  end
-
-  defp winner_modal(%{winner: %{type: :tie}} = assigns) do
-    ~H"""
-    <.modal
-      id="winner-modal"
-      on_cancel={hide_modal("winner-modal")}
-      show={true}
-    >
-      <div>
-        <h2 class="text-xl font-bold mb-4 text-primary">
-          It was a tie!
-        </h2>
-        <p>{GameDetails.format_winners(@winner.winners)} tied with a score of {@winner.score}.</p>
+        <p>
+          {if(@winner.type == :tie,
+            do: "#{GameDetails.format_winners(@winner.winners)} tied",
+            else: "#{@winner.winner} won"
+          )} with a score of {@winner.score}.
+        </p>
         <div class="flex justify-end mt-5">
           <.button type="button" phx-click={hide_modal("winner-modal")}>
             Close
