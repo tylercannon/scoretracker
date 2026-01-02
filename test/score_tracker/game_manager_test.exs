@@ -27,7 +27,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 5,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :highest
       ]
 
       game_id = GameManager.create_game(game_manager, game_opts)
@@ -43,6 +44,7 @@ defmodule ScoreTracker.GameManagerTest do
       assert game.host_id == "game-host"
       assert game.status == :in_progress
       assert game.round == 1
+      assert game.winning_score_type == :highest
 
       player_names = Enum.map(game.players, &Map.get(&1, :name))
       assert Enum.count(player_names) == 3
@@ -61,7 +63,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_mode: :party,
         game_type: :ripple,
         max_players: Ripple.max_players(),
-        max_rounds: Ripple.max_rounds()
+        max_rounds: Ripple.max_rounds(),
+        winning_score_type: Ripple.winning_score_type()
       ]
 
       game_id = GameManager.create_game(game_manager, game_opts)
@@ -79,7 +82,8 @@ defmodule ScoreTracker.GameManagerTest do
                status: :waiting_for_players,
                round: 1,
                players: [%Player{id: "game-host", name: "Example"}],
-               scores: %{"game-host" => %{}}
+               scores: %{"game-host" => %{}},
+               winning_score_type: :lowest
              }
     end
 
@@ -101,7 +105,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_type: 2,
         allow_spectators: 0,
         max_players: "ten",
-        max_rounds: "four"
+        max_rounds: "four",
+        winning_score_type: "invalid"
       ]
 
       valid_game_opts = [
@@ -110,7 +115,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_mode: :party,
         game_type: :rummy,
         max_players: Rummy.max_players(),
-        max_rounds: Rummy.max_rounds()
+        max_rounds: Rummy.max_rounds(),
+        winning_score_type: Rummy.winning_score_type()
       ]
 
       Enum.each(invalid_game_opts, fn {key, value} ->
@@ -133,7 +139,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_mode: :party,
         game_type: :ripple,
         max_players: Ripple.max_players(),
-        max_rounds: Ripple.max_rounds()
+        max_rounds: Ripple.max_rounds(),
+        winning_score_type: Ripple.winning_score_type()
       ]
 
       scorekeeper_game_opts = [
@@ -144,7 +151,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 5,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :highest
       ]
 
       %{party_game_opts: party_game_opts, scorekeeper_game_opts: scorekeeper_game_opts}
@@ -247,7 +255,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_type: :rummy,
         max_players: Rummy.max_rounds(),
         max_rounds: Rummy.max_players(),
-        players: ["PlayerTwo"]
+        players: ["PlayerTwo"],
+        winning_score_type: Rummy.winning_score_type()
       ]
 
       %{game_opts: game_opts}
@@ -287,7 +296,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_mode: :party,
         game_type: :ripple,
         max_players: Ripple.max_players(),
-        max_rounds: Ripple.max_rounds()
+        max_rounds: Ripple.max_rounds(),
+        winning_score_type: Ripple.winning_score_type()
       ]
 
       scorekeeper_game_opts = [
@@ -298,7 +308,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 5,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :lowest
       ]
 
       %{party_game_opts: party_game_opts, scorekeeper_game_opts: scorekeeper_game_opts}
@@ -349,7 +360,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 2,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :highest
       ]
 
       %{game_opts: game_opts}
@@ -391,7 +403,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 2,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :lowest
       ]
 
       %{game_opts: game_opts}
@@ -432,6 +445,7 @@ defmodule ScoreTracker.GameManagerTest do
       assert reset_game.scores["game-host"] == %{}
       assert reset_game.scores[player_two_id] == %{}
       assert reset_game.scores[player_three_id] == %{}
+      assert reset_game.winning_score_type == game.winning_score_type
     end
 
     test "rejects when game not found", %{game_manager: game_manager} do
@@ -481,7 +495,8 @@ defmodule ScoreTracker.GameManagerTest do
         game_mode: :party,
         game_type: :rummy,
         max_players: Rummy.max_players(),
-        max_rounds: Rummy.max_rounds()
+        max_rounds: Rummy.max_rounds(),
+        winning_score_type: Rummy.winning_score_type()
       ]
 
       game_id = GameManager.create_game(game_manager, game_opts)
@@ -498,7 +513,8 @@ defmodule ScoreTracker.GameManagerTest do
                status: :waiting_for_players,
                round: 1,
                players: [%Player{id: "game-host", name: "Example"}],
-               scores: %{"game-host" => %{}}
+               scores: %{"game-host" => %{}},
+               winning_score_type: :lowest
              }
     end
 

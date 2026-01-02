@@ -62,7 +62,7 @@ defmodule ScoreTracker.CreateGame do
       sort_param: :players_sort,
       drop_param: :players_drop
     )
-    |> validate_required([:game_mode, :game_type, :host_name, :winning_score_type])
+    |> validate_required([:game_mode, :game_type, :host_name])
     |> validate_player_name(:host_name)
     |> validate_unique_player_names()
     |> validate_number(:max_players, greater_than_or_equal_to: 2, less_than_or_equal_to: 10)

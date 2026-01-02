@@ -15,6 +15,12 @@ defmodule ScoreTracker.GameTypeTest do
     end
   end
 
+  describe "score_types/0" do
+    test "returns expected value" do
+      assert GameType.score_types() == [:highest, :lowest]
+    end
+  end
+
   describe "allows_negative_scores?/1" do
     test "returns expected value" do
       assert GameType.allows_negative_scores?(:ripple)
@@ -44,6 +50,13 @@ defmodule ScoreTracker.GameTypeTest do
     end
   end
 
+  describe "friendly_score_type/1" do
+    test "returns the expected value" do
+      assert GameType.friendly_score_type(:highest) == "Highest Score"
+      assert GameType.friendly_score_type(:lowest) == "Lowest Score"
+    end
+  end
+
   describe "round_info/2" do
     test "returns expected type" do
       assert is_list(GameType.round_info(:ripple, 1))
@@ -65,7 +78,8 @@ defmodule ScoreTracker.GameTypeTest do
       assert GameType.default_game() == %{
                type: :ripple,
                max_players: 6,
-               max_rounds: 10
+               max_rounds: 10,
+               winning_score_type: :lowest
              }
     end
   end

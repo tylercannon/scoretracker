@@ -85,4 +85,10 @@ defmodule ScoreTracker.GameType.RummyTest do
                ScoreTracker.Changeset.format_errors(changeset)
     end
   end
+
+  describe "winning_score_type/0" do
+    test "returns expected value" do
+      assert Rummy.winning_score_type() == :lowest
+    end
+  end
 end
