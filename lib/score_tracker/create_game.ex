@@ -18,6 +18,7 @@ defmodule ScoreTracker.CreateGame do
           host_name: String.t(),
           max_players: non_neg_integer(),
           max_rounds: non_neg_integer(),
+          winning_score_type: GameType.score_type(),
           players: list(Player.t())
         }
 
@@ -34,6 +35,11 @@ defmodule ScoreTracker.CreateGame do
     field :host_name, :string
     field :max_players, :integer, default: GameType.default_game().max_players
     field :max_rounds, :integer, default: GameType.default_game().max_rounds
+
+    field :winning_score_type, Ecto.Enum,
+      values: GameType.score_types(),
+      default: GameType.default_game().winning_score_type
+
     embeds_many :players, Player, on_replace: :delete
   end
 
@@ -48,7 +54,8 @@ defmodule ScoreTracker.CreateGame do
       :game_type,
       :host_name,
       :max_players,
-      :max_rounds
+      :max_rounds,
+      :winning_score_type
     ])
     |> cast_embed(:players,
       with: &Player.changeset/2,

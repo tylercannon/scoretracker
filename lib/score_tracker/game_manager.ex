@@ -65,6 +65,13 @@ defmodule ScoreTracker.GameManager do
                           default: [],
                           doc:
                             "The list of players (excluding the host) that aren't updating their own scores."
+                        ],
+                        winning_score_type: [
+                          type: {:in, GameType.score_types()},
+                          required: true,
+                          doc: """
+                          The winning score type.
+                          """
                         ]
                       )
 

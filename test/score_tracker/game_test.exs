@@ -14,7 +14,8 @@ defmodule ScoreTracker.GameTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 5,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :highest
       ]
 
       game = Game.new(opts)
@@ -29,6 +30,7 @@ defmodule ScoreTracker.GameTest do
       assert game.max_rounds == 5
       assert game.round == 1
       assert game.status == :in_progress
+      assert game.winning_score_type == :highest
 
       assert Enum.count(game.scores) == 3
       assert Enum.count(player_names) == 3
@@ -44,7 +46,8 @@ defmodule ScoreTracker.GameTest do
         game_mode: :party,
         game_type: :ripple,
         max_players: Ripple.max_players(),
-        max_rounds: Ripple.max_rounds()
+        max_rounds: Ripple.max_rounds(),
+        winning_score_type: Ripple.winning_score_type()
       ]
 
       game = Game.new(opts)
@@ -60,7 +63,8 @@ defmodule ScoreTracker.GameTest do
                players: [%Player{id: "game-host", name: "Example"}],
                round: 1,
                scores: %{"game-host" => %{}},
-               status: :waiting_for_players
+               status: :waiting_for_players,
+               winning_score_type: :lowest
              }
     end
 
@@ -71,7 +75,8 @@ defmodule ScoreTracker.GameTest do
         game_mode: :party,
         game_type: :custom,
         max_players: 3,
-        max_rounds: 4
+        max_rounds: 4,
+        winning_score_type: :lowest
       ]
 
       game = Game.new(opts)
@@ -87,7 +92,8 @@ defmodule ScoreTracker.GameTest do
                players: [%Player{id: "game-host", name: "Example"}],
                round: 1,
                scores: %{"game-host" => %{}},
-               status: :waiting_for_players
+               status: :waiting_for_players,
+               winning_score_type: :lowest
              }
     end
 
@@ -99,7 +105,8 @@ defmodule ScoreTracker.GameTest do
         game_mode: :party,
         game_type: :custom,
         max_players: 3,
-        max_rounds: 4
+        max_rounds: 4,
+        winning_score_type: :highest
       ]
 
       game = Game.new(opts)
@@ -115,7 +122,8 @@ defmodule ScoreTracker.GameTest do
                players: [%Player{id: "game-host", name: "Example"}],
                round: 1,
                scores: %{"game-host" => %{}},
-               status: :waiting_for_players
+               status: :waiting_for_players,
+               winning_score_type: :highest
              }
     end
   end
@@ -129,7 +137,8 @@ defmodule ScoreTracker.GameTest do
         game_mode: :party,
         game_type: :ripple,
         max_players: Ripple.max_players(),
-        max_rounds: Ripple.max_rounds()
+        max_rounds: Ripple.max_rounds(),
+        winning_score_type: Ripple.winning_score_type()
       ]
 
       scorekeeper_game_opts = [
@@ -140,7 +149,8 @@ defmodule ScoreTracker.GameTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 5,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :highest
       ]
 
       %{party_game_opts: party_game_opts, scorekeeper_game_opts: scorekeeper_game_opts}
@@ -253,7 +263,8 @@ defmodule ScoreTracker.GameTest do
         game_type: :rummy,
         max_players: Rummy.max_rounds(),
         max_rounds: Rummy.max_players(),
-        players: ["PlayerTwo"]
+        players: ["PlayerTwo"],
+        winning_score_type: Rummy.winning_score_type()
       ]
 
       %{game_opts: game_opts}
@@ -303,7 +314,8 @@ defmodule ScoreTracker.GameTest do
         game_mode: :party,
         game_type: :ripple,
         max_players: Ripple.max_players(),
-        max_rounds: Ripple.max_rounds()
+        max_rounds: Ripple.max_rounds(),
+        winning_score_type: Ripple.winning_score_type()
       ]
 
       scorekeeper_game_opts = [
@@ -314,7 +326,8 @@ defmodule ScoreTracker.GameTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 5,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :highest
       ]
 
       %{party_game_opts: party_game_opts, scorekeeper_game_opts: scorekeeper_game_opts}
@@ -368,7 +381,8 @@ defmodule ScoreTracker.GameTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 2,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :lowest
       ]
 
       %{game_opts: game_opts}
@@ -453,7 +467,8 @@ defmodule ScoreTracker.GameTest do
         game_type: :custom,
         max_players: 4,
         max_rounds: 2,
-        players: ["PlayerTwo", "PlayerThree"]
+        players: ["PlayerTwo", "PlayerThree"],
+        winning_score_type: :highest
       ]
 
       %{game_opts: game_opts}
@@ -501,6 +516,7 @@ defmodule ScoreTracker.GameTest do
       assert reset_game.scores["game-host"] == %{}
       assert reset_game.scores[player_two_id] == %{}
       assert reset_game.scores[player_three_id] == %{}
+      assert reset_game.winning_score_type == game.winning_score_type
     end
 
     test "rejects resetting scorekeeper game that is not completed", %{game_opts: game_opts} do
@@ -538,7 +554,8 @@ defmodule ScoreTracker.GameTest do
           game_mode: :scorekeeper,
           game_type: :custom,
           max_players: 4,
-          max_rounds: 5
+          max_rounds: 5,
+          winning_score_type: :highest
         )
 
       %{game: game}
@@ -556,7 +573,8 @@ defmodule ScoreTracker.GameTest do
                "custom_name" => nil,
                "host_id" => "game-host",
                "players" => [%{"id" => "game-host", "name" => "Example"}],
-               "scores" => %{"game-host" => %{}}
+               "scores" => %{"game-host" => %{}},
+               "winning_score_type" => "highest"
              }
     end
 

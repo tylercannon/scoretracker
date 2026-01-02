@@ -45,6 +45,16 @@ defmodule ScoreTrackerWeb.CreateGameForm do
           />
           <.input field={f[:max_players]} label="Max Players" inputmode="numeric" />
           <.input field={f[:max_rounds]} label="Max Rounds" inputmode="numeric" />
+          <.input
+            field={f[:winning_score_type]}
+            type="select"
+            label="Winning Score Type"
+            options={
+              Enum.map(GameType.score_types(), fn type ->
+                {GameType.friendly_score_type(type), type}
+              end)
+            }
+          />
         </div>
         <div :if={@show_players?} class="space-y-4">
           <span class="text-sm font-semibold leading-6 text-foreground">Players</span>
@@ -103,6 +113,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
       CreateGame.changeset(%CreateGame{
         game_mode: :scorekeeper,
         game_type: GameType.default_game().type,
+        winning_score_type: GameType.default_game().winning_score_type,
         players: [%Player{name: ""}]
       })
 

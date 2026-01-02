@@ -10,6 +10,7 @@ defmodule ScoreTracker.GameType do
   @type built_in_game_type() :: :ripple | :rummy
 
   @type game_type() :: built_in_game_type() | :custom
+  @type score_type() :: :highest | :lowest
 
   @doc """
   Whether the game type supports negative round scores
@@ -43,6 +44,11 @@ defmodule ScoreTracker.GameType do
   @callback validate_round_score(changeset :: Changeset.t(), field :: atom()) :: Changeset.t()
 
   @doc """
+  Whether the winner needs the highest or lowest score to win for the game type
+  """
+  @callback winning_score_type() :: score_type()
+
+  @doc """
   Returns a list of all built-in game types
   """
   @spec built_in_types() :: [built_in_game_type()]
@@ -53,6 +59,12 @@ defmodule ScoreTracker.GameType do
   """
   @spec game_types() :: [game_type()]
   def game_types, do: built_in_types() ++ [:custom]
+
+  @doc """
+  Returns a list of all score types
+  """
+  @spec score_types() :: [score_type()]
+  def score_types, do: [:highest, :lowest]
 
   @doc """
   Returns whether the game type supports negative round scores
@@ -77,6 +89,17 @@ defmodule ScoreTracker.GameType do
   def friendly_name(game_type), do: impl(game_type).friendly_name()
 
   @doc """
+  Returns the friendly name for a score type
+  """
+  @spec friendly_score_type(score_type()) :: String.t()
+  def friendly_score_type(score_type) do
+    score_type
+    |> Atom.to_string()
+    |> String.capitalize()
+    |> Kernel.<>(" Score")
+  end
+
+  @doc """
   Returns round-specific info for the given game type
   """
   @spec round_info(game_type(), non_neg_integer()) :: list(String.t()) | nil
@@ -97,7 +120,8 @@ defmodule ScoreTracker.GameType do
     do: %{
       type: :ripple,
       max_players: Ripple.max_players(),
-      max_rounds: Ripple.max_rounds()
+      max_rounds: Ripple.max_rounds(),
+      winning_score_type: Ripple.winning_score_type()
     }
 
   @doc """

@@ -16,7 +16,8 @@ defmodule ScoreTracker.CreateGameTest do
                allow_spectators: true,
                max_players: 6,
                max_rounds: 10,
-               players: []
+               players: [],
+               winning_score_type: :lowest
              } == create_game
     end
   end
@@ -36,7 +37,8 @@ defmodule ScoreTracker.CreateGameTest do
                 allow_spectators: true,
                 max_players: Ripple.max_players(),
                 max_rounds: Ripple.max_rounds(),
-                players: []
+                players: [],
+                winning_score_type: Ripple.winning_score_type()
               }} == Ecto.Changeset.apply_action(changeset, :update)
     end
 
@@ -54,7 +56,8 @@ defmodule ScoreTracker.CreateGameTest do
                 allow_spectators: true,
                 max_players: Rummy.max_players(),
                 max_rounds: Rummy.max_rounds(),
-                players: []
+                players: [],
+                winning_score_type: Rummy.winning_score_type()
               }} == Ecto.Changeset.apply_action(changeset, :update)
     end
 
@@ -70,7 +73,8 @@ defmodule ScoreTracker.CreateGameTest do
         "players" => %{
           "0" => %{"name" => "PlayerTwo"},
           "1" => %{"name" => "PlayerThree"}
-        }
+        },
+        "winning_score_type" => "highest"
       }
 
       changeset = CreateGame.changeset(%CreateGame{}, params)
@@ -89,7 +93,8 @@ defmodule ScoreTracker.CreateGameTest do
                 players: [
                   %Player{name: "PlayerTwo"},
                   %Player{name: "PlayerThree"}
-                ]
+                ],
+                winning_score_type: :highest
               }} == Ecto.Changeset.apply_action(changeset, :update)
     end
 
@@ -113,7 +118,8 @@ defmodule ScoreTracker.CreateGameTest do
         "players" => %{
           "0" => %{"name" => "Player2"},
           "1" => %{"name" => "PlayerThree"}
-        }
+        },
+        "winning_score_type" => "invalid"
       }
 
       {:error, changeset} =
@@ -131,7 +137,8 @@ defmodule ScoreTracker.CreateGameTest do
                players: [
                  %{name: ["must be valid format"]},
                  %{name: ["must not exceed max player count"]}
-               ]
+               ],
+               winning_score_type: ["must be one of: highest | lowest"]
              } == ScoreTracker.Changeset.format_errors(changeset)
     end
 
@@ -147,7 +154,8 @@ defmodule ScoreTracker.CreateGameTest do
         "players" => %{
           "0" => %{"name" => "Player2"},
           "1" => %{"name" => "PlayerThree"}
-        }
+        },
+        "winning_score_type" => "invalid"
       }
 
       {:error, changeset} =
@@ -165,7 +173,8 @@ defmodule ScoreTracker.CreateGameTest do
                players: [
                  %{name: ["must be valid format"]},
                  %{name: ["must not exceed max player count"]}
-               ]
+               ],
+               winning_score_type: ["must be one of: highest | lowest"]
              } == ScoreTracker.Changeset.format_errors(changeset)
     end
 
@@ -274,7 +283,8 @@ defmodule ScoreTracker.CreateGameTest do
                 allow_spectators: true,
                 max_players: Ripple.max_players(),
                 max_rounds: Ripple.max_rounds(),
-                players: []
+                players: [],
+                winning_score_type: Ripple.winning_score_type()
               }} == CreateGame.update(%CreateGame{}, params)
     end
 
@@ -284,14 +294,16 @@ defmodule ScoreTracker.CreateGameTest do
         "game_mode" => "party",
         "game_type" => "ripple",
         "max_players" => 11,
-        "max_rounds" => 0
+        "max_rounds" => 0,
+        "winning_score_type" => "invalid"
       }
 
       {:error, changeset} = CreateGame.update(%CreateGame{}, params)
 
       assert %{
                max_players: ["must be less than or equal to 10"],
-               max_rounds: ["must be greater than or equal to 1"]
+               max_rounds: ["must be greater than or equal to 1"],
+               winning_score_type: ["must be one of: highest | lowest"]
              } == ScoreTracker.Changeset.format_errors(changeset)
     end
   end
