@@ -429,8 +429,8 @@ defmodule ScoreTrackerWeb.GameLive do
 
   @impl Phoenix.LiveView
   def handle_info(%{event: event}, %Socket{assigns: %{game_id: game_id}} = socket)
-      when event in ["joined", "next_round", "play_again"] do
+      when event in ["joined", "next_round", "play_again", "score_updated"] do
     {:ok, game} = GameDetails.get_game(game_id)
-    {:noreply, assign(socket, game: game)}
+    {:noreply, assign(socket, game: game, edit_score_details: nil)}
   end
 end
