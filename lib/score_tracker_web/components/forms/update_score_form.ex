@@ -7,6 +7,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
   use ScoreTrackerWeb, :live_component
 
   alias ScoreTracker.{GameManager, GameType, UpdateScore}
+  alias ScoreTrackerWeb.GameDetails
 
   @impl true
   def render(%{game_id: _, player_id: _, game_type: _, round: _, on_cancel: _} = assigns) do
@@ -68,7 +69,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
 
   @impl true
   def handle_event("save", attrs, socket) do
-    game_type = socket.assigns.game_type
+    %{game_id: game_id, game_type: game_type} = socket.assigns
 
     socket =
       case UpdateScore.update(%UpdateScore{}, game_type, attrs) do
@@ -78,7 +79,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
             |> Map.from_struct()
             |> Map.merge(%{
               player_id: socket.assigns.player_id,
-              game_id: socket.assigns.game_id,
+              game_id: game_id,
               round: socket.assigns.round
             })
             |> Enum.to_list()
@@ -96,7 +97,8 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
               assign(socket, form: form)
 
             _ ->
-              push_navigate(socket, to: ~p"/game/#{socket.assigns.game_id}")
+              ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "score_updated", %{})
+              socket
           end
 
         {:error, changeset} ->
