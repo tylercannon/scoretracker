@@ -47,8 +47,8 @@ defmodule ScoreTracker.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:bandit, "~> 1.8.0"},
-      {:credo, "~> 1.7.13", only: [:dev, :test], runtime: false},
+      {:bandit, "~> 1.10.2"},
+      {:credo, "~> 1.7.16", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.2.0"},
       {:dotenvy, "~> 1.1.1"},
       {:ecto, "~> 3.13.5"},
@@ -63,12 +63,12 @@ defmodule ScoreTracker.MixProject do
       {:lazy_html, "~> 0.1.8", only: :test},
       {:mox, "~> 1.2.0", only: :test},
       {:nimble_options, "1.1.1"},
-      {:phoenix, "~> 1.8.1"},
+      {:phoenix, "~> 1.8.3"},
       {:phoenix_ecto, "~> 4.7.0"},
       {:phoenix_html, "~> 4.3.0"},
       {:phoenix_live_dashboard, "~> 0.8.7"},
-      {:phoenix_live_reload, "~> 1.6.1", only: :dev},
-      {:phoenix_live_view, "~> 1.1.18"},
+      {:phoenix_live_reload, "~> 1.6.2", only: :dev},
+      {:phoenix_live_view, "~> 1.1.22"},
       {:redix, "~> 1.5.3"},
       {:sobelow, "~> 0.14.1", only: [:dev, :test], runtime: false},
       {:telemetry_metrics, "~> 1.1.0"},
