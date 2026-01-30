@@ -3,116 +3,117 @@ name: elixir-dependency-updater
 description: Update Elixir project dependencies including breaking changes. Use when the user asks to update dependencies in an Elixir project, upgrade packages, run mix hex.outdated, handle dependency version bumps and breaking changes, or asks to update mix.exs dependencies.
 ---
 
-# Update Elixir Dependencies
+# Update Elixir Dependencies (Strict Checklist)
 
-Update all Elixir dependencies in a project, including handling breaking changes.
+This skill is intentionally written as a **no-skip** checklist. Agents must follow it exactly.
 
-## Workflow Overview
+## Non-negotiables (DO NOT SKIP)
 
-1. Identify outdated dependencies
-2. Update each dependency (one at a time)
-3. Verify all updates
-4. Handle blocked dependencies
-5. Generate summary report
+- You may update **all** dependencies marked "Update possible" **in a single batch**.
+- Any dependency that is **blocked only by the project's `mix.exs` version constraint** is **NOT truly blocked**. It must be **moved into the update batch** by changing the constraint.
+- **Review diffs individually** for each dependency being updated (even in a batch).
+- After updating dependencies, run the verification gates:
+  - `mix compile --warnings-as-errors` (must pass for both dev and test environments)
+  - `mix format --check-formatted`
+  - `mix test`
+- If any gate fails: **STOP, fix, re-run the failing gate(s) until green, then continue.**
+- Never "force" blocked updates caused by transitive constraints. Report them instead.
 
-## 1. Identify Outdated Dependencies
+## Step 0: Identify candidates
 
-Run `mix hex.outdated` in the project root. Parse the output to identify dependencies where `Latest` is newer than `Current`.
+Run:
 
-## 2. Update Each Dependency
+- `mix hex.outdated`
 
-For each outdated dependency:
+Separate dependencies into two groups initially:
 
-1. Update the version constraint in `mix.exs` to the `Latest` version
-2. Run `mix deps.get` to update the lock file
-3. Run `mix hex.package diff {dependency_name} {current_version}..{latest_version}` to view changes
-4. Analyze the diff for breaking changes (see below)
-5. Make any necessary code changes in the project
+- **Update possible**: dependencies where `Latest > Current` and status shows "Update possible"
+- **Update not possible**: dependencies showing "Update not possible"
 
-### Analyzing Diffs for Breaking Changes
+Then, for each dependency in **Update not possible**, you MUST determine whether it is blocked by:
 
-Look for these patterns in the diff output:
+- the project's own `mix.exs` constraint (fixable), or
+- transitive constraints (not fixable without larger coordination)
 
-**API Changes:**
-- Renamed functions: `-def old_name` / `+def new_name`
-- Changed function signatures: different arities, new required parameters
-- Removed public functions (functions no longer in public API)
-- Changed return types or data structures
+Do this classification with:
 
-**Configuration Changes:**
-- New required config keys
-- Renamed or removed config options
-- Changed default values
+- `mix hex.outdated dep`
 
-**Behavior Changes:**
-- Modified error handling (different exception types)
-- Changed validation rules
-- Modified callbacks or hooks
+Re-classify **Update not possible** dependencies into:
 
-## 3. Verification
+- **Constraint-only blocked (treat as updatable)**: output indicates it is blocked by the project's version constraint in `mix.exs`
+- **Transitively blocked (truly blocked)**: output indicates other deps/constraints prevent the update
 
-After updating all dependencies:
+## Step 1: Batch update all updatable dependencies
 
-1. `mix compile --warnings-as-errors` - Fix any compilation warnings
-2. `mix format --check-formatted` - Fix formatting with `mix format` if needed
-3. `mix test` - Fix any test failures
-4. `mix hex.outdated` - Confirm dependencies are updated
+The batch list is:
 
-If any step fails, fix the issues before proceeding.
+- all **Update possible** deps, plus
+- all **Constraint-only blocked (treat as updatable)** deps
 
-## 4. Handle Blocked Dependencies
+### 1A) Review diffs for each dependency (required, do this BEFORE updating)
 
-For dependencies showing `Update not possible`:
+For each dependency `dep` in the batch list:
 
-1. Run `mix hex.outdated {dependency_name}` to see why it's blocked
-2. **If blocked only by version constraint in `mix.exs`**: Update following the steps above
-3. **If blocked by transitive dependency requirements**: Report the blocker—do not force update
+- Record `current_version` and `latest_version` from `mix hex.outdated`.
+- Try: `mix hex.package diff dep current_version..latest_version`
+- If the diff command fails, you must still assess changes by reviewing:
+  - Hex package page release notes/changelog (or repository releases)
+- While reviewing, specifically look for:
+  - API changes (renames, arity changes, removed functions)
+  - config changes (new required keys, renamed keys, default changes)
+  - behavior changes (error/exception changes, validation changes, callback changes)
+- Note any breaking changes that will require code/config updates.
 
-When reporting blocked dependencies, include:
-- The dependency name
-- The latest available version
-- Which transitive dependency is blocking the update
-- The version constraint causing the conflict
+### 1B) Update all constraints in mix.exs
 
-## 5. Summary Report
+- Edit `mix.exs` and update each dependency's version constraint to allow its `latest_version` (prefer pinning to the shown latest if feasible).
+- This MUST include any deps previously reported as **blocked only by the project's `mix.exs` constraint**.
 
-Generate a summary using this format:
+### 1C) Fetch and lock
 
-```markdown
-## Dependencies Updated
+- Run `mix deps.get` once to update the lock file for all dependencies.
 
-| Package | Previous | Updated | Breaking Changes |
-|---------|----------|---------|------------------|
-| {name}  | {old}    | {new}   | Yes/No           |
+### 1D) Apply required code changes
 
-## Code Changes Made
+- Make code/config changes needed for each updated dependency based on the diffs reviewed in step 1A.
 
-- {description of changes in project files}
+### 1E) Verification gates (MUST be green before continuing)
 
-## Blocked Dependencies
+Run in order:
 
-| Package | Blocked By | Reason |
-|---------|------------|--------|
-| {name}  | {blocker}  | {why}  |
+1. `mix compile --warnings-as-errors` (dev environment)
+2. `MIX_ENV=test mix compile --warnings-as-errors` (test environment)
+3. `mix format --check-formatted`
+4. `mix test`
 
-## Verification Results
+If any step fails: **STOP**, fix the cause, then re-run from the failing step onward until all steps are green.
 
-- Compilation: ✓/✗
-- Formatting: ✓/✗  
-- Tests: ✓/✗ ({passed}/{total})
-```
+## Step 2: Handle blocked dependencies
 
-## Troubleshooting
+For any dependency classified as **Transitively blocked (truly blocked)**:
 
-**`mix hex.package diff` fails:**
-- Package may not be published to Hex—skip diff and review changelog/release notes manually
+- Do not force. Report:
+  - dependency name + latest version
+  - which dependency is blocking it
+  - the exact conflicting version requirement/constraint
 
-**Compilation fails after update:**
-- Check the diff for API changes
-- Review the package changelog for migration guides
-- Consider updating one dependency at a time to isolate issues
+## Step 3: Final confirmation and report
 
-**Tests fail with unclear errors:**
-- Run `mix test --trace` for more detail
-- Check if test helpers or fixtures need updates
-- Review package changelog for test-related changes
+Run:
+
+- `mix hex.outdated` (confirm expected updates/blocks)
+
+Then output a short report:
+
+- **Updated**
+  - `dep`: `current` → `latest` (breaking: yes/no, notes if yes)
+- **Code changes**
+  - File-level bullets of what changed and why
+- **Blocked**
+  - `dep`: blocked by `blocker` (constraint summary)
+- **Verification**
+  - `mix compile --warnings-as-errors` (dev): pass/fail
+  - `MIX_ENV=test mix compile --warnings-as-errors` (test): pass/fail
+  - `mix check`: pass/fail
+  - `mix test`: pass/fail
