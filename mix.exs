@@ -75,7 +75,7 @@ defmodule ScoreTracker.MixProject do
       {:telemetry_poller, "~> 1.3.0"},
       {:esbuild, "~> 0.10.0", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.4.1", runtime: Mix.env() == :dev},
-      {:usage_rules, "~> 0.1.26", only: [:dev]}
+      {:usage_rules, "~> 1.1.0", only: [:dev]}
     ]
   end
 
