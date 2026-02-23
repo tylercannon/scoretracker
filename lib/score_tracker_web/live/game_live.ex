@@ -12,6 +12,15 @@ defmodule ScoreTrackerWeb.GameLive do
       class="min-size-full flex flex-col items-center p-4 pb-12 text-primary bg-background"
       phx-mounted={JS.remove_class("overflow-hidden", to: "body")}
     >
+      <%!-- Hidden focus proxy to trigger iOS Safari keyboard before the server round-trip --%>
+      <input
+        type="text"
+        id="focus-proxy"
+        inputmode="numeric"
+        aria-hidden="true"
+        tabindex="-1"
+        class="absolute opacity-0 h-0 w-0 text-base"
+      />
       <div class="w-full flex items-center justify-between gap-4">
         <h1 class="text-xl font-bold">
           {GameType.friendly_name(@game.game_type, @game.custom_name)}
@@ -260,7 +269,8 @@ defmodule ScoreTrackerWeb.GameLive do
       type="button"
       class="flex items-center justify-center gap-1 px-4 hover:cursor-pointer"
       phx-click={
-        JS.push("edit_score",
+        JS.focus(to: "#focus-proxy")
+        |> JS.push("edit_score",
           value: %{
             player_id: @player_id,
             player_name: @player_name,
