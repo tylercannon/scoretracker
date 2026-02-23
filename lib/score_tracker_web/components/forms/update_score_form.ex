@@ -20,11 +20,10 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
         phx-change={JS.push("validate")}
         phx-submit="save"
       >
-        <%!-- inputmode="numeric" doesn't allow for negative number input on iOS Safari --%>
         <.input
           id={"#{@player_id}-#{@round}-score"}
           type={if GameType.allows_negative_scores?(@game_type), do: "number", else: "text"}
-          inputmode={if GameType.allows_negative_scores?(@game_type), do: "text", else: "numeric"}
+          inputmode={if GameType.allows_negative_scores?(@game_type), do: nil, else: "numeric"}
           field={f[:score]}
           label="Score"
         />
