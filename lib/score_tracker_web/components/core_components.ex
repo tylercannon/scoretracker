@@ -58,14 +58,14 @@ defmodule ScoreTrackerWeb.CoreComponents do
         role="dialog"
         tabindex="0"
       >
-        <div class="flex items-center justify-center min-h-dvh p-4">
+        <div class="flex items-center justify-center min-h-full p-4">
           <.focus_wrap
             id={"#{@id}-container"}
             phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
             phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
             phx-key="escape"
             class={[
-              "relative max-h-[90dvh] w-full max-w-xl",
+              "relative max-h-[90vh] w-full max-w-xl",
               "overflow-y-auto overscroll-contain",
               "transform transition-all",
               "bg-card/80 backdrop-blur-xl shadow-xl border border-border",
