@@ -56,6 +56,26 @@ const hooks = {
       })
     },
   },
+  KeyboardAware: {
+    mounted() {
+      this._onResize = () => {
+        const vv = window.visualViewport;
+        if (!vv) return;
+
+        this.el.style.height = `${vv.height}px`;
+        this.el.style.top = `${vv.offsetTop}px`;
+      };
+
+      this._onResize();
+
+      window.visualViewport?.addEventListener("resize", this._onResize, { passive: true });
+      window.visualViewport?.addEventListener("scroll", this._onResize, { passive: true });
+    },
+    destroyed() {
+      window.visualViewport?.removeEventListener("resize", this._onResize);
+      window.visualViewport?.removeEventListener("scroll", this._onResize);
+    },
+  },
   ShareLink: {
     mounted() {
       this.el.addEventListener("click", (_e) => {
