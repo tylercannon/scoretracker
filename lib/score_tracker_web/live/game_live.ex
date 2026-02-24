@@ -90,11 +90,13 @@ defmodule ScoreTrackerWeb.GameLive do
           <.play_again :if={GameDetails.host?(@game, @user_id) and GameDetails.complete?(@game)} />
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-center">
+          <table class="md:w-full text-center border-separate border-spacing-0">
             <thead class="bg-background text-primary">
               <tr>
-                <th class="p-3">Player</th>
-                <th class="md:hidden p-3">Total</th>
+                <th class="p-3 w-36 min-w-36 max-w-36 sticky left-0 z-20 bg-background">Player</th>
+                <th class="md:hidden p-3 sticky left-36 z-20 bg-background shadow-[4px_0_6px_-2px_rgba(0,0,0,0.1)]">
+                  Total
+                </th>
                 <th
                   :for={round <- 1..@game.max_rounds}
                   class={[
@@ -107,21 +109,32 @@ defmodule ScoreTrackerWeb.GameLive do
                 <th class="hidden md:table-cell p-3">Total</th>
               </tr>
             </thead>
-            <tbody class="border border-border">
+            <tbody>
               <tr
                 :for={%Player{id: player_id, name: player_name} <- @game.players}
                 class="group hover:bg-primary hover:text-primary-foreground"
               >
-                <td class="p-3 font-medium">{player_name}</td>
-                <td class="md:hidden p-3 font-bold">
+                <td class={[
+                  "w-36 min-w-36 max-w-36 p-3 sticky left-0 z-10",
+                  "font-medium truncate bg-background border-l border-border",
+                  "group-first:border-t group-last:border-b group-hover:bg-primary group-hover:text-primary-foreground"
+                ]}>
+                  {player_name}
+                </td>
+                <td class={[
+                  "md:hidden p-3 left-36 z-10 sticky",
+                  "font-bold bg-background border-border shadow-[4px_0_6px_-2px_rgba(0,0,0,0.1)]",
+                  "group-first:border-t group-last:border-b group-hover:bg-primary group-hover:text-primary-foreground"
+                ]}>
                   {GameDetails.player_total_score(player_id, @game)}
                 </td>
                 <td
                   :for={round <- 1..@game.max_rounds}
                   class={[
-                    "p-3",
+                    "p-3 border-border group-first:border-t group-last:border-b",
+                    round == @game.max_rounds && "border-r-2",
                     round == @game.round &&
-                      "border-x-2 border-primary text-lg font-bold group-last:border-b-2 group-last:border-primary"
+                      "border-x-2 border-x-primary text-lg font-bold group-last:border-b-2 group-last:border-b-primary"
                   ]}
                 >
                   <div class="flex gap-2 items-center justify-center">
@@ -141,7 +154,7 @@ defmodule ScoreTrackerWeb.GameLive do
                     )}
                   </div>
                 </td>
-                <td class="hidden md:table-cell p-3 font-bold">
+                <td class="hidden md:table-cell p-3 font-bold border-r border-border group-first:border-t group-last:border-b">
                   {GameDetails.player_total_score(player_id, @game)}
                 </td>
               </tr>
