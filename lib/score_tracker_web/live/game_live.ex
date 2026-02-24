@@ -19,7 +19,7 @@ defmodule ScoreTrackerWeb.GameLive do
         inputmode="numeric"
         aria-hidden="true"
         tabindex="-1"
-        class="absolute opacity-0 h-0 w-0 text-base"
+        class="absolute opacity-0 h-0 w-0 text-base caret-transparent"
       />
       <div class="w-full flex items-center justify-between gap-4">
         <h1 class="text-xl font-bold">
@@ -154,6 +154,7 @@ defmodule ScoreTrackerWeb.GameLive do
         id="edit-score-modal"
         on_cancel={hide_modal("edit-score-modal") |> JS.push("cancel_edit_score")}
         show={true}
+        keyboard_aware={true}
       >
         <div>
           <h2 class="text-xl font-bold mb-4 text-primary">

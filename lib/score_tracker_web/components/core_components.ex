@@ -39,6 +39,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
   attr :id, :string, required: true
   attr :show, :boolean, default: false
   attr :on_cancel, JS, default: %JS{}
+  attr :keyboard_aware, :boolean, default: false
   slot :inner_block, required: true
 
   def modal(assigns) do
@@ -53,19 +54,21 @@ defmodule ScoreTrackerWeb.CoreComponents do
       <div id={"#{@id}-bg"} class="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" />
       <!-- Modal -->
       <div
+        id={"#{@id}-modal"}
+        phx-hook={if(@keyboard_aware, do: "KeyboardAware")}
         class="fixed inset-0 z-10 w-screen overflow-hidden overscroll-y-contain"
         aria-modal="true"
         role="dialog"
         tabindex="0"
       >
-        <div class="flex items-center justify-center min-h-dvh p-4">
+        <div class="flex items-center justify-center min-h-full p-4">
           <.focus_wrap
             id={"#{@id}-container"}
             phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
             phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
             phx-key="escape"
             class={[
-              "relative max-h-[90dvh] w-full max-w-xl",
+              "relative max-h-[90vh] w-full max-w-xl",
               "overflow-y-auto overscroll-contain",
               "transform transition-all",
               "bg-card/80 backdrop-blur-xl shadow-xl border border-border",
