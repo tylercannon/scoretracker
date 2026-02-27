@@ -6,7 +6,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
 
   use ScoreTrackerWeb, :live_component
 
-  alias ScoreTracker.{CreateGame, GameManager, GameType, Player}
+  alias ScoreTracker.{CreateGame, GameServer, GameType, Player}
 
   @impl true
   def render(%{on_cancel: _, max_players_reached?: _, show_players?: _} = assigns) do
@@ -169,7 +169,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
             |> Map.update(:players, [], &Enum.map(&1, fn player -> player.name end))
             |> Enum.to_list()
 
-          game_id = GameManager.create_game(GameManager, game_opts)
+          game_id = GameServer.create_game(game_opts)
 
           socket
           |> assign(game_id: game_id)

@@ -12,10 +12,9 @@ defmodule ScoreTracker.Application do
       {DNSCluster, query: Application.get_env(:score_tracker, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: ScoreTracker.PubSub},
       ScoreTracker.Cache,
-      {ScoreTracker.GameManager,
-       name: ScoreTracker.GameManager,
-       storage_backend: ScoreTracker.GameStorage.Cache,
-       storage_backend_opts: []},
+      {Registry, keys: :unique, name: ScoreTracker.GameRegistry},
+      {DynamicSupervisor,
+       name: ScoreTracker.GameSupervisor, strategy: :one_for_one, max_children: 10_000},
       ScoreTrackerWeb.Endpoint
     ]
 
