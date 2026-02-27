@@ -6,7 +6,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
 
   use ScoreTrackerWeb, :live_component
 
-  alias ScoreTracker.{GameManager, GameType, UpdateScore}
+  alias ScoreTracker.{GameServer, GameType, UpdateScore}
   alias ScoreTrackerWeb.GameDetails
 
   @impl true
@@ -83,7 +83,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
             })
             |> Enum.to_list()
 
-          case GameManager.update_player_score(GameManager, score_opts) do
+          case GameServer.update_player_score(score_opts) do
             {:error, :not_found} ->
               attrs = Map.from_struct(update_score)
 
@@ -96,7 +96,14 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
               assign(socket, form: form)
 
             _ ->
-              ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "score_updated", %{})
+              {:ok, game} = GameServer.get_game(game_id)
+
+              ScoreTrackerWeb.Endpoint.broadcast(
+                GameDetails.topic(game_id),
+                "score_updated",
+                %{game: game}
+              )
+
               socket
           end
 

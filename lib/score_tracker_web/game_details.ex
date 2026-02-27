@@ -4,7 +4,7 @@ defmodule ScoreTrackerWeb.GameDetails do
   game state in the UI
   """
 
-  alias ScoreTracker.{Game, GameManager, Player}
+  alias ScoreTracker.{Game, GameServer, Player}
 
   @doc """
   The PubSub topic for a game
@@ -16,7 +16,7 @@ defmodule ScoreTrackerWeb.GameDetails do
   Get a game by it's id
   """
   @spec get_game(String.t()) :: {:ok, Game.t()} | {:error, :not_found}
-  def get_game(game_id), do: GameManager.get_game(GameManager, game_id)
+  def get_game(game_id), do: GameServer.get_game(game_id)
 
   @doc """
   Check whether a game is in progress

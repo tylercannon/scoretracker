@@ -6,7 +6,7 @@ defmodule ScoreTrackerWeb.JoinGameForm do
 
   use ScoreTrackerWeb, :live_component
 
-  alias ScoreTracker.{GameManager, JoinGame}
+  alias ScoreTracker.{GameServer, JoinGame}
   alias ScoreTrackerWeb.GameDetails
 
   @impl Phoenix.LiveComponent
@@ -70,7 +70,7 @@ defmodule ScoreTrackerWeb.JoinGameForm do
             |> Map.put(:player_id, socket.assigns.user_id)
             |> Enum.to_list()
 
-          case GameManager.add_player(GameManager, player_opts) do
+          case GameServer.add_player(player_opts) do
             {:error, error_code} ->
               {field, message} = GameDetails.get_join_error_details(error_code)
               attrs = Map.from_struct(join_game)

@@ -2,7 +2,7 @@ defmodule ScoreTrackerWeb.GameLive do
   use ScoreTrackerWeb, :live_view
 
   alias Phoenix.LiveView.Socket
-  alias ScoreTracker.{GameManager, GameType, Player}
+  alias ScoreTracker.{GameServer, GameType, Player}
   alias ScoreTrackerWeb.GameDetails
 
   @impl Phoenix.LiveView
@@ -378,11 +378,10 @@ defmodule ScoreTrackerWeb.GameLive do
         %Socket{assigns: %{is_host: host?, game_id: game_id}} = socket
       ) do
     if host? do
-      {:ok, status} = GameManager.start_game(GameManager, game_id: game_id)
+      {:ok, _status} = GameServer.start_game(game_id)
+      {:ok, game} = GameServer.get_game(game_id)
 
-      ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "start_game", %{
-        status: status
-      })
+      ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "start_game", %{game: game})
     end
 
     {:noreply, socket}
@@ -395,8 +394,10 @@ defmodule ScoreTrackerWeb.GameLive do
         %Socket{assigns: %{is_host: host?, game_id: game_id}} = socket
       ) do
     if host? do
-      {:ok, _} = GameManager.advance_to_next_round(GameManager, game_id: game_id)
-      ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "next_round", %{})
+      {:ok, _} = GameServer.advance_to_next_round(game_id)
+      {:ok, game} = GameServer.get_game(game_id)
+
+      ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "next_round", %{game: game})
     end
 
     {:noreply, socket}
@@ -433,8 +434,10 @@ defmodule ScoreTrackerWeb.GameLive do
         %Socket{assigns: %{is_host: host?, game_id: game_id}} = socket
       ) do
     if host? do
-      :ok = GameManager.reset_game(GameManager, game_id: game_id)
-      ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "play_again", %{})
+      :ok = GameServer.reset_game(game_id)
+      {:ok, game} = GameServer.get_game(game_id)
+
+      ScoreTrackerWeb.Endpoint.broadcast(GameDetails.topic(game_id), "play_again", %{game: game})
     end
 
     {:noreply, socket}
@@ -447,14 +450,19 @@ defmodule ScoreTrackerWeb.GameLive do
   end
 
   @impl Phoenix.LiveView
-  def handle_info(%{event: "start_game", payload: %{status: status}}, socket) do
-    {:noreply, update(socket, :game, &Map.put(&1, :status, status))}
+  def handle_info(%{event: "start_game", payload: %{game: game}}, socket) do
+    {:noreply, assign(socket, game: game)}
   end
 
   @impl Phoenix.LiveView
-  def handle_info(%{event: event}, %Socket{assigns: %{game_id: game_id}} = socket)
-      when event in ["joined", "next_round", "play_again", "score_updated"] do
+  def handle_info(%{event: "joined"}, %Socket{assigns: %{game_id: game_id}} = socket) do
     {:ok, game} = GameDetails.get_game(game_id)
+    {:noreply, assign(socket, game: game, edit_score_details: nil)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info(%{event: event, payload: %{game: game}}, socket)
+      when event in ["next_round", "play_again", "score_updated"] do
     {:noreply, assign(socket, game: game, edit_score_details: nil)}
   end
 end

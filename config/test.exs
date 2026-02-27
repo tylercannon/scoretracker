@@ -6,6 +6,9 @@ config :score_tracker, ScoreTrackerWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   server: false
 
+# Use ETS storage backend for tests
+config :score_tracker, :game_storage_backend, ScoreTracker.GameStorage.Ets
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 
