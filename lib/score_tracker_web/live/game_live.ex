@@ -326,34 +326,27 @@ defmodule ScoreTrackerWeb.GameLive do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"game_id" => game_id}, session, socket) do
-    case GameDetails.get_game(game_id) do
-      {:ok, game} ->
-        user_id = session["user_id"]
-        host? = GameDetails.host?(game, user_id)
+  def mount(%{"game_id" => game_id}, %{"user_id" => user_id}, socket) do
+    with {:ok, game} <- GameDetails.get_game(game_id),
+         true <- GameDetails.accessible?(game, user_id) do
+      if connected?(socket) do
+        Phoenix.PubSub.subscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
+      end
 
-        if GameDetails.accessible?(game, user_id) do
-          if connected?(socket) do
-            Phoenix.PubSub.subscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
-          end
+      send(self(), :after_mount)
 
-          send(self(), :after_mount)
+      socket =
+        assign(socket, %{
+          user_id: user_id,
+          game_id: game_id,
+          game: game,
+          is_host: GameDetails.host?(game, user_id),
+          edit_score_details: nil
+        })
 
-          socket =
-            assign(socket, %{
-              user_id: user_id,
-              game_id: game_id,
-              game: game,
-              is_host: host?,
-              edit_score_details: nil
-            })
-
-          {:ok, socket}
-        else
-          {:ok, push_navigate(socket, to: ~p"/")}
-        end
-
-      {:error, :not_found} ->
+      {:ok, socket}
+    else
+      _ ->
         {:ok, push_navigate(socket, to: ~p"/")}
     end
   end
