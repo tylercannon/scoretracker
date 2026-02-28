@@ -79,7 +79,7 @@ defmodule ScoreTracker.Changeset do
     if player_count > max_players - 1 do
       {valid_players, [invalid_player]} = Enum.split(players, -1)
       invalid_player = add_error(invalid_player, :name, "must not exceed max player count")
-      updated_players = Enum.concat(valid_players, [invalid_player])
+      updated_players = valid_players ++ [invalid_player]
 
       put_embed(changeset, :players, updated_players)
     else
@@ -113,17 +113,18 @@ defmodule ScoreTracker.Changeset do
 
         cond do
           is_nil(name) ->
-            %{acc | changesets: Enum.concat(changesets, [changeset])}
+            %{acc | changesets: [changeset | changesets]}
 
           MapSet.member?(names, name) ->
             updated_changeset = add_error(changeset, :name, "must be unique")
-            %{acc | changesets: Enum.concat(changesets, [updated_changeset])}
+            %{acc | changesets: [updated_changeset | changesets]}
 
           true ->
-            %{names: MapSet.put(names, name), changesets: Enum.concat(changesets, [changeset])}
+            %{names: MapSet.put(names, name), changesets: [changeset | changesets]}
         end
       end)
       |> Map.get(:changesets)
+      |> Enum.reverse()
 
     put_embed(changeset, :players, players)
   end

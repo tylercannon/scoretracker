@@ -330,24 +330,28 @@ defmodule ScoreTrackerWeb.GameLive do
     case GameDetails.get_game(game_id) do
       {:ok, game} ->
         user_id = session["user_id"]
-        is_host = GameDetails.host?(game, user_id)
+        host? = GameDetails.host?(game, user_id)
 
-        if connected?(socket) do
-          Phoenix.PubSub.subscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
+        if GameDetails.accessible?(game, user_id) do
+          if connected?(socket) do
+            Phoenix.PubSub.subscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
+          end
+
+          send(self(), :after_mount)
+
+          socket =
+            assign(socket, %{
+              user_id: user_id,
+              game_id: game_id,
+              game: game,
+              is_host: host?,
+              edit_score_details: nil
+            })
+
+          {:ok, socket}
+        else
+          {:ok, push_navigate(socket, to: ~p"/")}
         end
-
-        send(self(), :after_mount)
-
-        socket =
-          assign(socket, %{
-            user_id: user_id,
-            game_id: game_id,
-            game: game,
-            is_host: is_host,
-            edit_score_details: nil
-          })
-
-        {:ok, socket}
 
       {:error, :not_found} ->
         {:ok, push_navigate(socket, to: ~p"/")}
