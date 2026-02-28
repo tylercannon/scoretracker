@@ -72,5 +72,6 @@ defmodule ScoreTrackerWeb.HomeLive do
     end
   end
 
+  @impl Phoenix.LiveView
   def handle_params(_params, _uri, socket), do: {:noreply, socket}
 end

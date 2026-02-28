@@ -18,5 +18,6 @@ defmodule ScoreTrackerWeb.Plugs.HealthCheck do
     |> halt()
   end
 
+  @impl Plug
   def call(conn, _opts), do: conn
 end

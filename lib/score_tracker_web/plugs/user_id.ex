@@ -10,10 +10,10 @@ defmodule ScoreTrackerWeb.Plugs.UserIdPlug do
 
   @behaviour Plug
 
-  @impl true
+  @impl Plug
   def init(opts), do: opts
 
-  @impl true
+  @impl Plug
   def call(conn, _opts) do
     user_id = get_session(conn, :user_id)
 

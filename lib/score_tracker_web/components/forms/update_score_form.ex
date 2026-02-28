@@ -9,7 +9,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
   alias ScoreTracker.{GameServer, GameType, UpdateScore}
   alias ScoreTrackerWeb.GameDetails
 
-  @impl true
+  @impl Phoenix.LiveComponent
   def render(%{game_id: _, player_id: _, game_type: _, round: _, on_cancel: _} = assigns) do
     ~H"""
     <div>
@@ -42,7 +42,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
     """
   end
 
-  @impl true
+  @impl Phoenix.LiveComponent
   def update(assigns, socket) do
     game_type = assigns.game_type
 
@@ -54,7 +54,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
     {:ok, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveComponent
   def handle_event("validate", attrs, socket) do
     game_type = socket.assigns.game_type
 
@@ -66,7 +66,7 @@ defmodule ScoreTrackerWeb.UpdateScoreForm do
     {:noreply, assign(socket, form: form)}
   end
 
-  @impl true
+  @impl Phoenix.LiveComponent
   def handle_event("save", attrs, socket) do
     %{game_id: game_id, game_type: game_type} = socket.assigns
 

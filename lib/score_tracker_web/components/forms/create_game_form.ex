@@ -8,7 +8,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
 
   alias ScoreTracker.{CreateGame, GameServer, GameType, Player}
 
-  @impl true
+  @impl Phoenix.LiveComponent
   def render(%{on_cancel: _, max_players_reached?: _, show_players?: _} = assigns) do
     ~H"""
     <div>
@@ -107,7 +107,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
     """
   end
 
-  @impl true
+  @impl Phoenix.LiveComponent
   def update(assigns, socket) do
     changeset =
       CreateGame.changeset(%CreateGame{
@@ -133,7 +133,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
     {:ok, socket}
   end
 
-  @impl true
+  @impl Phoenix.LiveComponent
   def handle_event("validate", attrs, socket) do
     changeset = CreateGame.changeset(%CreateGame{}, attrs)
     show_players? = Ecto.Changeset.get_field(changeset, :game_mode) == :scorekeeper
@@ -157,7 +157,7 @@ defmodule ScoreTrackerWeb.CreateGameForm do
      )}
   end
 
-  @impl true
+  @impl Phoenix.LiveComponent
   def handle_event("save", attrs, socket) do
     socket =
       case CreateGame.update(%CreateGame{}, attrs) do

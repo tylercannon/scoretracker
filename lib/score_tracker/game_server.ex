@@ -137,7 +137,7 @@ defmodule ScoreTracker.GameServer do
 
   # Server Callbacks
 
-  @impl true
+  @impl GenServer
   def init({game_id, nil, storage_mod}) do
     case storage_mod.get_game(game_id) do
       {:ok, game} ->
@@ -153,6 +153,7 @@ defmodule ScoreTracker.GameServer do
     end
   end
 
+  @impl GenServer
   def init({game_id, %Game{} = game, storage_mod}) do
     Process.flag(:trap_exit, true)
     schedule_persist()
@@ -162,18 +163,18 @@ defmodule ScoreTracker.GameServer do
     {:ok, state, {:continue, :persist}}
   end
 
-  @impl true
+  @impl GenServer
   def handle_continue(:persist, %State{} = state) do
     persist(state)
     {:noreply, %{state | dirty: false}, @idle_timeout}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:get_game, _from, %State{} = state) do
     {:reply, {:ok, state.game}, state, @idle_timeout}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call({:add_player, player_id, player_name}, _from, %State{} = state) do
     case Game.add_player(state.game, player_id, player_name) do
       {:ok, :spectator, _game} ->
@@ -189,7 +190,7 @@ defmodule ScoreTracker.GameServer do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_call({:update_player_score, player_id, round, score}, _from, %State{} = state) do
     case Game.update_score(state.game, player_id, round, score) do
       {:ok, updated_game} ->
@@ -202,7 +203,7 @@ defmodule ScoreTracker.GameServer do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:start_game, _from, %State{} = state) do
     case Game.start(state.game) do
       {:ok, updated_game} ->
@@ -215,7 +216,7 @@ defmodule ScoreTracker.GameServer do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:advance_to_next_round, _from, %State{} = state) do
     updated_game = Game.advance_round(state.game)
     new_state = %{state | game: updated_game, dirty: true}
@@ -223,7 +224,7 @@ defmodule ScoreTracker.GameServer do
     {:reply, {:ok, updated_game.round}, new_state, {:continue, :persist}}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:reset_game, _from, %State{} = state) do
     case Game.reset(state.game) do
       {:ok, updated_game} ->
@@ -236,7 +237,7 @@ defmodule ScoreTracker.GameServer do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:periodic_persist, %State{} = state) do
     if state.dirty do
       persist(state)
@@ -247,13 +248,13 @@ defmodule ScoreTracker.GameServer do
     {:noreply, %{state | dirty: false}, @idle_timeout}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:timeout, %State{} = state) do
     # Idle timeout — shut down to free resources
     {:stop, {:shutdown, :idle_timeout}, state}
   end
 
-  @impl true
+  @impl GenServer
   def terminate(_reason, %State{} = state) do
     if state.dirty do
       persist(state)

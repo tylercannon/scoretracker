@@ -365,6 +365,7 @@ defmodule ScoreTrackerWeb.GameLive do
     Phoenix.PubSub.unsubscribe(ScoreTracker.PubSub, GameDetails.topic(game_id))
   end
 
+  @impl Phoenix.LiveView
   def terminate(_reason, _socket), do: :ok
 
   @impl Phoenix.LiveView
