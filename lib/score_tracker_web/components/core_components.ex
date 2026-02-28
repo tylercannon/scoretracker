@@ -51,7 +51,11 @@ defmodule ScoreTrackerWeb.CoreComponents do
       class="fixed z-50 inset-0 hidden"
     >
       <!-- Backdrop -->
-      <div id={"#{@id}-bg"} class="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" />
+      <div
+        id={"#{@id}-bg"}
+        class="fixed inset-0 bg-black/50 transition-opacity"
+        aria-hidden="true"
+      />
       <!-- Modal -->
       <div
         id={"#{@id}-modal"}
@@ -61,14 +65,14 @@ defmodule ScoreTrackerWeb.CoreComponents do
         role="dialog"
         tabindex="0"
       >
-        <div class="flex items-center justify-center min-h-full p-4">
+        <div class="flex items-center justify-center h-full p-4">
           <.focus_wrap
             id={"#{@id}-container"}
             phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
             phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
             phx-key="escape"
             class={[
-              "relative max-h-[90vh] w-full max-w-xl",
+              "relative max-h-full w-full max-w-xl",
               "overflow-y-auto overscroll-contain",
               "transform transition-all",
               "bg-card/80 backdrop-blur-xl shadow-xl border border-border",
@@ -612,7 +616,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
       transition: {"transition-all transform ease-out duration-300", "opacity-0", "opacity-100"}
     )
     |> show("##{id}-container")
-    |> JS.add_class("overflow-hidden", to: "body")
+    |> JS.add_class("overflow-hidden", to: "main")
     |> JS.focus_first(to: "##{id}-container")
   end
 
@@ -624,7 +628,7 @@ defmodule ScoreTrackerWeb.CoreComponents do
     )
     |> hide("##{id}-container")
     |> JS.hide(to: "##{id}", transition: {"block", "block", "hidden"})
-    |> JS.remove_class("overflow-hidden", to: "body")
+    |> JS.remove_class("overflow-hidden", to: "main")
     |> JS.pop_focus()
   end
 

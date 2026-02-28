@@ -71,6 +71,9 @@ const hooks = {
       window.visualViewport?.addEventListener("resize", this._onResize, { passive: true });
       window.visualViewport?.addEventListener("scroll", this._onResize, { passive: true });
     },
+    updated() {
+      this._onResize();
+    },
     destroyed() {
       window.visualViewport?.removeEventListener("resize", this._onResize);
       window.visualViewport?.removeEventListener("scroll", this._onResize);

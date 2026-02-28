@@ -42,7 +42,7 @@ defmodule ScoreTrackerWeb.GameDetails do
   @spec accessible?(Game.t(), String.t()) :: boolean()
   def accessible?(game, user_id) do
     player? = Enum.any?(game.players, &match?(%Player{id: ^user_id}, &1))
-    observable? = in_progress?(game) and game.allow_spectators
+    observable? = game.allow_spectators and game.status in [:in_progress, :complete]
 
     player? or observable?
   end

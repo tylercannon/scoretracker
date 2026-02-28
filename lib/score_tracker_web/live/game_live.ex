@@ -10,13 +10,14 @@ defmodule ScoreTrackerWeb.GameLive do
     ~H"""
     <div
       class="min-size-full flex flex-col items-center p-4 pb-12 text-primary bg-background"
-      phx-mounted={JS.remove_class("overflow-hidden", to: "body")}
+      phx-mounted={JS.remove_class("overflow-hidden", to: "main")}
     >
       <%!-- Hidden focus proxy to trigger iOS Safari keyboard before the server round-trip --%>
       <input
         type="text"
         id="focus-proxy"
-        inputmode="numeric"
+        type={if GameType.allows_negative_scores?(@game.game_type), do: "number", else: "text"}
+        inputmode={if GameType.allows_negative_scores?(@game.game_type), do: nil, else: "numeric"}
         aria-hidden="true"
         tabindex="-1"
         class="absolute opacity-0 h-0 w-0 text-base caret-transparent"
@@ -163,13 +164,11 @@ defmodule ScoreTrackerWeb.GameLive do
         </div>
       </div>
       <.modal
-        :if={is_map(@edit_score_details)}
         id="edit-score-modal"
         on_cancel={hide_modal("edit-score-modal") |> JS.push("cancel_edit_score")}
-        show={true}
         keyboard_aware={true}
       >
-        <div>
+        <div :if={is_map(@edit_score_details)} phx-mounted={show_modal("edit-score-modal")}>
           <h2 class="text-xl font-bold mb-4 text-primary">
             Edit {@edit_score_details.player_name}'s Round {@edit_score_details.round} Score
           </h2>

@@ -18,6 +18,7 @@ defmodule ScoreTrackerWeb.SessionOptions do
       secure: @secure,
       encrypt: true,
       sign: true,
+      max_age: 30 * 24 * 60 * 60,
       encryption_salt: {__MODULE__, :encryption_salt, []},
       signing_salt: {__MODULE__, :signing_salt, []},
       same_site: "Strict"
