@@ -1,7 +1,7 @@
 defmodule ScoreTrackerWeb.HomeLive do
   use ScoreTrackerWeb, :live_view
 
-  alias ScoreTracker.{JoinGame, Player}
+  alias ScoreTracker.JoinGame
   alias ScoreTrackerWeb.GameDetails
 
   @impl Phoenix.LiveView
@@ -60,7 +60,7 @@ defmodule ScoreTrackerWeb.HomeLive do
     with true <- JoinGame.valid_game_id?(game_id),
          {:ok, game} <- GameDetails.get_game(game_id) do
       socket =
-        if player_in_game?(game, socket.assigns.user_id) or spectator?(game) do
+        if GameDetails.accessible?(game, socket.assigns.user_id) do
           push_navigate(socket, to: ~p"/game/#{game_id}")
         else
           assign(socket, game_id: game_id, show_join_modal: true)
@@ -73,12 +73,4 @@ defmodule ScoreTrackerWeb.HomeLive do
   end
 
   def handle_params(_params, _uri, socket), do: {:noreply, socket}
-
-  defp player_in_game?(game, user_id) do
-    Enum.any?(game.players, &match?(%Player{id: ^user_id}, &1))
-  end
-
-  defp spectator?(game) do
-    GameDetails.in_progress?(game) and game.allow_spectators
-  end
 end

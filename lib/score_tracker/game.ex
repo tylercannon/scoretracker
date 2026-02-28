@@ -144,7 +144,7 @@ defmodule ScoreTracker.Game do
 
       true ->
         updated_scores = Map.put(game.scores, player_id, %{})
-        updated_players = Enum.concat(game.players, [%Player{id: player_id, name: player_name}])
+        updated_players = game.players ++ [%Player{id: player_id, name: player_name}]
         updated_game = %{game | scores: updated_scores, players: updated_players}
 
         {:ok, :player, updated_game}

@@ -37,6 +37,17 @@ defmodule ScoreTrackerWeb.GameDetails do
   def host?(game, user_id), do: game.host_id == user_id
 
   @doc """
+  Check whether a user can access a game (either as a player or spectator)
+  """
+  @spec accessible?(Game.t(), String.t()) :: boolean()
+  def accessible?(game, user_id) do
+    player? = Enum.any?(game.players, &match?(%Player{id: ^user_id}, &1))
+    observable? = in_progress?(game) and game.allow_spectators
+
+    player? or observable?
+  end
+
+  @doc """
   Check whether a user's score is editable
   """
   @spec user_score_editable?(Game.t(), String.t(), String.t(), non_neg_integer()) :: boolean()
