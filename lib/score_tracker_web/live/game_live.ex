@@ -168,7 +168,11 @@ defmodule ScoreTrackerWeb.GameLive do
         on_cancel={hide_modal("edit-score-modal") |> JS.push("cancel_edit_score")}
         keyboard_aware={true}
       >
-        <div :if={is_map(@edit_score_details)} phx-mounted={show_modal("edit-score-modal")}>
+        <div
+          :if={is_map(@edit_score_details)}
+          phx-mounted={show_modal("edit-score-modal")}
+          phx-remove={hide_modal("edit-score-modal")}
+        >
           <h2 class="text-xl font-bold mb-4 text-primary">
             Edit {@edit_score_details.player_name}'s Round {@edit_score_details.round} Score
           </h2>
