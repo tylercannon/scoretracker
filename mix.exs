@@ -48,7 +48,7 @@ defmodule ScoreTracker.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:bandit, "~> 1.10.4"},
+      {:bandit, "~> 1.11.0"},
       {:credo, "~> 1.7.18", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.2.0"},
       {:dotenvy, "~> 1.1.1"},
