@@ -11,7 +11,7 @@
 #   - https://pkgs.org/ - resource for finding needed packages
 #   - Ex: docker.io/hexpm/elixir:1.19.5-erlang-28.5-debian-trixie-20260421-slim
 #
-ARG ELIXIR_VERSION=1.20.0
+ARG ELIXIR_VERSION=1.20
 ARG OTP_VERSION=29.0.1
 ARG DEBIAN_VERSION=trixie-20260518-slim
 
