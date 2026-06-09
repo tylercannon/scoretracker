@@ -76,9 +76,9 @@ defmodule ScoreTracker.GameTypeTest do
   describe "default_game/0" do
     test "returns expected value" do
       assert GameType.default_game() == %{
-               type: :ripple,
-               max_players: 6,
-               max_rounds: 10,
+               type: :rummy,
+               max_players: 8,
+               max_rounds: 8,
                winning_score_type: :lowest
              }
     end
