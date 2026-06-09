@@ -116,13 +116,17 @@ defmodule ScoreTracker.GameType do
   Returns the default game configuration
   """
   @spec default_game() :: map()
-  def default_game,
-    do: %{
-      type: :ripple,
-      max_players: Ripple.max_players(),
-      max_rounds: Ripple.max_rounds(),
-      winning_score_type: Ripple.winning_score_type()
+  def default_game do
+    default_game_type = :rummy
+    default_game_impl = impl(default_game_type)
+
+    %{
+      type: default_game_type,
+      max_players: default_game_impl.max_players(),
+      max_rounds: default_game_impl.max_rounds(),
+      winning_score_type: default_game_impl.winning_score_type()
     }
+  end
 
   @doc """
   Get the game type module associated with the given game type
