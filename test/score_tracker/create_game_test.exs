@@ -12,10 +12,10 @@ defmodule ScoreTracker.CreateGameTest do
       assert %CreateGame{
                host_name: nil,
                game_mode: :scorekeeper,
-               game_type: :ripple,
+               game_type: :rummy,
                allow_spectators: true,
-               max_players: 6,
-               max_rounds: 10,
+               max_players: 8,
+               max_rounds: 8,
                players: [],
                winning_score_type: :lowest
              } == create_game
