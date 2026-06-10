@@ -57,6 +57,7 @@ defmodule ScoreTracker.GameTest do
                custom_name: nil,
                game_mode: :party,
                game_type: :ripple,
+               history: [],
                host_id: "game-host",
                max_players: 6,
                max_rounds: 10,
@@ -86,6 +87,7 @@ defmodule ScoreTracker.GameTest do
                custom_name: nil,
                game_mode: :party,
                game_type: :custom,
+               history: [],
                host_id: "game-host",
                max_players: 3,
                max_rounds: 4,
@@ -116,6 +118,7 @@ defmodule ScoreTracker.GameTest do
                custom_name: "MyGame",
                game_mode: :party,
                game_type: :custom,
+               history: [],
                host_id: "game-host",
                max_players: 3,
                max_rounds: 4,
@@ -507,6 +510,16 @@ defmodule ScoreTracker.GameTest do
       assert reset_game.allow_spectators
       assert reset_game.game_mode == game.game_mode
       assert reset_game.game_type == game.game_type
+
+      assert reset_game.history == [
+               %{
+                 "game_number" => 1,
+                 "game-host" => 10,
+                 player_two_id => 20,
+                 player_three_id => 30
+               }
+             ]
+
       assert reset_game.host_id == game.host_id
       assert reset_game.max_players == game.max_players
       assert reset_game.max_rounds == game.max_rounds
@@ -571,6 +584,7 @@ defmodule ScoreTracker.GameTest do
                "max_players" => 4,
                "max_rounds" => 5,
                "custom_name" => nil,
+               "history" => [],
                "host_id" => "game-host",
                "players" => [%{"id" => "game-host", "name" => "Example"}],
                "scores" => %{"game-host" => %{}},

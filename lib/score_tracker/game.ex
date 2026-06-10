@@ -14,6 +14,7 @@ defmodule ScoreTracker.Game do
           custom_name: String.t() | nil,
           game_mode: :scorekeeper | :party,
           game_type: GameType.game_type(),
+          history: list(%{String.t() => integer()}),
           host_id: String.t(),
           max_players: non_neg_integer(),
           max_rounds: non_neg_integer(),
@@ -43,6 +44,7 @@ defmodule ScoreTracker.Game do
     :custom_name,
     :game_mode,
     :game_type,
+    :history,
     :host_id,
     :max_players,
     :max_rounds,
@@ -82,6 +84,7 @@ defmodule ScoreTracker.Game do
       custom_name: custom_name,
       game_mode: game_mode,
       game_type: game_type,
+      history: [],
       host_id: host_id,
       max_players: Keyword.fetch!(opts, :max_players),
       max_rounds: Keyword.fetch!(opts, :max_rounds),
@@ -214,7 +217,23 @@ defmodule ScoreTracker.Game do
 
   def reset(%__MODULE__{} = game) do
     scores = Map.new(game.scores, fn {player_id, _round_scores} -> {player_id, %{}} end)
-    updated_game = %{game | status: :in_progress, round: 1, scores: scores}
+
+    current_game = Enum.count(game.history) + 1
+
+    completed_game =
+      game.scores
+      |> Map.new(fn {player_id, round_scores} ->
+        {player_id, Enum.sum_by(round_scores, fn {_round, score} -> score end)}
+      end)
+      |> Map.put("game_number", current_game)
+
+    updated_game = %{
+      game
+      | status: :in_progress,
+        round: 1,
+        scores: scores,
+        history: [completed_game | game.history]
+    }
 
     {:ok, updated_game}
   end

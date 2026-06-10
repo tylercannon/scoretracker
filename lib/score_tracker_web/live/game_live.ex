@@ -162,6 +162,48 @@ defmodule ScoreTrackerWeb.GameLive do
             </tbody>
           </table>
         </div>
+        <div :if={GameDetails.historical_scores?(@game)}>
+          <div class="my-8">
+            <h2 class="text-lg font-bold">History</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-center border-separate border-spacing-0">
+              <thead class="bg-background text-primary">
+                <tr>
+                  <th class="p-3 w-24 min-w-24 max-w-24 sticky left-0 z-20 bg-background shadow-[4px_0_6px_-2px_rgba(0,0,0,0.1)]">
+                    Game
+                  </th>
+                  <th
+                    :for={%Player{id: player_id, name: player_name} <- @game.players}
+                    class="p-3"
+                  >
+                    {player_name}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  :for={historical_game <- @game.history}
+                  class="group hover:bg-primary hover:text-primary-foreground"
+                >
+                  <td class={[
+                    "w-24 min-w-24 max-w-24 p-3 sticky left-0 z-10",
+                    "font-medium truncate bg-background border-l border-border shadow-[4px_0_6px_-2px_rgba(0,0,0,0.1)]",
+                    "group-first:border-t group-last:border-b group-hover:bg-primary group-hover:text-primary-foreground"
+                  ]}>
+                    {Map.get(historical_game, "game_number")}
+                  </td>
+                  <td
+                    :for={%Player{id: player_id} <- @game.players}
+                    class="p-3 border-border group-first:border-t group-last:border-b last:border-r"
+                  >
+                    {Map.get(historical_game, player_id)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
       <.modal
         id="edit-score-modal"
