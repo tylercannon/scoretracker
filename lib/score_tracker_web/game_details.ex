@@ -93,6 +93,11 @@ defmodule ScoreTrackerWeb.GameDetails do
     end)
   end
 
+  @spec historical_scores?(Game.t()) :: boolean()
+  def historical_scores?(game) do
+    not Enum.empty?(game.history)
+  end
+
   @doc """
   Format the winners of the game
   """
