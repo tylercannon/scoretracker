@@ -5,9 +5,9 @@ defmodule ScoreTracker.GameType do
   """
 
   alias Ecto.Changeset
-  alias ScoreTracker.GameType.{Ripple, Rummy}
+  alias ScoreTracker.GameType.{FiveCrowns, Ripple, Rummy}
 
-  @type built_in_game_type() :: :ripple | :rummy
+  @type built_in_game_type() :: :five_crowns | :ripple | :rummy
 
   @type game_type() :: built_in_game_type() | :custom
   @type score_type() :: :highest | :lowest
@@ -52,7 +52,7 @@ defmodule ScoreTracker.GameType do
   Returns a list of all built-in game types
   """
   @spec built_in_types() :: [built_in_game_type()]
-  def built_in_types, do: [:ripple, :rummy]
+  def built_in_types, do: [:five_crowns, :ripple, :rummy]
 
   @doc """
   Returns a list of all game types
@@ -132,6 +132,7 @@ defmodule ScoreTracker.GameType do
   Get the game type module associated with the given game type
   """
   @spec impl(game_type :: built_in_game_type()) :: module()
+  def impl(:five_crowns), do: FiveCrowns
   def impl(:ripple), do: Ripple
   def impl(:rummy), do: Rummy
 end

@@ -5,13 +5,13 @@ defmodule ScoreTracker.GameTypeTest do
 
   describe "built_in_types/0" do
     test "returns expected value" do
-      assert GameType.built_in_types() == [:ripple, :rummy]
+      assert GameType.built_in_types() == [:five_crowns, :ripple, :rummy]
     end
   end
 
   describe "game_types/0" do
     test "returns expected value" do
-      assert GameType.game_types() == [:ripple, :rummy, :custom]
+      assert GameType.game_types() == [:five_crowns, :ripple, :rummy, :custom]
     end
   end
 
@@ -23,6 +23,7 @@ defmodule ScoreTracker.GameTypeTest do
 
   describe "allows_negative_scores?/1" do
     test "returns expected value" do
+      refute GameType.allows_negative_scores?(:five_crowns)
       assert GameType.allows_negative_scores?(:ripple)
       refute GameType.allows_negative_scores?(:rummy)
       assert GameType.allows_negative_scores?(:custom)
@@ -31,6 +32,9 @@ defmodule ScoreTracker.GameTypeTest do
 
   describe "friendly_name/2" do
     test "returns expected value" do
+      assert GameType.friendly_name(:five_crowns, nil) == "Five Crowns"
+      assert GameType.friendly_name(:five_crowns, "MyGame") == "Five Crowns"
+
       assert GameType.friendly_name(:ripple, nil) == "Ripple"
       assert GameType.friendly_name(:ripple, "MyGame") == "Ripple"
 
@@ -44,6 +48,7 @@ defmodule ScoreTracker.GameTypeTest do
 
   describe "friendly_name/1" do
     test "returns expected value" do
+      assert GameType.friendly_name(:five_crowns) == "Five Crowns"
       assert GameType.friendly_name(:ripple) == "Ripple"
       assert GameType.friendly_name(:rummy) == "Rummy"
       assert GameType.friendly_name(:custom) == "Custom Game"
@@ -59,6 +64,7 @@ defmodule ScoreTracker.GameTypeTest do
 
   describe "round_info/2" do
     test "returns expected type" do
+      assert is_list(GameType.round_info(:five_crowns, 1))
       assert is_list(GameType.round_info(:ripple, 1))
       assert is_list(GameType.round_info(:rummy, 1))
       assert is_nil(GameType.round_info(:custom, 1))
@@ -67,6 +73,7 @@ defmodule ScoreTracker.GameTypeTest do
 
   describe "built_in?/1" do
     test "returns expected value" do
+      assert GameType.built_in?(:five_crowns)
       assert GameType.built_in?(:ripple)
       assert GameType.built_in?(:rummy)
       refute GameType.built_in?(:custom)
@@ -86,6 +93,7 @@ defmodule ScoreTracker.GameTypeTest do
 
   describe "impl/1" do
     test "returns expected value" do
+      assert GameType.impl(:five_crowns) == GameType.FiveCrowns
       assert GameType.impl(:ripple) == GameType.Ripple
       assert GameType.impl(:rummy) == GameType.Rummy
     end
