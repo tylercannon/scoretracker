@@ -130,7 +130,7 @@ defmodule ScoreTracker.CreateGameTest do
       assert %{
                host_name: ["must be valid format"],
                game_mode: ["must be one of: party | scorekeeper"],
-               game_type: ["must be one of: custom | ripple | rummy"],
+               game_type: ["must be one of: custom | five_crowns | ripple | rummy"],
                allow_spectators: ["must be of type: boolean"],
                max_players: ["must be greater than or equal to 2"],
                max_rounds: ["must be less than or equal to 20"],
